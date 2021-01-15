@@ -2,20 +2,20 @@ version: '3.5'
 
 services:
 
-    # felicity_fe:
-    #     container_name: felicity_fe
-    #     restart: unless-stopped
-    #     build:
-    #         context: ./frontend
-    #     volumes:
-    #         - ./frontend:/app
-    #     ports:
-    #         - "3000:3000"
-    #     depends_on:
-    #         - backend
-    #     networks:
-    #         - felicitynet
-    #     command: bash -c "cd vite && yarn dev"
+    felicity_fe:
+        container_name: felicity_fe
+        restart: unless-stopped
+        build:
+            context: ./frontend
+        volumes:
+            - ./frontend:/app
+        ports:
+            - "3000:3000"
+        depends_on:
+            - felicity_be
+        networks:
+            - felicitynet
+        command: bash -c "cd vite && yarn dev"
 
     felicity_be:
         container_name: felicity_be

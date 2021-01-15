@@ -27,9 +27,8 @@ class User(AbstractBaseUser):
     def user_type(self):
         return conf.LABORATORY_CONTACT
     
-    @property
     def propagate_user_type(self):
-        """sets the user_type field in auth"""     
+        """sets the user_type field in auth"""   
         self.auth.acquire_user_type(conf.LABORATORY_CONTACT)
     
     def unlink_auth(self): 

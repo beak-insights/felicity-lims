@@ -1,15 +1,26 @@
 import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router';
 
+
+import LoginView from "../views/pages/Login.vue";
+import HomeView from "../views/App.vue";
+import AboutView from "../views/About";
+
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'Home',
-    component: import('../views/App.vue'),
+    component: HomeView,
+  },
+  {
+    path: "/auth",
+    name: "Login",
+    component: LoginView,
+    meta: { layout: "empty" },
   },
   {
     path: '/about',
     name: 'About',
-    component: () => import('../views/About')
+    component: () => AboutView
   }
 ];
 

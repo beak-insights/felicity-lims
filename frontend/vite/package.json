@@ -1,5 +1,5 @@
 {
-  "name": "felicity-lims",
+  "name": "sootheAdminTemplate",
   "version": "0.1.0",
   "main": "src/main.ts",
   "scripts": {
@@ -7,18 +7,24 @@
     "build": "vite build"
   },
   "dependencies": {
-    "vue": "^3.0.0-rc.10",
-    "vue-router": "4.0.0-beta.2",
+    "@fortawesome/fontawesome-free": "^5.14.0",
+    "@fortawesome/fontawesome-svg-core": "^1.2.30",
+    "@fortawesome/free-brands-svg-icons": "^5.14.0",
+    "@fortawesome/free-solid-svg-icons": "^5.14.0",
+    "@fortawesome/vue-fontawesome": "^3.0.0-1",
+    "tailwindcss": "^1.8.10",
+    "vue": "^3.0.0",
+    "vue-router": "4.0.0-beta.12",
     "vuex": "4.0.0-beta.4"
   },
   "devDependencies": {
-    "@vue/compiler-sfc": "^3.0.0-rc.10",
-    "typescript": "^4.0.2",
-    "vite": "^1.0.0-rc.4",
+    "@vue/compiler-sfc": "^3.0.0-0",
     "eslint": "^7.9.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-vue": "^6.2.2",
-    "prettier": "^2.1.1"
+    "prettier": "^2.1.1",
+    "typescript": "^4.0.2",
+    "vite": "^1.0.0-rc.4"
   }
 }

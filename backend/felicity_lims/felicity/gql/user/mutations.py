@@ -1,5 +1,6 @@
 from datetime import timedelta
 import logging 
+import time
 
 import graphene
 from graphql import GraphQLError
@@ -77,8 +78,9 @@ class CreateUserAuth(graphene.Mutation):
     @staticmethod
     def mutate(root, info, user_uid, username, password, passwordc, **kwargs):
         # active_super_user = deps.get_current_active_superuser(token=token)
-        auth = user_models.UserAuth.get_by_username(username=username)
+        auth = user_models.UserAuth.get_by_username(username=username)        
         user = user_models.User.get(uid=user_uid)
+        
         # 1. Link if not already Linked
         if auth and user:
             if user.auth:
@@ -86,7 +88,7 @@ class CreateUserAuth(graphene.Mutation):
                     raise GraphQLError(f"The two accounts are already linked")
                 else:
                     raise GraphQLError(f"User is already linked to different auth details")
-            elif auth.user:
+            elif getattr(auth, user.user_type): # auth.lcuser/auth.ccuser/auth.dcuser
                 raise GraphQLError(f"Auth details are already linked to {user.full_name}")
             else:
                 # _update = {**user.to_dict(), **{ 'auth_uid': auth.uid }}
@@ -95,7 +97,7 @@ class CreateUserAuth(graphene.Mutation):
         else:
             if not user: # if there is no user there is nothing to link
                 raise GraphQLError("An error occured: Try Again") # Should never happen :)
-            
+                
             if password != passwordc:
                 raise GraphQLError("Password do not match, try again")
             
@@ -105,8 +107,9 @@ class CreateUserAuth(graphene.Mutation):
                 "login_retry": 0,
                 "is_blocked": False
             }
-            auth_in = user_schemas.AuthCreate(**auth_in)            
-            auth = user_models.UserAuth.create(auth_in=auth_in)
+            auth_schema = user_schemas.AuthCreate(**auth_in)            
+            auth = user_models.UserAuth.create(auth_in=auth_schema)
+            logger.info(f"User: {user}, Auth: {auth}")
             user.link_auth(auth_uid=auth.uid)
             user.propagate_user_type()
         ok = True

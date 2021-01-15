@@ -1,5 +1,5 @@
-mutation CreateALl {
-  usercreate(email: "aurtur@study.inc", firstname: "one", lastname: "two", token: "") {
+mutation CreateAll {
+  createUser(email: "aurtur@study.inc", firstname: "one", lastname: "two", token: "") {
     user {
       firstName
       lastName
@@ -7,24 +7,27 @@ mutation CreateALl {
       uid
     }
   }
-
-  authcreate(userUid:1, token:"", username:"ceam2", password:"password1", passwordc:"password1"){
+  createUserAuth(userUid: 1, token: "", username: "ceam2", password: "password1", passwordc: "password1") {
     userAuth {
       uid
       userName
       uid
       loginRetry
-      user {
-        uid
-        isSuperuser
-        email
+      lcuser {
         firstName
         lastName
+        labManager {
+          edges {
+            node {
+              labName
+              email
+            }
+          }
+        }
       }
     }
   }
-  
-  authunlink(userUid:0, token:""){
+  ulinkUserAuth(userUid: 0, token: "") {
     user {
       uid
       firstName
@@ -37,7 +40,6 @@ mutation CreateALl {
     }
   }
 }
-
 
 query LabAndUser {
   userByEmail(email: "admin@stanchionlabs.inc") {

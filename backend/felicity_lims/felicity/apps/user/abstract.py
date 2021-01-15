@@ -77,8 +77,9 @@ class AbstractAuth(DBModel):
     def get_by_username(cls, username):
         auth = cls.get(user_name=username)
         if not auth:
-            raise Exception("Invalid username, try again")
-        return auth 
+            # raise Exception("Invalid username, try again")
+            return None
+        return auth
 
     @classmethod
     def create(cls, auth_in: schemas.AuthCreate) -> schemas.User:

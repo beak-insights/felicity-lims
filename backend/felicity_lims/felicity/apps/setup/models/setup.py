@@ -10,7 +10,7 @@ class Laboratory(DBModel):
     setup_name = Column(String, default="felicity", nullable=False) # Do not change this value ever
     lab_name = Column(String, nullable=False)
     lab_manager_uid = Column(Integer, ForeignKey("user.uid"), nullable=True)
-    lab_manager = relationship(User, backref="lab_manager")
+    lab_manager = relationship(User, backref="lab_manager") # TODO refactor backref value to  backref="laboratory"
     email = Column(String, nullable=True) # Main Email Adress
     email_cc = Column(String, nullable=True)
     mobile_phone = Column(String, nullable=True)
