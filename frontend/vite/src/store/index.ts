@@ -1,9 +1,26 @@
-import { state } from './state';
 import { createStore } from 'vuex';
+
+// root state
+import { state } from './state';
+import { getters } from './getters';
+import { actions } from './actions';
+import { mutations } from './mutations';
+
+// modules
+import { patients } from './modules/patients';
+import { samples } from './modules/samples';
+import { cases } from './modules/cases';
+import { worksheets } from './modules/worksheets';
 
 export default createStore({
   state,
-  mutations: {},
-  actions: {},
-  modules: {},
+  getters,
+  mutations,
+  actions,
+  modules: {
+    patients,
+    samples,
+    cases,
+    worksheets,
+  },
 });

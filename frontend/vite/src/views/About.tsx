@@ -2,7 +2,8 @@ import { defineComponent } from 'vue';
 // import Logo from '../assets/logo.png'; // <img src={Logo} />
 
 export default defineComponent({
-  name: 'App',
+  name: 'About',
+  displayName: "About Page",
   setup() {
     return () => (
       <>

@@ -1,7 +1,9 @@
-export interface State {
+export interface IState {
   title: string;
 }
 
-export const state: State = {
-  title: 'Vue(v3) 与 tsx 的结合~'
+export const state: IState = {
+  title: 'Felicity LIMS',
 };
+
+export type RootState = typeof state;

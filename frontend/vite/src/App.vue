@@ -1,5 +1,6 @@
 <template>
   <component :is="layout">
+    <!-- <div class="text-center">Flash Messages will come here.</div> -->
     <router-view />
   </component>
 </template>

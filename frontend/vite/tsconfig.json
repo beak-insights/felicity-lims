@@ -33,8 +33,10 @@
 {
   "compilerOptions": {
     /* Basic Options */
-    "target": "es5",
+    "target": "esnext",
     "module": "esnext",
+    "strict": true,
+    "jsx": "preserve",
     "lib": [
       "ESNext",
       "DOM"

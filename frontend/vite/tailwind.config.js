@@ -8,12 +8,13 @@ module.exports = {
     './public/**/*.html',
     './src/**/*.vue',
   ],
-  target: 'relaxed',
   prefix: '',
   important: false,
   separator: ':',
   corePlugins: {},
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/custom-forms'),
+  ],
   theme: {
     extend: {
       gridTemplateColumns: {
