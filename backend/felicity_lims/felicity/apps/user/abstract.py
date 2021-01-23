@@ -39,25 +39,25 @@ class AbstractBaseUser(DBModel):
     
     def give_super_powers(self):
         user_obj = jsonable_encoder(self)        
-        user_in = UserUpdate(**user_obj)
+        user_in = schemas.UserUpdate(**user_obj)
         user_in.is_superuser = True
         self.update(**user_in)
     
     def strip_super_powers(self):
         user_obj = jsonable_encoder(self)        
-        user_in = UserUpdate(**user_obj)
+        user_in = schemas.UserUpdate(**user_obj)
         user_in.is_superuser = False
         self.update(**user_in)
     
     def activate(self):
         user_obj = jsonable_encoder(self)        
-        user_in = UserUpdate(**user_obj)
+        user_in = schemas.UserUpdate(**user_obj)
         user_in.is_active = True
         self.update(**user_in)
     
     def deactivate(self):
         user_obj = jsonable_encoder(self)        
-        user_in = UserUpdate(**user_obj)
+        user_in = schemas.UserUpdate(**user_obj)
         user_in.is_active = False
         self.update(**user_in)
     

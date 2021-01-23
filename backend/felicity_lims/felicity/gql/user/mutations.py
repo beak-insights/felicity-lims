@@ -156,10 +156,11 @@ class AuthenticateUser(graphene.Mutation):
             raise GraphQLError("Failed to log you in") # Weird it should not reach here
         
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-        access_token = security.create_access_token(auth.user.uid, expires_delta=access_token_expires ),
+        _user = getattr(auth, auth.user_type)
+        access_token = security.create_access_token(_user.uid, expires_delta=access_token_expires),
         token_type = "bearer"
         ok = True
-        return AuthenticateUser(ok=ok, token=access_token, token_type=token_type, user=auth.user)
+        return AuthenticateUser(ok=ok, token=access_token[0], token_type=token_type, user=_user)
         
                       
 class UpdateUser(graphene.Mutation):

@@ -262,6 +262,7 @@
 .patient-scroll {
   height: 400px;
 }
+
 .tab-active {
   border-bottom: 2px solid rgb(194, 193, 193);
   color: rgb(37, 37, 37) !important;
@@ -296,21 +297,6 @@ export default defineComponent({
     let currentTab = ref('samples');
     const tabs = ['samples', 'cases', 'logs'];
     let currentTabComponent = computed(() => 'tab-' + currentTab.value);
-
-    // const patients = ref([
-    //   new Patient(
-    //     'Aurthur',
-    //     'Musendame',
-    //     'Adura Clinic',
-    //     'Nkulumane',
-    //     'Matabeleland South',
-    //     2,
-    //     '01/01/2020',
-    //     'Male',
-    //     'P21-00976',
-    //     'TTTTTT',
-    //   ),
-    // ]);
 
     let patient = reactive({ ...nullPatient });
 

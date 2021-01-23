@@ -21,11 +21,11 @@
 
       <form class="mt-4" @submit.prevent="login">
         <label class="block">
-          <span class="text-gray-700 text-sm">Email</span>
+          <span class="text-gray-700 text-sm">Username</span>
           <input
-            type="email"
+            type="text"
             class="form-input mt-1 block w-full rounded-md focus:border-indigo-600"
-            v-model="email"
+            v-model="form.username"
           />
         </label>
 
@@ -34,7 +34,7 @@
           <input
             type="password"
             class="form-input mt-1 block w-full rounded-md focus:border-indigo-600"
-            v-model="password"
+            v-model="form.password"
           />
         </label>
 
@@ -53,6 +53,13 @@
           </div>
         </div>
 
+        <div v-if="userAuth?.error?.message" class="flex items-center justify-center mt-3">
+          <span v-if="userAuth.loading">Loading ...</span>
+          <div v-else-if="userAuth.error" class="block text-red-500">
+            Ohh: {{ userAuth.error.message }}
+          </div>
+        </div>
+
         <div class="mt-6">
           <button
             type="submit"
@@ -66,21 +73,37 @@
   </div>
 </template>
 
-<script>
-import { defineComponent, ref } from 'vue';
+<script lang="ts">
+import { defineComponent, ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
+import { useMutation } from '@urql/vue';
+import { AUTHENTICATE_USER } from '../../graphql/mutations';
+import { ActionTypes } from '../../store/actions';
 export default defineComponent({
   setup() {
     const router = useRouter();
-    const email = ref('johndoe@mail.com');
-    const password = ref('@#!@#asdf1231!_!@#');
+    const store = useStore();
+    // No hanging fruits
+    store.dispatch(ActionTypes.RESET_STATE);
+    localStorage.removeItem("fwt");
+    localStorage.removeItem("fuser");
+    //
+    let userAuth = reactive({ data: null, error: null });
+    let form = reactive({ username: null, password: null });
+    const { executeMutation: authenticateUser } = useMutation(AUTHENTICATE_USER);
+
     function login() {
-      router.push('/');
+      authenticateUser({ username: form.username, password: form.password }).then((result) => {
+        Object.assign(userAuth, result);
+        if(!result.error)  store.dispatch(ActionTypes.PERSIST_AUTH_DATA, result).then(_ => router.push({ name: "DashBoard" }));
+      });
     }
+
     return {
+      form,
       login,
-      email,
-      password,
+      userAuth,
     };
   },
 });

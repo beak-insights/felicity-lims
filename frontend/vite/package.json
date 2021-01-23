@@ -18,8 +18,10 @@
     "@fortawesome/vue-fontawesome": "^3.0.0-3",
     "@urql/vue": "^0.2.1",
     "@vitejs/plugin-vue": "^1.1.0",
+    "@tailwindcss/custom-forms": "^0.2.1",
     "graphql": "^15.4.0",
     "graphql-tag": "^2.11.0",
+    "jwt-decode": "^3.1.2",
     "react": "^17.0.1",
     "tailwindcss": "^2.0.2",
     "urql": "^1.11.6",
@@ -28,7 +30,7 @@
     "vuex": "^v4.0.0-rc.2"
   },
   "devDependencies": {
-    "@tailwindcss/custom-forms": "^0.2.1",
+    "@types/node": "^14.14.22",
     "@vitejs/plugin-vue-jsx": "^1.0.2",
     "@vue/compiler-sfc": "^3.0.0",
     "autoprefixer": "^10.2.3",

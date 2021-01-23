@@ -68,9 +68,10 @@ class UserAuth(AbstractAuth):
         
         logger.info(f"auth-user type == {self.user_type}")       
             
-        auth_obj = jsonable_encoder(self)
+        auth_obj =  self.to_dict() # jsonable_encoder(self)
         retries = self.login_retry
-        if not verify_password(password, self.hashed_password):            
+        if not verify_password(password, self.hashed_password):  
+            msg = ""          
             if self.login_retry < 3:
                 retries += 1
                 msg = f'Wrong Password {3 - retries} attempts left'
