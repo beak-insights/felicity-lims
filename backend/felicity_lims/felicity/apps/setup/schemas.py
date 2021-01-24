@@ -213,12 +213,6 @@ class SupplierInDB(SupplierInDBBase):
 class CountryBase(BaseModel):
     name: Optional[str] = None
     code: Optional[str] = None  
-    email: Optional[str] = None
-    email_cc: Optional[str] = None
-    consent_email: Optional[str] = None
-    mobile_phone: Optional[str] = None
-    business_phone: Optional[str] = None
-    consent_sms: Optional[str] = None
     active: Optional[bool] = True
 
 class CountryBaseInDB(CountryBase):

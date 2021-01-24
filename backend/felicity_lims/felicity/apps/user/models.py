@@ -66,7 +66,7 @@ class UserAuth(AbstractAuth):
         if not getattr(_user, 'is_active'): # e.g self.ccuser.is_active
             raise Exception("In active account: contact administrator")
         
-        logger.info(f"auth-user type == {self.user_type}")       
+        # logger.info(f"auth-user type == {self.user_type}")       
             
         auth_obj =  self.to_dict() # jsonable_encoder(self)
         retries = self.login_retry

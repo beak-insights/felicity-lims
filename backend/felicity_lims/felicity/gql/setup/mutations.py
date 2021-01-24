@@ -203,7 +203,7 @@ class UpdateSupplier(graphene.Mutation):
         obj_in = schemas.SupplierUpdate(**supplier.to_dict())    
         supplier = supplier.update(obj_in)
         ok = True
-        return UpdateSupplier(ok=ok, supplier=department)    
+        return UpdateSupplier(ok=ok, supplier=supplier)    
 
 
 # 
@@ -353,7 +353,7 @@ class CreateCountry(graphene.Mutation):
     country = graphene.Field(lambda: CountryType)
 
     @staticmethod
-    def mutate(root, info, name, code, kwargs):
+    def mutate(root, info, name, code, **kwargs):
         if not name:
             raise GraphQLError("Please Provide a namefor the country")
         exists = models.Country.get(code=code)
@@ -426,7 +426,7 @@ class CreateProvince(graphene.Mutation):
     province = graphene.Field(lambda: ProvinceType)
 
     @staticmethod
-    def mutate(root, info, name, code, kwargs):
+    def mutate(root, info, name, code, **kwargs):
         if not name:
             raise GraphQLError("Please Provide a name for the Province")
         exists = models.Province.get(code=code)
@@ -506,7 +506,7 @@ class CreateDistrict(graphene.Mutation):
     district = graphene.Field(lambda: DistrictType)
 
     @staticmethod
-    def mutate(root, info, name, code, kwargs):
+    def mutate(root, info, name, code, **kwargs):
         if not name:
             raise GraphQLError("Please Provide a namefor the district")
         exists = models.District.get(code=code)

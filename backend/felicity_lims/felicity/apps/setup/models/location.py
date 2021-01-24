@@ -57,6 +57,7 @@ class Province(LocationBase):
 class Country(DBModel):
     name = Column(String, default='Zimbabwe')
     code = Column(String, index=True, unique=True, nullable=True)
+    active = Column(Boolean(), default=False)
 
     @classmethod
     def create(cls, country: schemas.CountryCreate) -> schemas.Country:

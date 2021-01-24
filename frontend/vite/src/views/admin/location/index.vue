@@ -1,7 +1,7 @@
 <template>
   <div class="px-6">
     <div class="flex">
-      <h1 class="h1 my-4 font-bold text-dark-700">Patients</h1>
+      <h1 class="h1 my-4 font-bold text-dark-700">CPD</h1>
       <button
         class="px-4 my-2 ml-8 text-sm border-blue-500 border text-dark-700 transition-colors duration-150 rounded-lg focus:outline-none hover:bg-blue-500 hover:text-gray-100"
         @click="patientFormManager(true)"

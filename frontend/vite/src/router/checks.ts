@@ -1,4 +1,4 @@
-import jwt_decode from "jwt-decode";
+import jwt_decode from 'jwt-decode';
 
 export function isTokenValid(token: string | null) {
   if (token === null || token === undefined) return false;

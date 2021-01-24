@@ -47,13 +47,6 @@
       <font-awesome-icon icon="envelope" class="mr-2" />
       <span class="text-sm">Messages</span>
     </a>
-    <a
-      href="#"
-      class="no-underline text-white opacity-50 flex items-center px-4 border-b border-transparent hover:opacity-100 md:hover:border-grey-dark"
-    >
-      <font-awesome-icon icon="cog" class="mr-2" />
-      <span class="text-sm">Settings</span>
-    </a>
     <div class="flex text-right align-middle py-2">
       <div>
         <img
@@ -89,16 +82,14 @@
             class="no-underline text-gray-500 py-1 opacity-50 flex items-center px-4 border-b border-transparent hover:opacity-100 md:hover:border-grey-dark hover:bg-gray-800 hover:text-gray-200"
             >Profile</a
           >
-          <a
-            href="#"
+          <router-link
+            to="/admin"
             class="no-underline text-gray-500 py-1 opacity-50 flex items-center px-4 border-b border-transparent hover:opacity-100 md:hover:border-grey-dark hover:bg-gray-800 hover:text-gray-200"
-            >Products</a
-          >
+            >Configurations</router-link>
           <router-link
             to="/auth"
             class="no-underline text-gray-500 py-1 opacity-50 flex items-center px-4 border-b border-transparent hover:opacity-100 md:hover:border-grey-dark hover:bg-gray-800 hover:text-gray-200"
-            >Log out</router-link
-          >
+            >Log out</router-link>
         </div>
       </div>
     </div>

@@ -1,31 +1,55 @@
 import { RootState } from '../state';
 import { ActionTree, GetterTree, MutationTree } from 'vuex';
 
+
+export interface IBase {
+  uid?: number,
+  name?: string,
+  code?: string,
+}
+
+export interface IClient extends IBase {
+  district?: IDistrict
+}
+export interface IProvince extends IBase {
+  country?: ICountry
+}
+export interface IDistrict extends IBase {
+  province?: IProvince
+}
+export interface ICountry extends IBase {}
+
 export interface IPatient {
-  firstName?: string;
-  lastName?: string;
-  clientName?: string;
-  districtName?: string;
-  provinceName?: string;
-  age?: number;
-  dob?: Date;
-  gender?: string;
-  patientId?: string;
+  uid?: number,
   clientPatientId?: string;
+  patientId?: string;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
+  client?: IClient;
+  gender?: string;
+  age?: number;
+  dateOfBirth?: Date;
+  ageDobEstimated?: Boolean;
+  phoneHome?: string;
+  phoneMobile?: string;
+  consentSms?: string;
 }
 
 export class Patient implements IPatient {
   constructor(
-    public firstName?: string,
-    public lastName?: string,
-    public clientName?: string,
-    public districtName?: string,
-    public provinceName?: string,
-    public age?: number,
-    public dob?: Date,
-    public gender?: string,
+    public uid?: number,
     public patientId?: string,
     public clientPatientId?: string,
+    public firstName?: string,
+    public lastName?: string,
+    public gender?: string,
+    public age?: number,
+    public dateOfBirth?: Date,
+    public ageDobEstimated?: Boolean,
+    public client?: IClient,
+    public phoneMobile?: string,
+    public phoneHome?: string
   ) {}
 }
 
@@ -38,20 +62,7 @@ export interface IState {
 export const initialState = () => {
   return <IState>{
     patient: null,
-    patients: [
-      new Patient(
-        'Aurthur',
-        'Musendame',
-        'Adura Clinic',
-        'Nkulumane',
-        'Matabeleland South',
-        24,
-        new Date('01/01/2020 00:00:00'),
-        'Male',
-        'P21-00976',
-        'TTTTTT',
-      ),
-    ],
+    patients: [],
   };
 };
 

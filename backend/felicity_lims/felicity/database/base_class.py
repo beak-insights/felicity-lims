@@ -63,9 +63,13 @@ class DBModel(AllFeaturesMixin):
     def save(self):
         """Saves the updated model to the current entity db.
         """
-        self.session.add(self)
-        self.session.flush()
-        self.session.commit()
+        try:
+            self.session.add(self)
+            self.session.flush()
+            self.session.commit()
+        except:
+            self.session.rollback()
+            raise
         return self
     
     @classmethod

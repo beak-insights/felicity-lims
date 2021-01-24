@@ -70,4 +70,4 @@ class Patient(DBModel):
         scalar = cls.session.query(func.count(Patient.uid)).filter(Patient.patient_id.like(prefix)).scalar()
         if isinstance(count, type(None)):
             count = 0
-        return f"{prefix}-{sequencer(count + 1, 5)}"
+        return f"{prefix}-{sequencer(count + 5, 5)}"

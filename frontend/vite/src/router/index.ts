@@ -7,8 +7,10 @@ import ClientsView from '../views/client/index.vue';
 import SamplesView from '../views/sample/index.vue';
 import WorkSheetsView from '../views/worksheet/index.vue';
 import AboutView from '../views/About.vue';
+import AdminView from '../views/admin/index.vue';
 import PageNotFound from '../views/404.vue';
 import { isTokenValid } from './checks';
+
 
 const routes: RouteRecordRaw[] = [
   {
@@ -74,13 +76,22 @@ const routes: RouteRecordRaw[] = [
       is_admin: true,
     },
   },
-  { 
+  {
+    name: 'admin',
+    path: '/admin',
+    component: AdminView,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    },
+  },
+  {
     name: '404-page-not-found',
-    path: '/:pathMatch(.*)', 
+    path: '/:pathMatch(.*)',
     component: PageNotFound,
     meta: {
-      layout: 'empty' ,
-    }
+      layout: 'empty',
+    },
   },
 ];
 
@@ -92,7 +103,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     let token = localStorage.getItem('fwt');
-    if (isTokenValid(token)) {      
+    if (!isTokenValid(token)) {
       next({ path: '/auth' });
       return;
     } else {

@@ -5,6 +5,7 @@ from graphql import GraphQLError
 from fastapi.encoders import jsonable_encoder
 
 from felicity.apps.patient import models, schemas
+from felicity.apps.client import models as client_models
 from felicity.gql.patient.types import (
     PatientType,
 )
@@ -41,11 +42,16 @@ class CreatePatient(graphene.Mutation):
         exists = models.Patient.get(client_patient_id=client_patient_id)
         if exists:
             raise GraphQLError(f"Client Patient Id already in use")
+        
+        client = client_models.Client.get(uid=client_uid)
+        if not client:
+            raise GraphQLError(f"Client with uid {client_uid} does not exist")
 
         incoming = {
             "client_patient_id": client_patient_id,
             "first_name": first_name,
             "last_name": last_name,
+            "client_uid": client_uid,
             "active": True,
         }
         for k, v in kwargs.items():
@@ -53,21 +59,22 @@ class CreatePatient(graphene.Mutation):
         
         # Dirty patient_id Getter 
         # Im skeptical of the way i am creating the patient_id especially if there are many queries
-        # almost at the same time that migh have the same patient id
+        # almost at the same time that might have the same patient id
         give_up = 20
         i = 0
         while True:
             patient_id = models.Patient.create_patient_id()
             incoming["patient_id"] = patient_id
-            obj_in = schemas.PatientCreate(**incoming)            
+            obj_in = schemas.PatientCreate(**incoming)
+            error = ""            
             try:                  
                 patient = models.Patient.create(obj_in)
                 break            
             except Exception as e:
-                logger.info(f"Patient Id {patient_id} already in taken. Retrying")
+                error = e
                 
             if i == give_up: # give up
-                raise GraphQLError(f"Failed to find a unique patient id after {give_up} trials. Try Again")
+                raise GraphQLError(f"Exception:  {error}")
             
             # retry again            
             i+=1

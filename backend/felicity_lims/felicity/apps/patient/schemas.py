@@ -10,6 +10,7 @@ from pydantic import BaseModel, EmailStr
 # Shared properties
 class PatientBase(BaseModel):
     client_patient_id: Optional[str] = None
+    client_uid: Optional[int] = None
     patient_id: Optional[str] = None
     first_name: Optional[str] = None
     middle_name: Optional[str] = None
@@ -27,9 +28,10 @@ class PatientBase(BaseModel):
 
 # Properties to receive via API on creation
 class PatientCreate(PatientBase):
-    client_patient_id: str = None
-    first_name: str = None
-    last_name: str = None
+    client_patient_id: str
+    first_name: str
+    last_name: str
+    client_uid: int
     active: bool = True
 
 
