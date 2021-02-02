@@ -7,6 +7,7 @@ import { actions } from './actions';
 import { mutations } from './mutations';
 
 // modules
+import { admin } from './modules/admin';
 import { patients } from './modules/patients';
 import { samples } from './modules/samples';
 import { cases } from './modules/cases';
@@ -18,6 +19,7 @@ export default createStore({
   mutations,
   actions,
   modules: {
+    admin,
     patients,
     samples,
     cases,

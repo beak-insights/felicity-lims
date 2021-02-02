@@ -1,4 +1,5 @@
 import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router';
+import adminRoutes from './admin';
 
 import LoginView from '../views/auth/Login.vue';
 import DashBoardView from '../views/dashboard/index.vue';
@@ -68,18 +69,10 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: '/admin',
-    name: 'admin',
-    component: () => WorkSheetsView,
-    meta: {
-      requiresAuth: true,
-      is_admin: true,
-    },
-  },
-  {
     name: 'admin',
     path: '/admin',
     component: AdminView,
+    children: adminRoutes,
     meta: {
       requiresAuth: true,
       requiresAdmin: true,

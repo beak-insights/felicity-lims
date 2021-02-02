@@ -1,23 +1,6 @@
 import { RootState } from '../state';
 import { ActionTree, GetterTree, MutationTree } from 'vuex';
-
-
-export interface IBase {
-  uid?: number,
-  name?: string,
-  code?: string,
-}
-
-export interface IClient extends IBase {
-  district?: IDistrict
-}
-export interface IProvince extends IBase {
-  country?: ICountry
-}
-export interface IDistrict extends IBase {
-  province?: IProvince
-}
-export interface ICountry extends IBase {}
+import { IClient, IDistrict, IProvince, ICountry } from '../common'
 
 export interface IPatient {
   uid?: number,
