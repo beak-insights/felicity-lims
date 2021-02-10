@@ -83,15 +83,21 @@
                   <!-- Client Details -->
                   <div class="flex">
                     <span class="text-gray-800 text-sm font-medium w-16">Client</span>
-                    <span class="text-gray-600 text-sm md:text-md">{{ patient?.client?.name }}</span>
+                    <span class="text-gray-600 text-sm md:text-md">{{
+                      patient?.client?.name
+                    }}</span>
                   </div>
                   <div class="flex">
                     <span class="text-gray-800 text-sm font-medium w-16">District:</span>
-                    <span class="text-gray-600 text-sm md:text-md">{{ patient?.client?.district?.name }}</span>
+                    <span class="text-gray-600 text-sm md:text-md">{{
+                      patient?.client?.district?.name
+                    }}</span>
                   </div>
                   <div class="flex">
                     <span class="text-gray-800 text-sm font-medium w-16">Province:</span>
-                    <span class="text-gray-600 text-sm md:text-md">{{ patient?.client?.district?.province?.name }}</span>
+                    <span class="text-gray-600 text-sm md:text-md">{{
+                      patient?.client?.district?.province?.name
+                    }}</span>
                   </div>
                 </div>
                 <div class="col-span-1">
@@ -270,6 +276,7 @@
 </style>
 
 <script scope="ts">
+import { useMutation } from '@urql/vue';
 import { defineComponent, ref, reactive, computed } from 'vue';
 import { mapGetters, useStore } from 'vuex';
 import { useRouter } from 'vue-router';
@@ -279,7 +286,7 @@ import tabCases from '../_components/sample/patientCaseTab.vue';
 import tabLogs from '../_components/sample/patientLogTab.vue';
 import modal from '../_components/modals/simpleModal.vue';
 import { Patient } from '../../store/modules/patients';
-import { GET_ALL_PATIENTS } from '../../graphql/queries'
+import { GET_ALL_PATIENTS } from '../../graphql/queries';
 
 export const IPatient = typeof Patient;
 
@@ -302,7 +309,7 @@ export default defineComponent({
     let patient = reactive({ ...nullPatient });
     const { data: patients, fetching: ptFetching, error: ptError } = useQuery({
       query: GET_ALL_PATIENTS,
-    })
+    });
 
     function isPatientSelected() {
       return patient.patientId !== undefined;
@@ -324,7 +331,6 @@ export default defineComponent({
       showModal.value = true;
       createPatient.value = create;
       if (create) setPatientToNull();
-      console.log(patient);
     }
 
     function savePatientForm() {
@@ -339,7 +345,7 @@ export default defineComponent({
       currentTabComponent,
       patient,
       getPatientFullName,
-      patients,// computed(() => store.getters.getPatients),
+      patients, // computed(() => store.getters.getPatients),
       isPatientSelected,
       selectPatient,
       patientFormManager,
