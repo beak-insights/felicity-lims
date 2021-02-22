@@ -22,6 +22,7 @@ databases = "^0.3.2"
 asyncpg = "^0.21.0"
 graphene-sqlalchemy = "^2.3.0"
 sqlalchemy_mixins = "^1.2.1"
+sqlalchemy_mptt ="^0.2.5"
 tenacity = "^6.2.0"
 
 [tool.poetry.dev-dependencies]

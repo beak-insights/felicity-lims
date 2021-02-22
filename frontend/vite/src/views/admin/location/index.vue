@@ -13,7 +13,7 @@
           <div
             v-for="c in countries?.countryAll.edges"
             :key="c.node.uid"
-            class="bg-white w-full flex justify-between p-2 mb-1 rounded-xl shadow border"
+              :class="country?.uid === c.node.uid ? 'bg-white w-full flex justify-between p-2 mb-1 rounded-xl shadow border c-active' : 'bg-white w-full flex justify-between p-2 mb-1 rounded-xl shadow border' "
           >
             <a
               href="#"
@@ -39,18 +39,19 @@
         </button>
         <div class="overflow-y-scroll overscroll-contain scroll-section">
           <div
-            v-for="p in provinces?.provinceAll.edges"
-            :key="p.node.uid"
-            class="bg-white w-full flex justify-between p-2 mb-1 rounded-xl shadow border"
+            v-for="p in provinces"
+            :key="p.uid"
+            :class="province?.uid === p.uid ? 'bg-white w-full flex justify-between p-2 mb-1 rounded-xl shadow border c-active' : 'bg-white w-full flex justify-between p-2 mb-1 rounded-xl shadow border' "
           >
             <a
               href="#"
-              @click.prevent.stop="selectLocation('province', p.node)"
+              @click.prevent.stop="selectLocation('province', p)"
               class="font-semibold text-gray-700"
             >
-              <span>{{ p.node.name }}</span>
+              <span>{{ p.name }}</span>
+              
             </a>
-            <a href="#" @click="FormManager(false, 'province', p.node)" class="px-2 cursor">
+            <a href="#" @click="FormManager(false, 'province', p)" class="px-2 cursor">
               <font-awesome-icon icon="pen" />
             </a>
           </div>
@@ -67,18 +68,18 @@
         </button>
         <div class="overflow-y-scroll overscroll-contain scroll-section">
           <div
-            v-for="d in districts?.districtAll.edges"
-            :key="d.node.uid"
-            class="bg-white w-full flex justify-between p-2 mb-1 rounded-xl shadow border"
+            v-for="d in districts"
+            :key="d.uid"
+            :class="district?.uid === d.uid ? 'bg-white w-full flex justify-between p-2 mb-1 rounded-xl shadow border c-active' : 'bg-white w-full flex justify-between p-2 mb-1 rounded-xl shadow border' "
           >
             <a
               href="#"
-              @click.prevent.stop="selectLocation('district', d.node)"
+              @click.prevent.stop="selectLocation('district', d)"
               class="font-semibold text-gray-700"
             >
-              <span>{{ d.node.name }}</span>
+              <span>{{ d.name }}</span>
             </a>
-            <a href="#" @click="FormManager(false, 'district', d.node)" class="px-2 cursor">
+            <a href="#" @click="FormManager(false, 'district', d)" class="px-2 cursor">
               <font-awesome-icon icon="pen" />
             </a>
           </div>
@@ -135,34 +136,36 @@
   border-bottom: 2px solid rgb(194, 193, 193);
   color: rgb(37, 37, 37) !important;
 }
+
+.c-active {
+  background-color: lightblue;
+}
 </style>
 
 <script scope="ts">
-import { useMutation } from '@urql/vue';
 import { defineComponent, ref, reactive, computed } from 'vue';
-import { mapGetters, useStore } from 'vuex';
-import { useRouter } from 'vue-router';
-import { useQuery } from '@urql/vue';
-import tabSamples from '../../_components/sample/patientSampleTab.vue';
-import tabCases from '../../_components/sample/patientCaseTab.vue';
-import tabLogs from '../../_components/sample/patientLogTab.vue';
+import { useQuery, useMutation } from '@urql/vue';
 import modal from '../../_components/modals/simpleModal.vue';
-import { Country, Province, District, GenericLocation } from '../../../store/common';
+import { 
+  Country, 
+  Province, 
+  District, 
+  GenericLocation 
+} from '../../../store/common';
 import {
   GET_ALL_COUNTRIES,
   GET_ALL_PROVINCES,
+  FILTER_PROVINCES_BY_COUNTRY,
   GET_ALL_DISTRICTS,
+  FILTER_DISTRICTS_BY_PROVINCE,
 } from '../../../graphql/admin/queries';
-import { ADD_COUNTRY, UPDATE_COUNTRY } from '../../../graphql/admin/mutations';
+import { ADD_COUNTRY, UPDATE_COUNTRY, ADD_PROVINCE, ADD_DISTRICT, UPDATE_DISTRICT, UPDATE_PROVINCE } from '../../../graphql/admin/mutations';
 
 export const ICountry = typeof Country;
 
 export default defineComponent({
   name: 'location',
   components: {
-    tabSamples,
-    tabCases,
-    tabLogs,
     modal,
   },
   setup() {
@@ -171,12 +174,16 @@ export default defineComponent({
     const nullDistrict = new District();
     const nullLocation = new GenericLocation();
 
-    let store = useStore();
     let createLocation = ref(true);
     let showModal = ref(false);
     let targetLocation = ref('');
 
+    let provinces = ref([]);
+    let districts = ref([]);
+
     let country = reactive({ ...nullCountry });
+    let countryUid = ref(null);
+    let provinceUid = ref(null);
     let province = reactive({ ...nullProvince });
     let district = reactive({ ...nullDistrict });
     let form = reactive({ ...nullLocation });
@@ -186,29 +193,65 @@ export default defineComponent({
       query: GET_ALL_COUNTRIES,
     });
 
-    const { data: provinces, fetching: PFetching, error: PError } = useQuery({
-      query: GET_ALL_PROVINCES,
+    const provincesfilter = useQuery({
+      query: FILTER_PROVINCES_BY_COUNTRY,
+      variables: { uid: countryUid },
+      pasuse: computed(() => countryUid !== null), // not working
+      requestPolicy: 'network-only',
     });
 
-    const { data: districts, fetching: DFetching, error: DError } = useQuery({
-      query: GET_ALL_DISTRICTS,
+    const districtsfilter = useQuery({
+      query: FILTER_DISTRICTS_BY_PROVINCE,
+      variables: { uid: provinceUid },
+      pasuse: computed(() => provinceUid !== null), // not working
+      requestPolicy: 'network-only',
     });
 
     const { executeMutation: createCountry } = useMutation(ADD_COUNTRY);
     const { executeMutation: updateCountry } = useMutation(UPDATE_COUNTRY);
+    const { executeMutation: createProvince } = useMutation(ADD_PROVINCE);
+    const { executeMutation: updateProvince } = useMutation(UPDATE_PROVINCE);
+    const { executeMutation: createDistrict } = useMutation(ADD_DISTRICT);
+    const { executeMutation: updateDistrict } = useMutation(UPDATE_DISTRICT);
 
-    function addCountry(form) {
+    function addCountry() {
       createCountry({ name: form.name, code: form.code }).then((result) => {
-        console.log(result);
         Object.assign(country, result);
       });
     }
 
-    function editCountry(form) {
+    function editCountry() {
       updateCountry({ uid: form.uid, name: form.name, code: form.code, active: true }).then(
         (result) => {
-          console.log(result);
           Object.assign(country, result);
+        },
+      );
+    }
+
+    function addProvince() {
+      createProvince({name: form.name, code:form.code, countryUid: country.uid}).then((result) => {
+        Object.assign(province, result);
+      });
+    }
+
+    function editProvince() {
+      updateProvince({ uid: form.uid, name: form.name, code: form.code, active: true }).then(
+        (result) => {
+          Object.assign(province, result);
+        },
+      );
+    }
+
+    function addDistrict() {
+      createDistrict({name: form.name, code:form.code, provinceUid: province.uid}).then((result) => {
+        Object.assign(district, result);
+      });
+    }
+
+    function editDistrict() {
+      updateDistrict({ uid: form.uid, name: form.name, code: form.code, active: true }).then(
+        (result) => {
+          Object.assign(district, result);
         },
       );
     }
@@ -222,8 +265,23 @@ export default defineComponent({
     }
 
     let selectLocation = (target, selected) => {
-      if (target === 'country') Object.assign(country, { ...selected });
-      if (target === 'province') Object.assign(province, { ...selected });
+      if (target === 'country') { 
+        Object.assign(country, { ...selected });
+        countryUid.value = selected.uid;
+        districts.value = [];
+        provincesfilter.executeQuery({requestPolicy: 'network-only'}).then(result => {
+          provinces.value = result.data.value?.provincesByCountryUid;
+        });
+      };
+
+      if (target === 'province') {
+        Object.assign(province, { ...selected });
+        provinceUid.value = selected.uid;
+        districtsfilter.executeQuery({requestPolicy: 'network-only'}).then(result => {
+          districts.value = result.data.value?.districtsByProvinceUid;
+        });
+      };
+
       if (target === 'district') Object.assign(district, { ...selected });
     };
 
@@ -254,16 +312,20 @@ export default defineComponent({
     }
 
     function saveForm() {
-      console.log(createLocation.value, targetLocation.value);
       console.log(form);
       if (targetLocation.value === 'country') {
-        if (createLocation.value === true) addCountry(form);
-        if (createLocation.value === false) editCountry(form);
+        if (createLocation.value === true) addCountry();
+        if (createLocation.value === false) editCountry();
       }
       if (targetLocation.value === 'province') {
+        if (createLocation.value === true) addProvince();
+        if (createLocation.value === false) editProvince();
       }
       if (targetLocation.value === 'district') {
+        if (createLocation.value === true) addDistrict();
+        if (createLocation.value === false) editDistrict();
       }
+      showModal.value = false;
     }
 
     return {
@@ -275,8 +337,11 @@ export default defineComponent({
       isCountrySelected,
       isProvinceSelected,
       selectLocation,
+      country,
       countries,
+      province,
       provinces,
+      district,
       districts,
     };
   },

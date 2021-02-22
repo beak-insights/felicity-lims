@@ -11,15 +11,6 @@ from felicity.apps.setup.models import Province
 from felicity.apps.client import schemas
 
 
-# class ClientContact(AbstractBaseUser):
-#     """Client Contact Focal person"""
-#     auth_uid = Column(Integer, ForeignKey('userauth.uid'), nullable=True)
-#     auth = relationship("UserAuth", backref=backref("user", uselist=False))
-#     email_cc = Column(String, nullable=True)
-#     consent_sms = Column(Boolean(), default=False)
-    
-
-
 class Client(DBModel):
     """Client/Facility"""
     name = Column(String, nullable=False)

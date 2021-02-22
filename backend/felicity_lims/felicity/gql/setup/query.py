@@ -38,9 +38,11 @@ class SetupQuery(graphene.ObjectType):
     # District Queries
     district_all = SQLAlchemyConnectionField(DistrictType.connection)
     district_by_uid = graphene.Field(lambda: DistrictType, uid=graphene.String(default_value=""))
+    districts_by_province_uid = graphene.List(lambda: DistrictType, uid=graphene.String(default_value=""))
     # Province Queries
     province_all = SQLAlchemyConnectionField(ProvinceType.connection)
     province_by_uid = graphene.Field(lambda: ProvinceType, uid=graphene.String(default_value=""))
+    provinces_by_country_uid = graphene.List(lambda: ProvinceType, uid=graphene.String(default_value=""))
     # Country Queries
     country_all = SQLAlchemyConnectionField(CountryType.connection)
     country_by_uid = graphene.Field(lambda: CountryType, uid=graphene.String(default_value=""))
@@ -69,9 +71,17 @@ class SetupQuery(graphene.ObjectType):
         district= models.District.get(uid=uid)
         return district
 
+    def resolve_districts_by_province_uid(self, info, uid):
+        districts = models.District.where(province_uid__exact=uid).all()
+        return districts
+
     def resolve_province_by_uid(self, info, uid):
         province= models.Province.get(uid=uid)
         return province
+
+    def resolve_provinces_by_country_uid(self, info, uid):
+        provinces = models.Province.where(country_uid__exact=uid).all()
+        return provinces
 
     def resolve_country_by_uid(self, info, uid):
         country= models.Country.find(uid)

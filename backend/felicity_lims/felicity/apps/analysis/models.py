@@ -9,6 +9,7 @@ from felicity.apps.patient import models as pt_models
 from felicity.apps.client import models as ct_models
 from felicity.apps.analysis import schemas
 from felicity.apps.core.utils import sequencer
+from felicity.apps.core import BaseMPTT
 from felicity.apps.analysis.conf import states
    
     
@@ -102,6 +103,7 @@ class AnalysisRequest(DBModel):
     @classmethod
     def create(cls, obj_in: schemas.AnalysisRequestCreate) -> schemas.SampleType:
         data = cls._import(obj_in)
+        data['request_id'] = cls.create_request_id()
         return super().create(**data)
 
     def update(self, obj_in: schemas.SampleTypeUpdate) -> schemas.SampleType:
@@ -123,7 +125,7 @@ class SALink(DBModel):
     analysis_uid = Column(Integer, ForeignKey('analysis.uid'), primary_key=True)
     
         
-class Sample(DBModel):
+class Sample(BaseMPTT, DBModel):
     """Sample"""
     analysisrequest_uid = Column(Integer, ForeignKey('analysisrequest.uid'), nullable=False)
     analysisrequest = relationship('AnalysisRequest', backref="samples")
@@ -135,7 +137,7 @@ class Sample(DBModel):
     priority = Column(Integer, nullable=False, default=0)
     status = Column(String, nullable=False)
     assigned = Column(Boolean(), default=False)
-        
+
     @classmethod
     def create_sample_id(cls, sampletype):
         prefix_key = sampletype.abbr
@@ -153,6 +155,9 @@ class Sample(DBModel):
     @classmethod
     def create(cls, obj_in: schemas.SampleCreate) -> schemas.Sample:
         data = cls._import(obj_in)
+        sampletype_uid = data[sampletype_uid]
+        sample_type = SampleType.find(sampletype_uid) # get(uid=sampletype_uid)
+        data['sample_id'] = cls.create_sample_id(sample_type)
         return super().create(**data)
 
     def update(self, obj_in: schemas.SampleUpdate) -> schemas.Sample:
@@ -160,7 +165,7 @@ class Sample(DBModel):
         return super().update(**data)
     
     
-class AnalysisResult(DBModel):
+class AnalysisResult(BaseMPTT, DBModel):
     """Test/Analysis Result
     Number of analysis results per sample will be directly proportional to
     the number of linked sample_analyses at minimum :)

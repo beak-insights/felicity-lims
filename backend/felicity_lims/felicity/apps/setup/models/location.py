@@ -1,9 +1,13 @@
+import logging
+
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 
 from felicity.database.base_class import DBModel
 from felicity.apps.setup import schemas
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class LocationBase(DBModel):
     __abstract__ = True
@@ -11,13 +15,11 @@ class LocationBase(DBModel):
     name = Column(String)
     email = Column(String, nullable=True)
     email_cc = Column(String, nullable=True)
-    consent_email = Column(Boolean(), default=False)
     mobile_phone = Column(String, nullable=True)
     business_phone = Column(String, nullable=True)
-    consent_sms = Column(Boolean(), default=False)
     active = Column(Boolean(), default=False)
     
-    
+
 class District(LocationBase):
     province_uid = Column(Integer, ForeignKey("province.uid"))
     province = relationship("Province", backref="districts")

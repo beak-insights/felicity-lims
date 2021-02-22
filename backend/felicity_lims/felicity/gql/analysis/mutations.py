@@ -294,7 +294,7 @@ class CreateAnalysisRequest(graphene.Mutation):
         incoming = {
             "patient_uid": patient_uid,
             "client_uid": client_uid,
-            "request_id": models.AnalysisRequest.create_request_id(),
+            "request_id": None, # models.AnalysisRequest.create_request_id(),
             "client_request_id": kwargs.get('client_request_id', None)
         }
 
@@ -313,7 +313,7 @@ class CreateAnalysisRequest(graphene.Mutation):
             sample_in = {
                 'analysisrequest_uid': analysisrequest.uid,
                 'sampletype_uid': _st_uid,
-                'sample_id': models.Sample.create_sample_id(sampletype=stype),
+                'sample_id': None, # models.Sample.create_sample_id(sampletype=stype),
                 'priority': priority,
                 'status': states.sample.PENDING
             }

@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     SECRET_KEY: str = secrets.token_urlsafe(32)
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 16 
-    SERVER_NAME: str = getenv_value("SERVER_NAME", 'stanchion')
+    SERVER_NAME: str = getenv_value("SERVER_NAME", 'felicity')
     SERVER_HOST: AnyHttpUrl = getenv_value("SERVER_HOST", 'https://localhost')
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = ['http://localhost:8000', 'http://localhost:3000']
 
@@ -35,7 +35,7 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
-    PROJECT_NAME: str = getenv_value("PROJECT_NAME", 'STANCHION PROJECT')
+    PROJECT_NAME: str = getenv_value("PROJECT_NAME", 'FELLICITY LIMS')
     SENTRY_DSN: Optional[HttpUrl] = getenv_value("SENTRY_DSN", "")
 
     @validator("SENTRY_DSN", pre=True)

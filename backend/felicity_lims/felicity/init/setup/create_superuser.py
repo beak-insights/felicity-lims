@@ -26,6 +26,9 @@ def create_super_user() -> None:
             if not su_auth:
                 raise Exception("Failed to add authentication to superuser")
             
-            superuser.auth_uid = su_auth.uid
-            superuser.auth = su_auth
+            superuser.link_auth(auth_uid=su_auth.uid)
+            # superuser.auth_uid = su_auth.uid
+            # superuser.auth = su_auth
+            # superuser.propagate_user_type()
+            superuser.propagate_user_type()
             superuser.save()

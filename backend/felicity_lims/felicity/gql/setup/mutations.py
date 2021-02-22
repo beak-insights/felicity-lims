@@ -1,5 +1,6 @@
-import graphene
+import logging
 
+import graphene
 from graphql import GraphQLError
 from fastapi.encoders import jsonable_encoder
 
@@ -14,6 +15,9 @@ from felicity.gql.setup.types import (
     ProvinceType,
     DistrictType,
 )
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # 
 # Laboratory Mutations
@@ -416,10 +420,10 @@ class CreateProvince(graphene.Mutation):
         country_uid = graphene.Int(required=False)
         email = graphene.String(required=False)
         email_cc = graphene.String(required=False)
-        consent_email = graphene.String(required=False)
+        consent_email = graphene.Boolean(required=False)
         mobile_phone = graphene.String(required=False)
         business_phone = graphene.String(required=False)
-        consent_sms = graphene.String(required=False)
+        consent_sms = graphene.Boolean(required=False)
         active = graphene.Boolean(required=False)
 
     ok = graphene.Boolean()
@@ -455,10 +459,8 @@ class UpdateProvince(graphene.Mutation):
         country_uid = graphene.Int(required=False)
         email = graphene.String(required=False)
         email_cc = graphene.String(required=False)
-        consent_email = graphene.String(required=False)
         mobile_phone = graphene.String(required=False)
         business_phone = graphene.String(required=False)
-        consent_sms = graphene.String(required=False)
         active = graphene.Boolean(required=False)
 
     ok = graphene.Boolean()
@@ -466,6 +468,7 @@ class UpdateProvince(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, uid, **kwargs):   
+        logger.info(kwargs)
         if not uid:
             raise GraphQLError("No uid provided to idenity update obj")
         
@@ -479,7 +482,7 @@ class UpdateProvince(graphene.Mutation):
                 try:
                     setattr(province, field, kwargs[field])
                 except Exception as e:
-                    pass               
+                    pass             
         obj_in = schemas.ProvinceUpdate(**province.to_dict())    
         province = province.update(obj_in)
         ok = True
@@ -496,10 +499,8 @@ class CreateDistrict(graphene.Mutation):
         province_uid = graphene.Int(required=False)
         email = graphene.String(required=False)
         email_cc = graphene.String(required=False)
-        consent_email = graphene.String(required=False)
         mobile_phone = graphene.String(required=False)
         business_phone = graphene.String(required=False)
-        consent_sms = graphene.String(required=False)
         active = graphene.Boolean(required=False)
 
     ok = graphene.Boolean()
@@ -529,16 +530,14 @@ class CreateDistrict(graphene.Mutation):
                 
 class UpdateDistrict(graphene.Mutation):
     class Arguments:
-        uid = graphene.Int(required=True)
+        uid = graphene.String(required=True)
         name = graphene.String(required=False)
         code = graphene.String(required=False)
         province_uid = graphene.Int(required=False)
         email = graphene.String(required=False)
         email_cc = graphene.String(required=False)
-        consent_email = graphene.String(required=False)
         mobile_phone = graphene.String(required=False)
         business_phone = graphene.String(required=False)
-        consent_sms = graphene.String(required=False)
         active = graphene.Boolean(required=False)
 
 
@@ -552,7 +551,7 @@ class UpdateDistrict(graphene.Mutation):
         
         district = models.District.get(uid=uid)
         if not district:
-            raise GraphQLError(f"district with uidd {uid} not found. Cannot update obj ...")
+            raise GraphQLError(f"district with uid {uid} not found. Cannot update obj ...")
 
         obj_data = jsonable_encoder(district)
         for field in obj_data:

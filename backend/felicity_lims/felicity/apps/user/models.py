@@ -1,7 +1,7 @@
 import logging 
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
-from sqlalchemy.orm import backref
+from sqlalchemy.orm import relationship, column_property, backref
+from sqlalchemy.sql import exists
 
 from fastapi.encoders import jsonable_encoder
 
@@ -17,31 +17,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # TODO: Refactor User to LaboratoryContact, UserAuth to ContactAuth
-
-
-class User(AbstractBaseUser):
-    auth_uid = Column(Integer, ForeignKey('userauth.uid'))
-    auth = relationship("UserAuth", backref=backref(conf.LABORATORY_CONTACT, uselist=False))
-    
-    @property
-    def user_type(self):
-        return conf.LABORATORY_CONTACT
-    
-    def propagate_user_type(self):
-        """sets the user_type field in auth"""   
-        self.auth.acquire_user_type(conf.LABORATORY_CONTACT)
-    
-    def unlink_auth(self): 
-        auth = self.auth    
-        _update = {**self.to_dict(), **{ 'auth_uid': None, 'auth': None }}
-        self.update(_update)
-        if not self.auth:
-            auth.delete()
-    
-    def link_auth(self, auth_uid):       
-        _update = {**self.to_dict(), **{ 'auth_uid': auth_uid }}
-        self.update(_update)
-        
 
 class UserAuth(AbstractAuth):
     """Authentication class user access
@@ -91,3 +66,27 @@ class UserAuth(AbstractAuth):
             raise Exception("Use your username authenticate")
         auth_obj = self.get_by_username(username)
         return auth_obj.has_access(password)
+
+
+class User(AbstractBaseUser):
+    auth_uid = Column(Integer, ForeignKey('userauth.uid'))
+    auth = relationship("UserAuth", backref=backref(conf.LABORATORY_CONTACT, uselist=False))
+
+    @property
+    def user_type(self):
+        return conf.LABORATORY_CONTACT
+    
+    def propagate_user_type(self):
+        """sets the user_type field in auth"""   
+        self.auth.acquire_user_type(conf.LABORATORY_CONTACT)
+    
+    def unlink_auth(self): 
+        auth = self.auth    
+        _update = {**self.to_dict(), **{ 'auth_uid': None, 'auth': None }}
+        self.update(_update)
+        if not self.auth:
+            auth.delete()
+    
+    def link_auth(self, auth_uid):       
+        _update = {**self.to_dict(), **{ 'auth_uid': auth_uid }}
+        self.update(_update)

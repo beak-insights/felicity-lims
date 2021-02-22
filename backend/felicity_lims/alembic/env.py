@@ -35,7 +35,7 @@ target_metadata = DBModel.metadata
 def get_url():
     user = os.getenv("POSTGRES_USER", "felicity")
     password = os.getenv("POSTGRES_PASSWORD", "felicity")
-    server = os.getenv("POSTGRES_SERVER", "database")
+    server = os.getenv("POSTGRES_SERVER", "felicity_db")
     db = os.getenv("POSTGRES_DB", "felicity_lims")
     return f"postgresql://{user}:{password}@{server}/{db}"
 

@@ -31,11 +31,20 @@ export const ADD_PROVINCE = gql`
         uid
         name
         code
-        country {
-          uid
-          name
-          code
-        }
+        countryUid
+      }
+    }
+  }
+`;
+
+export const UPDATE_PROVINCE = gql`
+  mutation editProvince($uid: String!, $name: String!, $code: String, $active: Boolean) {
+    updateProvince(uid: $uid, name: $name, code: $code, active: $active) {
+      province {
+        uid
+        name
+        code
+        countryUid
       }
     }
   }
@@ -48,43 +57,21 @@ export const ADD_DISTRICT = gql`
         uid
         name
         code
-        province {
-          uid
-          name
-          code
-          country {
-            uid
-            name
-            code
-          }
-        }
+        provinceUid
       }
     }
   }
 `;
 
-export const ADD_CLIENT = gql`
-  mutation AddClient($name: String!, $code: String!, $districtUid: Int!) {
-    createClient(name: $name, code: $code, districtUid: $districtUid) {
-      client {
+
+export const UPDATE_DISTRICT = gql`
+  mutation editDistrict($uid: String!, $name: String!, $code: String, $active: Boolean) {
+    updateDistrict(uid: $uid, name: $name, code: $code, active: $active) {
+      district {
         uid
         name
         code
-        district {
-          uid
-          name
-          code
-          province {
-            uid
-            name
-            code
-            country {
-              uid
-              name
-              code
-            }
-          }
-        }
+        provinceUid
       }
     }
   }

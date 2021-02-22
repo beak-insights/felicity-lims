@@ -33,6 +33,18 @@ export const GET_ALL_PROVINCES = gql`
     }
   }`;
 
+
+export const FILTER_PROVINCES_BY_COUNTRY = gql`
+  query filterProvincesByCountry($uid: String!) {
+    provincesByCountryUid(uid: $uid){
+      name
+      uid
+      code
+      countryUid
+    }
+  }`;
+  
+
 export const GET_ALL_DISTRICTS = gql`
   query getAllDistricts {
     districtAll {
@@ -50,5 +62,15 @@ export const GET_ALL_DISTRICTS = gql`
           provinceUid
         }
       }
+    }
+  }`;
+
+export const FILTER_DISTRICTS_BY_PROVINCE = gql`
+  query filterDistrictsByProvince($uid: String!) {
+    districtsByProvinceUid(uid: $uid){
+      name
+      uid
+      code
+      provinceUid
     }
   }`;

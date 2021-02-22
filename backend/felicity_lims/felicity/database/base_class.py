@@ -2,6 +2,7 @@ from typing import Dict, TypeVar
 
 from pydantic import BaseModel as PydanticBaseModel
 from sqlalchemy import Column, Integer
+from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy_mixins import AllFeaturesMixin
 
@@ -75,6 +76,12 @@ class DBModel(AllFeaturesMixin):
     @classmethod
     def get_one(cls, **kwargs):
         return cls.query.filter_by(**kwargs).first()
+    
+    @classmethod
+    def fulltext_search(cls, search_string, field):
+        """Full-text Search with PostgreSQL"""
+        return cls.query.filter(func.to_tsvector('english', getattr(cls, field)).match(search_string, postgresql_regconfig='english')).all()
+
     
     def psql_records_to_dict(self, records, many=False):
         # records._row: asyncpg.Record / databases.backends.postgres.Record
