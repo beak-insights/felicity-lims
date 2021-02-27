@@ -6,11 +6,11 @@ def create_laboratory() -> None:
     laboratory = Laboratory.get_by_setup_name("felicity")
     if not laboratory:
         lab_in = LaboratoryCreate(
-            setup_name= "felicity",
+            setup_name="felicity",
             lab_name="Felicity Labs",
-            email= None,
-            email_cc= None,
-            mobile_phone= None,
-            business_phone= None,
+            email=None,
+            email_cc=None,
+            mobile_phone=None,
+            business_phone=None,
         )
-        laboratory = Laboratory.create(lab_in)
+        Laboratory.create(lab_in)

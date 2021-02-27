@@ -9,6 +9,7 @@ from felicity.apps.setup import schemas
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class LocationBase(DBModel):
     __abstract__ = True
     code = Column(String, index=True, unique=True, nullable=True)
@@ -18,7 +19,7 @@ class LocationBase(DBModel):
     mobile_phone = Column(String, nullable=True)
     business_phone = Column(String, nullable=True)
     active = Column(Boolean(), default=False)
-    
+
 
 class District(LocationBase):
     province_uid = Column(Integer, ForeignKey("province.uid"))
@@ -73,4 +74,3 @@ class Country(DBModel):
         """Update the country with given data"""
         data = self._import(country)
         return super().update(**data)
- 

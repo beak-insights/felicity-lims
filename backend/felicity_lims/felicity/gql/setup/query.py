@@ -1,7 +1,6 @@
 import graphene
 from graphene import (
     relay,
-    String,
 )
 from graphene_sqlalchemy import SQLAlchemyConnectionField
 

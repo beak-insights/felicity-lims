@@ -3,6 +3,7 @@ import uuid
 from sqlalchemy.types import TypeDecorator, BINARY
 from sqlalchemy.dialects.postgresql import UUID as psqlUUID
 
+
 class UUID(TypeDecorator):
     """Platform-independent GUID type.
 

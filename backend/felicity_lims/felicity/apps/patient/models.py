@@ -1,15 +1,13 @@
-from typing import Generic
-from datetime import datetime
 import logging
+from datetime import datetime
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, func, DateTime
 from sqlalchemy.orm import relationship
-from sqlalchemy.orm import backref
 
-from felicity.database.base_class import DBModel
-from felicity.apps.patient import schemas
-from felicity.apps.core.utils import sequencer
 from felicity.apps.client.models import Client
+from felicity.apps.core.utils import sequencer
+from felicity.apps.patient import schemas
+from felicity.database.base_class import DBModel
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -54,6 +52,7 @@ class Patient(DBModel):
     @classmethod
     def create(cls, obj_in: schemas.PatientCreate) -> schemas.Patient:
         data = cls._import(obj_in)
+        data['patient_id'] = cls.create_patient_id()
         return super().create(**data)
 
     def update(self, obj_in: schemas.PatientUpdate) -> schemas.Patient:
@@ -67,7 +66,7 @@ class Patient(DBModel):
         prefix = f"{prefix_key}{prefix_year}"
         count = cls.where(patient_id__startswith=f'%{prefix}%').count()
         # Find a way to use the line below: its faster
-        scalar = cls.session.query(func.count(Patient.uid)).filter(Patient.patient_id.like(prefix)).scalar()
+        # scalar = cls.query(func.count(Patient.uid)).filter(Patient.patient_id.like(prefix)).scalar()
         if isinstance(count, type(None)):
             count = 0
         return f"{prefix}-{sequencer(count + 5, 5)}"

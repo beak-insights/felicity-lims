@@ -11,28 +11,26 @@ class Job(DBModel):
     job_id = Column(Integer)
     status = Column(String)
     reason = Column(String)
-    
-    
+
     def increase_priority(self):
         if self.priority < conf.priorities.HIGH:
             self.priority += 1
             self.save()
-    
+
     def decrease_priority(self):
         if self.priority > conf.priorities.NORMAL:
             self.priority -= 1
             self.save()
-    
+
     @classmethod
     def fetch_sorted(cls):
-        exclude =[conf.states.FINISHED, conf.states.FAILED]
+        exclude = [conf.states.FINISHED, conf.states.FAILED]
         jobs = Job.where(status__notin=exclude).sort('-priority').all()
         _jobs = Job.smart_query(
-            filters = {
-                'status__ne': conf.states.FINISHED,
-                'status__ne': conf.states.FAILED,
+            filters={
+                'status__notin': [conf.states.FINISHED, conf.states.FAILED],
             },
-            sort_attrs = ['-priority']
+            sort_attrs=['-priority']
         )
         return jobs
 

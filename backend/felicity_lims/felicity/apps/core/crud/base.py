@@ -1,5 +1,5 @@
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
-
+import databases
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -24,11 +24,11 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         self.model = model
 
-    def get(self, db: Session, id: Any) -> Optional[ModelType]:
-        return db.query(self.model).filter(self.model.id == id).first()
+    def get(self, db: Session, _id: Any) -> Optional[ModelType]:
+        return db.query(self.model).filter(self.model.id == _id).first()
 
     def get_multi(
-        self, db: Session, *, skip: int = 0, limit: int = 100
+            self, db: Session, *, skip: int = 0, limit: int = 100
     ) -> List[ModelType]:
         return db.query(self.model).offset(skip).limit(limit).all()
 
@@ -41,11 +41,11 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return db_obj
 
     def update(
-        self,
-        db: Session,
-        *,
-        db_obj: ModelType,
-        obj_in: Union[UpdateSchemaType, Dict[str, Any]]
+            self,
+            db: Session,
+            *,
+            db_obj: ModelType,
+            obj_in: Union[UpdateSchemaType, Dict[str, Any]]
     ) -> ModelType:
         obj_data = jsonable_encoder(db_obj)
         if isinstance(obj_in, dict):
@@ -60,15 +60,16 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db.refresh(db_obj)
         return db_obj
 
-    def remove(self, db: Session, *, id: int) -> ModelType:
-        obj = db.query(self.model).get(id)
+    def remove(self, db: Session, *, _id: int) -> ModelType:
+        obj = db.query(self.model).get(_id)
         db.delete(obj)
         db.commit()
         return obj
 
 
-import databases 
 Database = TypeVar("Database", bound=databases.Database)
+
+
 class ACRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def __init__(self, model: Type[ModelType]):
         """
@@ -81,17 +82,17 @@ class ACRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         * `schema`: A Pydantic model (schema) class
         """
         self.model = model
-        
+
     @property
     def table(self):
         return self.model().__table__
 
-    async def get(self, db: Database, id: Any) -> Optional[ModelType]:
-        query = self.table.select().where(self.model.id == id) #.first()
+    async def get(self, db: Database, _id: Any) -> Optional[ModelType]:
+        query = self.table.select().where(self.model.id == _id)  # .first()
         return await db.fetch_one(query)
 
     async def get_multi(
-        self, db: Database, *, skip: int = 0, limit: int = 100
+            self, db: Database, *, skip: int = 0, limit: int = 100
     ) -> List[ModelType]:
         query = self.table.select().offset(skip).limit(limit)
         # from sqlalchemy.sql import select
@@ -105,11 +106,11 @@ class ACRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return await db.execute(query)
 
     async def update(
-        self,
-        db: Database,
-        *,
-        db_obj: ModelType,
-        obj_in: Union[UpdateSchemaType, Dict[str, Any]]
+            self,
+            db: Database,
+            *,
+            db_obj: ModelType,
+            obj_in: Union[UpdateSchemaType, Dict[str, Any]]
     ) -> ModelType:
         obj_data = jsonable_encoder(db_obj)
         if isinstance(obj_in, dict):
@@ -122,6 +123,6 @@ class ACRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         query = self.table.update().values(**db_obj)
         return await db.execute(query)
 
-    async def remove(self, db: Database, *, id: int) -> ModelType:
-        query = self.table.delete().where(self.model.id == id)
+    async def remove(self, db: Database, *, _id: int) -> ModelType:
+        query = self.table.delete().where(self.model.id == _id)
         return await db.execute(query)

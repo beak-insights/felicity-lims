@@ -2,17 +2,16 @@ from datetime import datetime
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-from sqlalchemy.orm import backref
 
-from felicity.database.base_class import DBModel
-from felicity.apps.patient import models as pt_models
-from felicity.apps.client import models as ct_models
 from felicity.apps.analysis import schemas
-from felicity.apps.core.utils import sequencer
-from felicity.apps.core import BaseMPTT
 from felicity.apps.analysis.conf import states
-   
-    
+from felicity.apps.client import models as ct_models
+from felicity.apps.core import BaseMPTT
+from felicity.apps.core.utils import sequencer
+from felicity.apps.patient import models as pt_models
+from felicity.database.base_class import DBModel
+
+
 class SampleType(DBModel):
     """SampleType"""
     name = Column(String, nullable=False)
@@ -28,14 +27,14 @@ class SampleType(DBModel):
     def update(self, obj_in: schemas.SampleTypeUpdate) -> schemas.SampleType:
         data = self._import(obj_in)
         return super().update(**data)
-    
-    
+
+
 class ASTLink(DBModel):
     """Many to Many Link between Analysis and SampleType
     """
     sampletype_uid = Column(Integer, ForeignKey('sampletype.uid'), primary_key=True)
     analysis_uid = Column(Integer, ForeignKey('analysis.uid'), primary_key=True)
-    
+
 
 class Profile(DBModel):
     """Sample"""
@@ -51,8 +50,8 @@ class Profile(DBModel):
     def update(self, obj_in: schemas.ProfileUpdate) -> schemas.Profile:
         data = self._import(obj_in)
         return super().update(**data)
-  
-    
+
+
 class APLink(DBModel):
     """Many to Many Link between Analysis and Profile
     Offers multi-profiles flexibility per analysis
@@ -60,8 +59,8 @@ class APLink(DBModel):
     """
     analysis_uid = Column(Integer, ForeignKey('analysis.uid'), primary_key=True)
     profile_uid = Column(Integer, ForeignKey('profile.uid'), primary_key=True)
- 
-        
+
+
 class Analysis(DBModel):
     """Analysis Test"""
     name = Column(String, nullable=False)
@@ -79,7 +78,7 @@ class Analysis(DBModel):
     def update(self, obj_in: schemas.AnalysisUpdate) -> schemas.Analysis:
         data = self._import(obj_in)
         return super().update(**data)
-    
+
 
 class AnalysisRequest(DBModel):
     """AnalysisRequest"""
@@ -89,7 +88,7 @@ class AnalysisRequest(DBModel):
     client = relationship(ct_models.Client, backref="analysis_requests")
     request_id = Column(String, index=True, unique=True, nullable=True)
     client_request_id = Column(String, index=True, unique=True, nullable=True)
-        
+
     @classmethod
     def create_request_id(cls):
         prefix_key = 'AR'
@@ -109,22 +108,22 @@ class AnalysisRequest(DBModel):
     def update(self, obj_in: schemas.SampleTypeUpdate) -> schemas.SampleType:
         data = self._import(obj_in)
         return super().update(**data)
-   
- 
+
+
 class SPLink(DBModel):
     """Many to Many Link between Sample and Profile
     """
     sample_uid = Column(Integer, ForeignKey('sample.uid'), primary_key=True)
     profile_uid = Column(Integer, ForeignKey('profile.uid'), primary_key=True)
 
-    
+
 class SALink(DBModel):
     """Many to Many Link between Sample and Analysis
     """
     sample_uid = Column(Integer, ForeignKey('sample.uid'), primary_key=True)
     analysis_uid = Column(Integer, ForeignKey('analysis.uid'), primary_key=True)
-    
-        
+
+
 class Sample(BaseMPTT, DBModel):
     """Sample"""
     analysisrequest_uid = Column(Integer, ForeignKey('analysisrequest.uid'), nullable=False)
@@ -155,16 +154,16 @@ class Sample(BaseMPTT, DBModel):
     @classmethod
     def create(cls, obj_in: schemas.SampleCreate) -> schemas.Sample:
         data = cls._import(obj_in)
-        sampletype_uid = data[sampletype_uid]
-        sample_type = SampleType.find(sampletype_uid) # get(uid=sampletype_uid)
+        sampletype_uid = data['sampletype_uid']
+        sample_type = SampleType.find(sampletype_uid)  # get(uid=sampletype_uid)
         data['sample_id'] = cls.create_sample_id(sample_type)
         return super().create(**data)
 
     def update(self, obj_in: schemas.SampleUpdate) -> schemas.Sample:
         data = self._import(obj_in)
         return super().update(**data)
-    
-    
+
+
 class AnalysisResult(BaseMPTT, DBModel):
     """Test/Analysis Result
     Number of analysis results per sample will be directly proportional to

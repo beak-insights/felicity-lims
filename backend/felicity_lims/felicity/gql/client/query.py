@@ -1,12 +1,11 @@
 import graphene
 from graphene import (
     relay,
-    String,
 )
 from graphene_sqlalchemy import SQLAlchemyConnectionField
 
-from felicity.gql.client.types import ClientType
 from felicity.apps.client import models
+from felicity.gql.client.types import ClientType
 
 
 class ClientQuery(graphene.ObjectType):
@@ -18,7 +17,7 @@ class ClientQuery(graphene.ObjectType):
     clients_by_name = graphene.List(lambda: ClientType, name=graphene.String(default_value=""))
 
     def resolve_client_by_uid(self, info, uid):
-        client= models.Client.get(uid=uid)
+        client = models.Client.get(uid=uid)
         return client
 
     def resolve_client_by_code(self, info, code):

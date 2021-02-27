@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional
 
 from pydantic import BaseModel, EmailStr
 
@@ -9,7 +9,7 @@ from pydantic import BaseModel, EmailStr
 
 # Shared properties
 class LaboratoryBase(BaseModel):
-    setup_name:  Optional[str] = "felicity"
+    setup_name: Optional[str] = "felicity"
     lab_name: Optional[str] = None
     email: Optional[EmailStr] = None
     email_cc: Optional[str] = None
@@ -45,15 +45,13 @@ class LaboratoryInDB(LaboratoryInDBBase):
     pass
 
 
-
-
-#  
+#
 #  Department 
 # 
 
 # Shared properties
 class DepartmentBase(BaseModel):
-    name:  str = None
+    name: str = None
     description: str = None
     code: str = None
 
@@ -85,14 +83,13 @@ class DepartmentInDB(DepartmentInDBBase):
     pass
 
 
-
-#  
+#
 #  Instrument 
 # 
 
 # Shared properties
 class InstrumentBase(BaseModel):
-    name:  str = None
+    name: str = None
     description: str = None
     keyword: str = None
     supplier_uid: int = None
@@ -131,7 +128,7 @@ class InstrumentInDB(InstrumentInDBBase):
 
 # Shared properties
 class MethodBase(BaseModel):
-    name:  str = None
+    name: str = None
     description: str = None
     keyword: str = None
 
@@ -163,14 +160,13 @@ class MethodInDB(MethodInDBBase):
     pass
 
 
-
-#  
+#
 #  Supplier 
 # 
 
 # Shared properties
 class SupplierBase(BaseModel):
-    name:  str = None
+    name: str = None
     description: str = None
     keyword: str = None
 
@@ -202,18 +198,16 @@ class SupplierInDB(SupplierInDBBase):
     pass
 
 
-
-
-
-# 
+#
 # Country s
 # 
 
 # Shared properties
 class CountryBase(BaseModel):
     name: Optional[str] = None
-    code: Optional[str] = None  
+    code: Optional[str] = None
     active: Optional[bool] = True
+
 
 class CountryBaseInDB(CountryBase):
     uid: Optional[str] = None
@@ -221,26 +215,28 @@ class CountryBaseInDB(CountryBase):
     class Config:
         orm_mode = True
 
+
 # Properties to receive via API on creation
 class CountryCreate(CountryBase):
-	pass
+    pass
+
 
 # Properties to receive via API on update
 class CountryUpdate(CountryBase):
-	pass
+    pass
+
 
 # Properties to return via API
 class Country(CountryBaseInDB):
     pass
 
+
 # Properties stored in DB
 class CountryInDB(CountryBaseInDB):
-	pass
+    pass
 
 
-
-
-# 
+#
 # Province s
 # 
 
@@ -248,7 +244,7 @@ class CountryInDB(CountryBaseInDB):
 class ProvinceBase(BaseModel):
     name: Optional[str] = None
     code: Optional[str] = None
-    country_uid: Optional[str] = None  
+    country_uid: Optional[str] = None
     email: Optional[str] = None
     email_cc: Optional[str] = None
     consent_email: Optional[str] = None
@@ -257,27 +253,32 @@ class ProvinceBase(BaseModel):
     consent_sms: Optional[str] = None
     active: Optional[bool] = True
 
+
 class ProvinceBaseInDB(ProvinceBase):
     uid: Optional[str] = None
 
     class Config:
         orm_mode = True
 
+
 # Properties to receive via API on creation
 class ProvinceCreate(ProvinceBase):
     country_uid: str
 
+
 # Properties to receive via API on update
 class ProvinceUpdate(ProvinceBase):
-	pass
+    pass
+
 
 # Properties to return via API
 class Province(ProvinceBaseInDB):
     pass
 
+
 # Properties stored in DB
 class ProvinceInDB(ProvinceBaseInDB):
-	pass
+    pass
 
 
 # 
@@ -288,7 +289,7 @@ class ProvinceInDB(ProvinceBaseInDB):
 class DistrictBase(BaseModel):
     name: Optional[str] = None
     code: Optional[str] = None
-    province_uid: Optional[str] = None  
+    province_uid: Optional[str] = None
     email: Optional[str] = None
     email_cc: Optional[str] = None
     consent_email: Optional[str] = None
@@ -297,24 +298,29 @@ class DistrictBase(BaseModel):
     consent_sms: Optional[str] = None
     active: Optional[bool] = True
 
+
 class DistrictBaseInDB(DistrictBase):
     uid: Optional[str] = None
 
     class Config:
         orm_mode = True
 
+
 # Properties to receive via API on creation
 class DistrictCreate(DistrictBase):
     province_uid: str
 
+
 # Properties to receive via API on update
 class DistrictUpdate(DistrictBase):
-	pass
+    pass
+
 
 # Properties to return via API
 class District(DistrictBaseInDB):
     pass
 
+
 # Properties stored in DB
 class DistrictInDB(DistrictBaseInDB):
-	pass
+    pass

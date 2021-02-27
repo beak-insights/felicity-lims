@@ -85,7 +85,7 @@ class UpdateLaboratory(graphene.Mutation):
                 try:
                     setattr(laboratory, field, kwargs[field])
                 except Exception as e:
-                    pass               
+                    logger.warning(e)               
         obj_in = schemas.LaboratoryUpdate(**laboratory.to_dict())    
         laboratory = laboratory.update(obj_in)
         ok = True
@@ -144,7 +144,7 @@ class UpdateDepartment(graphene.Mutation):
                 try:
                     setattr(department, field, kwargs[field])
                 except Exception as e:
-                    pass               
+                    logger.warning(e)               
         obj_in = schemas.DepartmentUpdate(**department.to_dict())    
         department = department.update(obj_in)
         ok = True
@@ -203,7 +203,7 @@ class UpdateSupplier(graphene.Mutation):
                 try:
                     setattr(supplier, field, kwargs[field])
                 except Exception as e:
-                    pass               
+                    logger.warning(e)               
         obj_in = schemas.SupplierUpdate(**supplier.to_dict())    
         supplier = supplier.update(obj_in)
         ok = True

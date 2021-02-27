@@ -1,4 +1,4 @@
-from typing import Optional, List, Dict
+from typing import Optional, Dict
 
 from pydantic import BaseModel
 
@@ -22,27 +22,32 @@ class WorkSheetBase(BaseModel):
     row_wise: Optional[bool] = True
     template: Optional[Dict] = {}
 
+
 class WorkSheetBaseInDB(WorkSheetBase):
     uid: Optional[str] = None
 
     class Config:
         orm_mode = True
 
+
 # Properties to receive via API on creation
 class WorkSheetCreate(WorkSheetBase):
     pass
 
+
 # Properties to receive via API on update
 class WorkSheetUpdate(WorkSheetBase):
-	pass
+    pass
+
 
 # Properties to return via API
 class WorkSheet(WorkSheetBaseInDB):
     pass
 
+
 # Properties stored in DB
 class WorkSheetInDB(WorkSheetBaseInDB):
-	pass
+    pass
 
 
 # 
@@ -64,28 +69,29 @@ class WSTemplateBase(BaseModel):
     row_wise: Optional[bool] = True
     template: Optional[Dict] = {}
 
+
 class WSTemplateBaseInDB(WSTemplateBase):
     uid: Optional[str] = None
 
     class Config:
         orm_mode = True
 
+
 # Properties to receive via API on creation
 class WSTemplateCreate(WSTemplateBase):
     pass
 
+
 # Properties to receive via API on update
 class WSTemplateUpdate(WSTemplateBase):
-	pass
+    pass
+
 
 # Properties to return via API
 class WSTemplate(WSTemplateBaseInDB):
     pass
 
+
 # Properties stored in DB
 class WSTemplateInDB(WSTemplateBaseInDB):
-	pass
-
-
-
-
+    pass

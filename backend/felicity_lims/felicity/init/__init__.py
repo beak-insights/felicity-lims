@@ -1,5 +1,4 @@
 import logging
-from time import sleep
 
 from felicity.init.checks.db import check_db_conn_status
 from felicity.init.setup.create_superuser import create_super_user
@@ -20,4 +19,3 @@ def initialize_felicity():
     
     logger.info("Felicity LIMS Initializing Success :) YaY")
     return True
-    

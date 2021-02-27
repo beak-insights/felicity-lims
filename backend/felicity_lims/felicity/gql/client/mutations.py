@@ -32,7 +32,7 @@ class CreateClient(graphene.Mutation):
     client = graphene.Field(lambda: ClientType)
 
     @staticmethod
-    def mutate(root, info, name, code, **kwargs): 
+    def mutate(root, info, name, code, **kwargs):
         if not code or not name:
             raise GraphQLError("Please Provide a name and a unique client code")
         exists = models.Client.get(code=code)
@@ -85,7 +85,7 @@ class UpdateClient(graphene.Mutation):
                 try:
                     setattr(client, field, kwargs[field])
                 except Exception as e:
-                    pass               
+                    logger.warning(f"failed to set attribute {field}: {e}")
         obj_in = schemas.ClientUpdate(**client.to_dict())    
         client = client.update(obj_in)
         ok = True

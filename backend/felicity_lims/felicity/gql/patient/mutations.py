@@ -60,24 +60,27 @@ class CreatePatient(graphene.Mutation):
         # Dirty patient_id Getter 
         # Im skeptical of the way i am creating the patient_id especially if there are many queries
         # almost at the same time that might have the same patient id
-        give_up = 20
-        i = 0
-        while True:
-            patient_id = models.Patient.create_patient_id()
-            incoming["patient_id"] = patient_id
-            obj_in = schemas.PatientCreate(**incoming)
-            error = ""            
-            try:                  
-                patient = models.Patient.create(obj_in)
-                break            
-            except Exception as e:
-                error = e
+        # give_up = 20
+        # i = 0
+        # while True:
+        #     patient_id = models.Patient.create_patient_id()
+        #     incoming["patient_id"] = patient_id
+        #     obj_in = schemas.PatientCreate(**incoming)
+        #     error = ""            
+        #     try:                  
+        #         patient = models.Patient.create(obj_in)
+        #         break            
+        #     except Exception as e:
+        #         error = e
                 
-            if i == give_up: # give up
-                raise GraphQLError(f"Exception:  {error}")
+        #     if i == give_up: # give up
+        #         raise GraphQLError(f"Exception:  {error}")
             
-            # retry again            
-            i+=1
+        #     # retry again            
+        #     i+=1
+        
+        obj_in = schemas.PatientCreate(**incoming)
+        patient = models.Patient.create(obj_in)
             
         ok = True
         return CreatePatient(patient=patient, ok=ok)

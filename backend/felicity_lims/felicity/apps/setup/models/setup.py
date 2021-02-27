@@ -7,11 +7,11 @@ from felicity.apps.setup import schemas
 
 
 class Laboratory(DBModel):
-    setup_name = Column(String, default="felicity", nullable=False) # Do not change this value ever
+    setup_name = Column(String, default="felicity", nullable=False)  # Do not change this value ever
     lab_name = Column(String, nullable=False)
     lab_manager_uid = Column(Integer, ForeignKey("user.uid"), nullable=True)
-    lab_manager = relationship(User, backref="lab_manager") # TODO refactor backref value to  backref="laboratory"
-    email = Column(String, nullable=True) # Main Email Adress
+    lab_manager = relationship(User, backref="lab_manager")  # TODO refactor backref value to  backref="laboratory"
+    email = Column(String, nullable=True)  # Main Email Adress
     email_cc = Column(String, nullable=True)
     mobile_phone = Column(String, nullable=True)
     business_phone = Column(String, nullable=True)
@@ -23,8 +23,8 @@ class Laboratory(DBModel):
 
     def update(self, obj_in: schemas.LaboratoryUpdate) -> schemas.Laboratory:
         data = self._import(obj_in)
-        return super().update(**data) 
-    
+        return super().update(**data)
+
     @classmethod
     def get_by_setup_name(cls, keyword="felicity"):
         lab_setup = cls.get(setup_name=keyword)
@@ -32,7 +32,7 @@ class Laboratory(DBModel):
             return None
         return lab_setup
 
- 
+
 class Supplier(DBModel):
     """Supplier"""
     name = Column(String, nullable=False)
@@ -46,8 +46,8 @@ class Supplier(DBModel):
     def update(self, obj_in: schemas.SupplierUpdate) -> schemas.Supplier:
         data = self._import(obj_in)
         return super().update(**data)
-        
-       
+
+
 class Department(DBModel):
     """Departrments/Sections"""
     name = Column(String, nullable=False)
@@ -61,9 +61,9 @@ class Department(DBModel):
 
     def update(self, obj_in: schemas.DepartmentUpdate) -> schemas.Department:
         data = self._import(obj_in)
-        return super().update(**data) 
-    
-    
+        return super().update(**data)
+
+
 class Instrument(DBModel):
     """Instrument/Analyser"""
     name = Column(String, nullable=False)
@@ -79,9 +79,9 @@ class Instrument(DBModel):
 
     def update(self, obj_in: schemas.InstrumentUpdate) -> schemas.Instrument:
         data = self._import(obj_in)
-        return super().update(**data) 
-    
-    
+        return super().update(**data)
+
+
 class Method(DBModel):
     """Analyses/Test Method"""
     name = Column(String, nullable=False)
@@ -95,4 +95,4 @@ class Method(DBModel):
 
     def update(self, obj_in: schemas.MethodUpdate) -> schemas.Method:
         data = self._import(obj_in)
-        return super().update(**data) 
+        return super().update(**data)

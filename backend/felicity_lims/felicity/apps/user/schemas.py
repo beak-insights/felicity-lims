@@ -14,6 +14,8 @@ class UserBase(BaseModel):
     is_superuser: bool = False
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+    password: Optional[str] = None
+    user_name: Optional[str] = None
 
 
 # Properties to receive via API on creation
@@ -62,6 +64,7 @@ class AuthCreate(AuthBase):
     password: str
     login_retry: int = 0
     is_blocked: bool = False
+
 
 # Properties to receive via API on update
 class AuthUpdate(AuthBase):

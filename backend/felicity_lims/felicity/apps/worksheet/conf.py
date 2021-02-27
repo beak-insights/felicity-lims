@@ -12,6 +12,7 @@ class WSTypes(object):
     FLAT = 0
     GRID = 1
 
+
 worksheet_types = WSTypes()
 
 
@@ -21,5 +22,6 @@ class WSStates(object):
     OPEN = 'open'
     TO_BE_VERIFIED = 'to_be_verified'
     VERIFIED = 'verified'
+
 
 worksheet_states = WSStates()

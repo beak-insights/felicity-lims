@@ -26,7 +26,7 @@ class Client(DBModel):
     phone_business = Column(String, nullable=True)
     consent_sms = Column(Boolean(), default=False)
     active = Column(Boolean(), default=False)
-    
+
     @classmethod
     def create(cls, obj_in: schemas.ClientCreate) -> schemas.Client:
         if cls.get(code=obj_in.code):
@@ -46,7 +46,7 @@ class Client(DBModel):
         elif self.province:
             return self.province.name
         else:
-            return ""        
+            return ""
 
     @property
     def get_country(self):
@@ -63,25 +63,22 @@ class ClientContact(AbstractBaseUser):
     auth = relationship(UserAuth, backref=backref(conf.CLIENT_CONTACT, uselist=False))
     email_cc = Column(String, nullable=True)
     consent_sms = Column(Boolean(), default=False)
-    
+
     @property
     def user_type(self):
         return conf.CLIENT_CONTACT
-    
-    @property
+
     def propagate_user_type(self):
-        """sets the user_type field in auth"""     
+        """sets the user_type field in auth"""
         self.auth.acquire_user_type(conf.CLIENT_CONTACT)
-    
+
     def unlink_auth(self):
-        auth = self.auth    
-        _update = {**self.to_dict(), **{ 'auth_uid': None, 'auth': None }}
+        auth = self.auth
+        _update = {**self.to_dict(), **{'auth_uid': None, 'auth': None}}
         self.update(_update)
         if not self.auth:
             auth.delete()
-    
-    def link_auth(self, auth_uid):       
-        _update = {**self.to_dict(), **{ 'auth_uid': auth_uid }}
+
+    def link_auth(self, auth_uid):
+        _update = {**self.to_dict(), **{'auth_uid': auth_uid}}
         self.update(_update)
-
-

@@ -30,10 +30,11 @@ class classproperty(object):
 class DBModel(AllFeaturesMixin):
     __name__: str
     __abstract__ = True
-    
+
     uid = Column(Integer, primary_key=True, index=True, nullable=False, autoincrement=True)
+
     # uid = Column(UUID(), default=uuid.uuid4, primary_key=True, unique=True, nullable=False)
-    
+
     # Generate __tablename__ automatically
     @declared_attr
     def __tablename__(cls) -> str:
@@ -72,30 +73,30 @@ class DBModel(AllFeaturesMixin):
             self.session.rollback()
             raise
         return self
-    
+
     @classmethod
     def get_one(cls, **kwargs):
         return cls.query.filter_by(**kwargs).first()
-    
+
     @classmethod
     def fulltext_search(cls, search_string, field):
         """Full-text Search with PostgreSQL"""
-        return cls.query.filter(func.to_tsvector('english', getattr(cls, field)).match(search_string, postgresql_regconfig='english')).all()
+        return cls.query.filter(
+            func.to_tsvector('english', getattr(cls, field)).match(search_string, postgresql_regconfig='english')).all()
 
-    
     def psql_records_to_dict(self, records, many=False):
         # records._row: asyncpg.Record / databases.backends.postgres.Record
         if not many and records:
             return dict(records)
         return [dict(record) for record in records]
-    
+
     @classmethod
     def scalar(cls, filters):
         cls.query.scalar()
 
     # def get_multi(cls, *, skip: int = 0, limit: int = 100):
     #     return cls.objects.offset(skip).limit(limit).all()
-    
+
+
 DBModel.query = SessionScoped.query_property()
 DBModel.set_session(SessionScoped())
-

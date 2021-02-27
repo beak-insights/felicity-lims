@@ -13,27 +13,32 @@ class SampleTypeBase(BaseModel):
     description: Optional[str] = None
     active: Optional[bool] = True
 
+
 class SampleTypeBaseInDB(SampleTypeBase):
     uid: Optional[str] = None
 
     class Config:
         orm_mode = True
 
+
 # Properties to receive via API on creation
 class SampleTypeCreate(SampleTypeBase):
     pass
 
+
 # Properties to receive via API on update
 class SampleTypeUpdate(SampleTypeBase):
-	pass
+    pass
+
 
 # Properties to return via API
 class SampleType(SampleTypeBaseInDB):
     pass
 
+
 # Properties stored in DB
 class SampleTypeInDB(SampleTypeBaseInDB):
-	pass
+    pass
 
 
 # 
@@ -46,31 +51,35 @@ class ProfileBase(BaseModel):
     description: Optional[str] = None
     active: Optional[bool] = True
 
+
 class ProfileBaseInDB(ProfileBase):
     uid: Optional[str] = None
 
     class Config:
         orm_mode = True
 
+
 # Properties to receive via API on creation
 class ProfileCreate(ProfileBase):
     pass
 
+
 # Properties to receive via API on update
 class ProfileUpdate(ProfileBase):
-	pass
+    pass
+
 
 # Properties to return via API
 class Profile(ProfileBaseInDB):
     pass
 
+
 # Properties stored in DB
 class ProfileInDB(ProfileBaseInDB):
-	pass
+    pass
 
 
-
-# 
+#
 # Analysis Schemas
 # 
 
@@ -83,31 +92,35 @@ class AnalysisBase(BaseModel):
     profiles: Optional[List[Profile]] = []
     sampletypes: Optional[List[SampleType]] = []
 
+
 class AnalysisBaseInDB(AnalysisBase):
     uid: Optional[str] = None
 
     class Config:
         orm_mode = True
 
+
 # Properties to receive via API on creation
 class AnalysisCreate(AnalysisBase):
     pass
 
+
 # Properties to receive via API on update
 class AnalysisUpdate(AnalysisBase):
-	pass
+    pass
+
 
 # Properties to return via API
 class Analysis(AnalysisBaseInDB):
     pass
 
+
 # Properties stored in DB
 class AnalysisInDB(AnalysisBaseInDB):
-	pass
+    pass
 
 
-
-# 
+#
 # AnalysisRequest Schemas
 # 
 
@@ -118,43 +131,48 @@ class AnalysisRequestBase(BaseModel):
     request_id: Optional[str] = None
     client_request_id: Optional[str] = None
 
+
 class AnalysisRequestBaseInDB(AnalysisRequestBase):
     uid: Optional[str] = None
 
     class Config:
         orm_mode = True
 
+
 # Properties to receive via API on creation
 class AnalysisRequestCreate(AnalysisRequestBase):
     pass
 
+
 # Properties to receive via API on update
 class AnalysisRequestUpdate(AnalysisRequestBase):
-	pass
+    pass
+
 
 # Properties to return via API
 class AnalysisRequest(AnalysisRequestBaseInDB):
     pass
 
+
 # Properties stored in DB
 class AnalysisRequestInDB(AnalysisRequestBaseInDB):
-	pass
+    pass
 
 
-
-# 
+#
 # Sample Schemas
 # 
 
 # Shared properties
 class SampleBase(BaseModel):
     analysisrequest_uid: Optional[int] = None
-    sampletype_uid: Optional[int] = None 
+    sampletype_uid: Optional[int] = None
     profiles: Optional[List[Profile]] = []
     analyses: Optional[List[Analysis]] = []
     sample_id: Optional[str] = None
     priority: Optional[int] = 0
     status: Optional[str] = None
+
 
 class SampleBaseInDB(SampleBase):
     uid: Optional[str] = None
@@ -162,25 +180,28 @@ class SampleBaseInDB(SampleBase):
     class Config:
         orm_mode = True
 
+
 # Properties to receive via API on creation
 class SampleCreate(SampleBase):
     pass
 
+
 # Properties to receive via API on update
 class SampleUpdate(SampleBase):
-	pass
+    pass
+
 
 # Properties to return via API
 class Sample(SampleBaseInDB):
     pass
 
+
 # Properties stored in DB
 class SampleInDB(SampleBaseInDB):
-	pass
+    pass
 
 
-
-# 
+#
 # AnalysisResultBase Schemas
 # 
 
@@ -190,24 +211,29 @@ class AnalysisResultBase(BaseModel):
     sample_uid: Optional[int] = None
     status: Optional[str] = None
 
+
 class AnalysisResultBaseInDB(AnalysisResultBase):
     uid: Optional[str] = None
 
     class Config:
         orm_mode = True
 
+
 # Properties to receive via API on creation
 class AnalysisResultCreate(AnalysisResultBase):
     pass
 
+
 # Properties to receive via API on update
 class AnalysisResultUpdate(AnalysisResultBase):
-	pass
+    pass
+
 
 # Properties to return via API
 class AnalysisResult(AnalysisResultBaseInDB):
     pass
 
+
 # Properties stored in DB
 class AnalysisResultInDB(AnalysisResultBaseInDB):
-	pass
+    pass

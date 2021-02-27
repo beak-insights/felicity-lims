@@ -1,37 +1,45 @@
 <template>
   <div class="px-6">
-    <div class="flex">
+    <div class="flex items-center">
       <h1 class="h1 my-4 font-bold text-dark-700">Patients</h1>
       <button
-        class="px-4 my-2 ml-8 text-sm border-blue-500 border text-dark-700 transition-colors duration-150 rounded-lg focus:outline-none hover:bg-blue-500 hover:text-gray-100"
+        class="px-4 my-2 h-10 ml-8 text-sm border-blue-500 border text-dark-700 transition-colors duration-150 rounded-lg focus:outline-none hover:bg-blue-500 hover:text-gray-100"
         @click="patientFormManager(true)"
       >
         Add Patient
       </button>
+      <input
+        class="w-64 h-10 ml-6 pl-4 pr-2 py-1 text-sm text-gray-700 placeholder-gray-600 border-1 border-gray-400 rounded-md  focus:placeholder-gray-500 focus:border-green-100 focus:outline-none focus:shadow-outline-purple form-input"
+        type="text" placeholder="Search ..." aria-label="Search"
+        @keyup="searchPatients($event)"
+      />
     </div>
     <hr />
 
     <div class="grid grid-cols-12 gap-4 mt-2">
       <section class="col-span-4 overflow-y-scroll overscroll-contain patient-scroll">
         <a
-          v-for="pt in patients?.patientAll.edges"
-          :key="pt.node.patientId"
+          v-for="pt in patients"
+          :key="pt.patientId"
           href="#"
-          @click.prevent.stop="selectPatient(pt.node)"
-          class="bg-white w-full flex items-center p-1 mb-1 rounded-xl shadow border"
+          @click.prevent.stop="selectPatient(pt)"
+          :class="[
+            'bg-white w-full flex items-center p-1 mb-1 rounded-xl shadow border',
+            { 'border-green-500 bg-green-100': pt.uid === patientForm.uid },
+          ]"
         >
           <div class="flex-grow p-1">
             <div class="font-semibold text-gray-700 flex justify-between">
-              <span>{{ getPatientFullName(pt.node) }}</span>
-              <span class="text-sm text-gray-500">{{ pt.node.age }} yrs, {{ pt.node.gender }}</span>
+              <span>{{ getPatientFullName(pt) }}</span>
+              <span class="text-sm text-gray-500">{{ pt.age }} yrs, {{ getGender(pt.gender) }}</span>
             </div>
             <div class="text-sm text-gray-500 flex justify-between">
-              <span>{{ pt.node.patientId }}</span>
-              <span>{{ pt.node.clientPatientId }}</span>
+              <span>{{ pt.patientId }}</span>
+              <span>{{ pt.clientPatientId }}</span>
             </div>
             <div class="text-sm text-gray-500 flex justify-between">
-              <span>{{ pt.node?.client?.district?.province?.name }}</span>
-              <span>{{ pt.node?.client?.name }}</span>
+              <span>{{ pt?.client?.district?.province?.name }}</span>
+              <span>{{ pt?.client?.name }}</span>
             </div>
           </div>
           <div class="p-2">
@@ -48,12 +56,12 @@
           <div class="grid grid-cols-12 gap-3">
             <!-- Meta Column -->
             <div class="sm:col-span-2 text-center hidden sm:block">
-              <div class="inline-block font-md text-medium mb-2">{{ patient.patientId }}</div>
+              <div class="inline-block font-md text-medium mb-2">{{ patientForm.patientId }}</div>
               <!-- Age -->
               <div
                 class="grid grid-rows-2 mx-auto mb-1 py-1 w-4/5 2lg:w-3/5 rounded-md bg-green-400"
               >
-                <div class="inline-block font-medium text-2xl text-white">{{ patient.age }}</div>
+                <div class="inline-block font-medium text-2xl text-white">{{ patientForm.age }}</div>
                 <div class="inline-block font-medium text-white text-sm lg:text-md">Yrs Old</div>
               </div>
             </div>
@@ -62,9 +70,9 @@
               <div
                 class="flex justify-between sm:text-sm md:text-md lg:text-lg text-gray-700 font-bold"
               >
-                <span>{{ getPatientFullName(patient) }}</span>
+                <span>{{ getPatientFullName(patientForm) }}</span>
                 <div>
-                  <span class="font-medium text-md">{{ patient.dob }}</span>
+                  <span class="font-medium text-md">{{ patientForm.dateOfBirth }}</span>
                   <button
                     @click="patientFormManager(false)"
                     class="ml-4 inline-flex items-center justify-center w-8 h-8 mr-2 border-blue-500 border text-gray-900 transition-colors duration-150 bg-white rounded-full focus:outline-none hover:bg-gray-200"
@@ -84,19 +92,19 @@
                   <div class="flex">
                     <span class="text-gray-800 text-sm font-medium w-16">Client</span>
                     <span class="text-gray-600 text-sm md:text-md">{{
-                      patient?.client?.name
+                      patientForm?.client?.name
                     }}</span>
                   </div>
                   <div class="flex">
                     <span class="text-gray-800 text-sm font-medium w-16">District:</span>
                     <span class="text-gray-600 text-sm md:text-md">{{
-                      patient?.client?.district?.name
+                      patientForm?.client?.district?.name
                     }}</span>
                   </div>
                   <div class="flex">
                     <span class="text-gray-800 text-sm font-medium w-16">Province:</span>
                     <span class="text-gray-600 text-sm md:text-md">{{
-                      patient?.client?.district?.province?.name
+                      patientForm?.client?.district?.province?.name
                     }}</span>
                   </div>
                 </div>
@@ -105,7 +113,7 @@
                   <div class="col-span-2 flex mt-2">
                     <span class="text-gray-800 text-sm font-medium w-16">Client Patient ID</span>
                     <span class="text-gray-600 text-sm md:text-md">{{
-                      patient.clientPatientId
+                      patientForm.clientPatientId
                     }}</span>
                   </div>
                 </div>
@@ -149,108 +157,89 @@
       <form action="post" class="p-1">
         <label class="block mb-2">
           <span class="text-gray-700">Patient Unique Identifier</span>
-          <input class="form-input mt-1 block w-full" placeholder="Patient Unique Identifier" />
+          <input class="form-input mt-1 block w-full" v-model="patientForm.clientPatientId" placeholder="Patient Unique Identifier" />
         </label>
         <div class="flex justify-between">
           <label class="block mb-2">
             <span class="text-gray-700">First Name</span>
-            <input
-              class="form-input mt-1 block w-full"
-              :value="patient.firstName"
-              placeholder="First Name"
-            />
+            <input class="form-input mt-1 block w-full" v-model="patientForm.firstName" placeholder="First Name" />
           </label>
           <label class="block mb-2 mx-2">
             <span class="text-gray-700">Middle Name</span>
-            <input class="form-input mt-1 block w-full" placeholder="Middle Name" />
+            <input class="form-input mt-1 block w-full" v-model="patientForm.middleName" placeholder="Middle Name" />
           </label>
           <label class="block mb-2">
             <span class="text-gray-700">Last Name</span>
-            <input
-              class="form-input mt-1 block w-full"
-              :value="patient.lastName"
-              placeholder="Last Name"
-            />
+            <input class="form-input mt-1 block w-full" v-model="patientForm.lastName" placeholder="Last Name" />
           </label>
         </div>
+
         <div class="flex justify-between">
           <label class="block mb-2">
             <span class="text-gray-700">Age</span>
-            <input
-              class="form-input mt-1 block w-full"
-              type="number"
-              :value="patient.age"
-              placeholder="Age"
-            />
+            <input class="form-input mt-1 block w-full" type="number" v-model="patientForm.age" placeholder="Age" />
           </label>
           <label class="block mb-2 mx-2">
             <span class="text-gray-700">Date of Birth</span>
-            <input
-              class="form-input mt-1 block w-full"
-              type="date"
-              :value="patient.dob"
-              placeholder="Date of Birth"
-            />
+            <input class="form-input mt-1 block w-full" type="date" v-model="patientForm.dateOfBirth" placeholder="Date of Birth" />
           </label>
           <label class="inline-flex items-center -mb-6">
-            <input type="checkbox" class="form-checkbox text-green-500 mx-4" checked />
+            <input type="checkbox" class="form-checkbox text-green-500 mx-4" v-model="patientForm.ageDobEstimated" />
             <span class="ml-2">Age/DOB Estimated?</span>
           </label>
         </div>
-        <div class="grid grid-cols-6 justify-between">
-          <label class="block mb-2 col-span-4">
-            <span class="text-gray-700">Mobile Number</span>
-            <input
-              class="form-input mt-1 block w-full"
-              type="number"
-              :value="patient.mobile"
-              placeholder="Mobile Number"
-            />
+
+        <div class="flex justify-between">
+          <label class="block mb-2">
+            <span class="text-gray-700">Gender</span>
+            <select class="form-select block w-full mt-1" v-model="patientForm.gender">
+               <option></option>
+              <option v-for="(sex, indx) in genders" :key="sex.index" :value="indx"> {{ sex }}</option>
+            </select>
           </label>
-          <label class="inline-flex items-center -mb-6 col-span-2">
-            <input type="checkbox" class="form-checkbox text-green-500 mx-4" checked />
+          <label class="block mb-2">
+            <span class="text-gray-700">Mobile Number</span>
+            <input class="form-input mt-1 block w-full" type="number" v-model="patientForm.phoneMobile" placeholder="Mobile Number" />
+          </label>
+          <label class="inline-flex items-center -mb-6">
+            <input type="checkbox" class="form-checkbox text-green-500 mx-4" v-model="patientForm.consentSms" />
             <span class="ml-2">Consent to SMS</span>
           </label>
         </div>
+
         <!-- other identifiers: passport, client pid, national id -->
         <label class="block mb-2">
           <span class="text-gray-700">Primary Referrer</span>
-          <select class="form-select block w-full mt-1" :value="patient.client">
-            <option>Referrer One</option>
-            <option>Referrer Two</option>
-            <option>Referrer Three</option>
-            <option>Referrer Four</option>
-          </select>
+          <select class="form-select block w-full mt-1" v-model="patientForm.clientUid">
+              <option></option>
+              <option v-for="client in clients?.clientAll?.edges" :key="client.node.uid" :value="client.node.uid"> {{ client.node.name }} {{ client.node.uid }}</option>
+            </select>
         </label>
+
         <div class="grid grid-cols-3 gap-x-4 mb-4">
           <label class="block col-span-1 mb-2">
             <span class="text-gray-700">Country</span>
-            <select class="form-select block w-full mt-1" :value="patient.countryId">
-              <option>Zimbabwe</option>
-              <option>South Africa</option>
-              <option>Zambia</option>
-              <option>Angola</option>
+            <select class="form-select block w-full mt-1" v-model="countryUid" @change="getProvinces($event)">
+              <option></option>
+              <option v-for="country in countries" :key="country.uid" :value="country.uid"> {{ country.name }} {{ country.uid }}</option>
             </select>
           </label>
           <label class="block col-span-1 mb-2">
             <span class="text-gray-700">Province</span>
-            <select class="form-select block w-full mt-1" :value="patient.provinceId">
-              <option>Bulawayo</option>
-              <option>Harare</option>
-              <option>Midlands</option>
-              <option>Matabeleland North</option>
+            <select class="form-select block w-full mt-1" v-model="provinceUid" @change="getDistricts($event)">
+               <option></option>
+              <option v-for="province in provinces" :key="province.uid" :value="province.uid"> {{ province.name }} {{ province.uid }}</option>
             </select>
           </label>
           <label class="block col-span-1 mb-2">
             <span class="text-gray-700">District</span>
-            <select class="form-select block w-full mt-1" :value="patient.districtId">
-              <option>Harare</option>
-              <option>Bulawayo</option>
-              <option>Gweru</option>
-              <option>Kariba</option>
+            <select class="form-select block w-full mt-1" v-model="patientForm.districtUid">
+               <option></option>
+              <option v-for="district in districts" :key="district.uid" :value="district.uid"> {{ district.name }} {{ district.uid }}</option>
             </select>
           </label>
         </div>
+
         <hr />
         <button
           type="button"
@@ -266,7 +255,7 @@
 
 <style lang="postcss">
 .patient-scroll {
-  height: 400px;
+  height: 700px;
 }
 
 .tab-active {
@@ -286,9 +275,19 @@ import tabCases from '../_components/sample/patientCaseTab.vue';
 import tabLogs from '../_components/sample/patientLogTab.vue';
 import modal from '../_components/modals/simpleModal.vue';
 import { Patient } from '../../store/modules/patients';
-import { GET_ALL_PATIENTS } from '../../graphql/queries';
+import { GET_ALL_PATIENTS, SEARCH_PATIENTS } from '../../graphql/patient/queries';
+import {  GET_ALL_CLIENTS } from '../../graphql/clients/queries';
+import {
+  GET_ALL_COUNTRIES,
+  FILTER_PROVINCES_BY_COUNTRY,
+  FILTER_DISTRICTS_BY_PROVINCE,
+} from '../../graphql/admin/queries';
+import { ADD_PATIENT } from '../../graphql/patient/mutations';
 
 export const IPatient = typeof Patient;
+
+import { ActionTypes } from '../../store/modules/patients';
+import { ActionTypes as AdminActionTypes } from '../../store/modules/admin';
 
 export default defineComponent({
   name: 'patients',
@@ -301,55 +300,122 @@ export default defineComponent({
   setup(context) {
     const nullPatient = new Patient();
     let store = useStore();
-    let createPatient = ref(true);
+    let createAction = ref(true);
     let showModal = ref(false);
+
     let currentTab = ref('samples');
     const tabs = ['samples', 'cases', 'logs'];
     let currentTabComponent = computed(() => 'tab-' + currentTab.value);
-    let patient = reactive({ ...nullPatient });
-    const { data: patients, fetching: ptFetching, error: ptError } = useQuery({
-      query: GET_ALL_PATIENTS,
+
+    let patientForm = reactive({ ...nullPatient });
+
+    let provinces = ref([]);
+    let districts = ref([]);
+
+    let countryUid = ref(null);
+    let provinceUid = ref(null);
+
+    const genders = ["Male", "Female", "Missing", "Trans Gender"]
+
+    store.dispatch(AdminActionTypes.FETCH_COUNTRIES);    
+    store.dispatch(ActionTypes.FETCH_PATIENTS);
+
+    const { data: clients, fetching: CFetching, error: CError } = useQuery({
+      query: GET_ALL_CLIENTS,
     });
 
+    const { executeMutation: createPatient } = useMutation(ADD_PATIENT);
+
+    const provincesfilter = useQuery({
+      query: FILTER_PROVINCES_BY_COUNTRY,
+      variables: { uid: countryUid },
+      pasuse: computed(() => countryUid === null), // not working
+      requestPolicy: 'network-only',
+    });
+
+    const districtsfilter = useQuery({
+      query: FILTER_DISTRICTS_BY_PROVINCE,
+      variables: { uid: provinceUid },
+      pasuse: computed(() => provinceUid === null), // not working
+      requestPolicy: 'network-only',
+    });
+
+    function addPatient() {
+      createPatient({ clientPatientId: patientForm.clientPatientId, firstName: patientForm.firstName,
+        middleName: patientForm.middleName, lastName: patientForm.lastName, age: patientForm.age,
+        gender: patientForm.gender, dateOfBirth: patientForm.dateOfBirth, ageDobEstimated: patientForm.ageDobEstimated,
+        clientUid: patientForm.clientUid, phoneMobile: patientForm.phoneMobile, consentSms: patientForm.consentSms, 
+      }).then(result => store.dispatch(ActionTypes.ADD_PATIENT, result));
+    }
+
+    function getProvinces(event) {
+      provincesfilter.executeQuery({requestPolicy: 'network-only'}).then(result => {
+        provinces.value = result.data.value?.provincesByCountryUid;
+      });
+    }
+
+    function getDistricts(event) {
+      districtsfilter.executeQuery({requestPolicy: 'network-only'}).then(result => {
+        districts.value = result.data.value?.districtsByProvinceUid;
+      });
+    }
+
+    function searchPatients(event) {
+      store.dispatch(ActionTypes.SEARCH_PATIENTS, event.target.value);
+    }
+
     function isPatientSelected() {
-      return patient.patientId !== undefined;
+      return patientForm.patientId !== undefined;
     }
 
     let getPatientFullName = (pt) => {
       return pt.firstName + ' ' + pt.lastName;
     };
 
+    let getGender = pos => genders[pos];
+
     let selectPatient = (pt) => {
-      Object.assign(patient, { ...pt });
+      Object.assign(patientForm, { ...pt });
     };
 
     let setPatientToNull = () => {
-      Object.assign(patient, { ...nullPatient });
+      Object.assign(patientForm, { ...nullPatient });
     };
 
     function patientFormManager(create) {
       showModal.value = true;
-      createPatient.value = create;
+      createAction.value = create;
       if (create) setPatientToNull();
     }
 
     function savePatientForm() {
-      console.log(createPatient);
+       if (createAction.value) addPatient();
+       showModal.value = false;
     }
-    //
 
     return {
       showModal,
       tabs,
       currentTab,
       currentTabComponent,
-      patient,
+      patientForm,
       getPatientFullName,
-      patients, // computed(() => store.getters.getPatients),
+      patients: computed(() => store.getters.getPatients),
       isPatientSelected,
       selectPatient,
       patientFormManager,
       savePatientForm,
+      countries: computed(() => store.getters.getCountries),
+      clients,
+      countryUid,
+      provinces,
+      provinceUid,
+      districts,
+      getProvinces,
+      getDistricts,
+      genders,
+      getGender,
+      searchPatients
     };
   },
 });

@@ -13,7 +13,7 @@ from felicity.apps.worksheet import schemas
 
 
 class WSBase(DBModel):
-    __abstract__ = True    
+    __abstract__ = True
     worksheet_type = Column(String)
     reserved = Column(JSONB)
     plate = Column(JSONB)
@@ -22,7 +22,7 @@ class WSBase(DBModel):
     cols = Column(Integer)
     row_wise = Column(Boolean(), default=False)
     state = Column(String)
-    
+
     def plate_values(self):
         """Values for the WS plate creator"""
         data = dict()
@@ -35,14 +35,13 @@ class WSBase(DBModel):
         return data
 
 
-
 class WSTPLink(DBModel):
     """Many to Many Link between WorkSheetTemplate and Profile
     """
     ws_template_uid = Column(Integer, ForeignKey('worksheettemplate.uid'), primary_key=True)
     profile_uid = Column(Integer, ForeignKey('profile.uid'), primary_key=True)
 
-    
+
 class WSTALink(DBModel):
     """Many to Many Link between WorkSheetTemplate and Analysis
     """
@@ -71,28 +70,28 @@ class WorkSheetTemplate(WSBase):
     def update(self, obj_in: schemas.WSTemplateUpdate) -> schemas.WSTemplate:
         data = self._import(obj_in)
         return super().update(**data)
-    
-    
+
+
 class WSPLink(DBModel):
     """Many to Many Link between WorkSheet and Profile
     """
     worksheet_uid = Column(Integer, ForeignKey('worksheet.uid'), primary_key=True)
     profile_uid = Column(Integer, ForeignKey('profile.uid'), primary_key=True)
 
-    
+
 class WSALink(DBModel):
     """Many to Many Link between WorkSheet and Analysis
     """
     worksheet_uid = Column(Integer, ForeignKey('worksheet.uid'), primary_key=True)
     analysis_uid = Column(Integer, ForeignKey('analysis.uid'), primary_key=True)
-    
+
 
 class WorkSheet(WSBase):
     template_uid = Column(Integer, ForeignKey('worksheettemplate.uid'), nullable=False)
     template = relationship('WorkSheetTemplate', backref='worksheets')
     analyst_uid = Column(Integer, ForeignKey('user.uid'), nullable=False)
     analyst = relationship(User, backref='worksheets')
-    worksheet_id = Column(String, index=True, unique=True, nullable=False)    
+    worksheet_id = Column(String, index=True, unique=True, nullable=False)
     profiles = relationship(Profile, secondary="wsplink", backref="worksheets")
     analyses = relationship(Analysis, secondary="wsalink", backref="worksheets")
     instrument_uid = Column(Integer, ForeignKey('instrument.uid'), nullable=False)
