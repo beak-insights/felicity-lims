@@ -12,3 +12,12 @@ export const GET_ALL_CLIENTS = gql`
       }
     }
   }`;
+
+export const SEARCH_CLIENTS = gql`
+  query searchClients($queryString: String!) {
+    clientSearch(queryString: $queryString){
+        uid
+        name
+        code
+    }
+  }`;

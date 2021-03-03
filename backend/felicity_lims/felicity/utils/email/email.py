@@ -1,7 +1,5 @@
 import logging
-from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, Optional
 
 import emails
 from emails.template import JinjaTemplate
@@ -13,8 +11,10 @@ async def send_email(
     email_to: str,
     subject_template: str = "",
     html_template: str = "",
-    environment: Dict[str, Any] = {},
+        environment=None,
 ) -> None:
+    if environment is None:
+        environment = {}
     assert settings.EMAILS_ENABLED, "no provided configuration for email variables"
     message = emails.Message(
         subject=JinjaTemplate(subject_template),
@@ -37,7 +37,7 @@ async def send_test_email(email_to: str) -> None:
     subject = f"{project_name} - Test email"
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "test_email.html") as f:
         template_str = f.read()
-    send_email(
+    await send_email(
         email_to=email_to,
         subject_template=subject,
         html_template=template_str,
@@ -52,7 +52,7 @@ async def send_reset_password_email(email_to: str, email: str, token: str) -> No
         template_str = f.read()
     server_host = settings.SERVER_HOST
     link = f"{server_host}/reset-password?token={token}"
-    send_email(
+    await send_email(
         email_to=email_to,
         subject_template=subject,
         html_template=template_str,
@@ -72,7 +72,7 @@ async def send_new_account_email(email_to: str, username: str, password: str) ->
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_account.html") as f:
         template_str = f.read()
     link = settings.SERVER_HOST
-    send_email(
+    await send_email(
         email_to=email_to,
         subject_template=subject,
         html_template=template_str,

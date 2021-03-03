@@ -23,10 +23,8 @@ export const GET_ALL_PROVINCES = gql`
           code
           email
           emailCc
-          consentEmail
           businessPhone
           mobilePhone
-          consentSms
           countryUid
         }
       }
@@ -55,10 +53,8 @@ export const GET_ALL_DISTRICTS = gql`
           code
           email
           emailCc
-          consentEmail
           businessPhone
           mobilePhone
-          consentSms
           provinceUid
         }
       }

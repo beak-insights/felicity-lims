@@ -15,6 +15,7 @@ class ClientQuery(graphene.ObjectType):
     client_by_code = graphene.Field(lambda: ClientType, code=graphene.String(default_value=""))
     client_by_uid = graphene.Field(lambda: ClientType, uid=graphene.String(default_value=""))
     clients_by_name = graphene.List(lambda: ClientType, name=graphene.String(default_value=""))
+    client_search = graphene.List(lambda: ClientType, query_string=graphene.String(default_value=""))
 
     def resolve_client_by_uid(self, info, uid):
         client = models.Client.get(uid=uid)
@@ -28,3 +29,15 @@ class ClientQuery(graphene.ObjectType):
         clients = models.Client.where(name__contains=name).all()
         # clients = models.Client.where(name__like=f"%{name}%").all()
         return clients
+        return query
+
+    def resolve_client_search(self, info, query_string):
+        filters = ['name__ilike', 'code__ilike']
+        combined = set()
+        for _filter in filters:
+            arg = dict()
+            arg[_filter] = f"%{query_string}%"
+            query = models.Client.where(**arg).all()
+            for item in query:
+                combined.add(item)
+        return list(combined)

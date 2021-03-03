@@ -329,14 +329,14 @@ export default defineComponent({
     const provincesfilter = useQuery({
       query: FILTER_PROVINCES_BY_COUNTRY,
       variables: { uid: countryUid },
-      pasuse: computed(() => countryUid === null), // not working
+      pause: computed(() => countryUid !== null), // not working
       requestPolicy: 'network-only',
     });
 
     const districtsfilter = useQuery({
       query: FILTER_DISTRICTS_BY_PROVINCE,
       variables: { uid: provinceUid },
-      pasuse: computed(() => provinceUid === null), // not working
+      pause: computed(() => provinceUid !== null), // not working
       requestPolicy: 'network-only',
     });
 

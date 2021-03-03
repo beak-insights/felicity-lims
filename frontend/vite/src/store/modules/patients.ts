@@ -91,6 +91,7 @@ export const mutations = <MutationTree<IState>>{
   },
 
   [MutationTypes.SET_PATIENTS](state: IState, payload: any[]): void {
+    state.patients = [];
     payload?.forEach(obj => state.patients?.push(obj?.node));
   },
 
@@ -126,7 +127,7 @@ export const actions = <ActionTree<IState, RootState>>{
       .toPromise()
       .then(result => commit(MutationTypes.DIRECT_SET_PATIENTS, result.data.patientSearch))
   }
- 
+
 };
 
 // namespaced: true,

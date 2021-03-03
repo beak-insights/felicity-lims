@@ -1,7 +1,10 @@
+import { useQuery } from '@urql/vue';
+import { urqlClient } from '../../urql';
 import { RootState } from '../state';
 import { ActionTree, GetterTree, MutationTree } from 'vuex';
 import { IClient, IDistrict } from '../common'
 
+import { GET_ALL_CLIENTS, SEARCH_CLIENTS } from '../../graphql/clients/queries';
 
 export class Client implements IClient {
   constructor(
@@ -19,16 +22,20 @@ export class Client implements IClient {
   ) {}
 }
 
+export interface IClientContact {
+
+}
+
 // state contract
 export interface IState {
-  client?: IClient | null;
   clients?: IClient[];
+  clientContacts?: IClientContact[];
 }
 
 export const initialState = () => {
   return <IState>{
-    client: null,
     clients: [],
+    clientContacts: [],
   };
 };
 
@@ -36,21 +43,22 @@ export const state: IState = initialState();
 
 export enum MutationTypes {
   RESET_STATE = 'RESET_STATE',
-  SET_CLIENT = 'SET_CLIENT',
-  CLEAR_CLIENT = 'CLEAR_CLIENT',
+  SET_CLIENT_CONTACTS = 'SET_CLIENT_CONTACTS',
   SET_CLIENTS = 'SET_CLIENTS',
+  SET_CLIENTS_DIRECT = 'SET_CLIENTS_DIRECT',
 }
 
 export enum ActionTypes {
   RESET_STATE = 'RESET_STATE',
-  SET_CLIENT = 'SET_CLIENT',
-  CLEAR_CLIENT = 'CLEAR_CLIENT',
+  SET_CLIENT_CONTACTS = 'SET_CLIENT_CONTACTS',
   SET_CLIENTS = 'SET_CLIENTS',
+  FETCH_CLIENTS = 'FETCH_CLIENTS',
+  SEARCH_CLIENTS = 'SEARCH_CLIENTS'
 }
 
 // Getters
 export const getters = <GetterTree<IState, RootState>>{
-  getClient: (state) => state.client,
+  getClientContacts: (state) => state.clientContacts,
   getClients: (state) => state.clients,
 };
 
@@ -60,9 +68,22 @@ export const mutations = <MutationTree<IState>>{
     Object.assign(state, initialState());
   },
 
-  [MutationTypes.SET_CLIENT](state: IState, payload: IClient): void {
-    state.client = payload;
+  [MutationTypes.SET_CLIENT_CONTACTS](state: IState, payload: IClientContact[]): void {
+    state.clientContacts = [];
+    state.clientContacts = payload;
   },
+
+  [MutationTypes.SET_CLIENTS](state: IState, payload: any[]): void {
+    state.clients = [];
+    payload?.forEach(obj => state.clients?.push(obj?.node));
+  },
+
+  [MutationTypes.SET_CLIENTS_DIRECT](state: IState, clients: IClient[]): void {
+    state.clients = [];
+    state.clients = clients;
+  },
+
+
 };
 
 // Actions
@@ -71,9 +92,21 @@ export const actions = <ActionTree<IState, RootState>>{
     commit(MutationTypes.RESET_STATE);
   },
 
-  async [ActionTypes.SET_CLIENT]({ commit }, payload: IClient) {
-    commit(MutationTypes.SET_CLIENT, payload);
+  async [ActionTypes.SET_CLIENT_CONTACTS]({ commit }, payload: IClient) {
+    commit(MutationTypes.SET_CLIENT_CONTACTS, payload);
   },
+
+  async [ActionTypes.FETCH_CLIENTS]({ commit }){
+    await useQuery({ query: GET_ALL_CLIENTS })
+          .then(payload => commit(MutationTypes.SET_CLIENTS, payload.data.value.clientAll.edges));
+  },
+
+  async [ActionTypes.SEARCH_CLIENTS]({ commit }, query: string){
+    await urqlClient
+      .query(SEARCH_CLIENTS, { queryString: query })
+      .toPromise()
+      .then(result => commit(MutationTypes.SET_CLIENTS_DIRECT, result.data.clientSearch))
+  }
 };
 
 // namespaced: true,

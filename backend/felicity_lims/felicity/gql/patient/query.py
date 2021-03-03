@@ -35,7 +35,6 @@ class PatientQuery(graphene.ObjectType):
             arg = dict()
             arg[_filter] = f"%{query_string}%"
             query = models.Patient.where(**arg).all()
-            logging.info(query)
             for item in query:
                 combined.add(item)
         return list(combined)

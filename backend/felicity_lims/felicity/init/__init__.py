@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def initialize_felicity():
+def initialize_felicity() -> bool:
     logger.info("Initializing Felicity LIMS")
     # Felicity Health Status Checks
     check_db_conn_status()

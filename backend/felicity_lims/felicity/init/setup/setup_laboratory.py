@@ -1,9 +1,11 @@
+from typing import Optional
+
 from felicity.apps.setup.models import Laboratory
 from felicity.apps.setup.schemas import LaboratoryCreate
 
 
 def create_laboratory() -> None:
-    laboratory = Laboratory.get_by_setup_name("felicity")
+    laboratory: Optional[Laboratory] = Laboratory.get_by_setup_name("felicity")
     if not laboratory:
         lab_in = LaboratoryCreate(
             setup_name="felicity",

@@ -1,10 +1,11 @@
 import uuid
+from abc import ABC
 
 from sqlalchemy.types import TypeDecorator, BINARY
 from sqlalchemy.dialects.postgresql import UUID as psqlUUID
 
 
-class UUID(TypeDecorator):
+class UUID(TypeDecorator, ABC):
     """Platform-independent GUID type.
 
     Uses Postgresql's UUID type, otherwise uses

@@ -1,4 +1,5 @@
 import { useQuery } from '@urql/vue';
+import { urqlClient } from '../../urql';
 import { RootState } from '../state';
 import { ActionTree, GetterTree, MutationTree } from 'vuex';
 import { IDistrict, IProvince, ICountry } from '../common'
@@ -45,8 +46,8 @@ export enum ActionTypes {
   FETCH_COUNTRIES = 'FETCH_COUNTRIES',
   FETCH_PROVINCES = 'FETCH_PROVINCES',
   FETCH_DISTRICTS = 'FETCH_DISTRICTS',
-  FILTER_DISTRICTS = 'FILTER_DISTRICTS',
-  FILTER_PROVINCES = 'FILTER_PROVINCES'
+  FILTER_DISTRICTS_BY_PROVINCE = 'FILTER_DISTRICTS_BY_PROVINCE',
+  FILTER_PROVINCES_BY_COUNTRY = 'FILTER_PROVINCES_BY_COUNTRY'
 }
 
 // Getters
@@ -68,7 +69,19 @@ export const mutations = <MutationTree<IState>>{
   },
 
   [MutationTypes.SET_COUNTRIES](state: IState, payload: any[]): void {
+    state.countries = [];
     payload?.forEach(obj => state.countries?.push(obj?.node));
+  },
+
+  [MutationTypes.SET_PROVINCES_DIRECT](state: IState, payload: any[]): void {
+    state.provinces = [];
+    state.provinces = payload;
+    state.districts = [];
+  },
+
+  [MutationTypes.SET_DISTRICTS_DIRECT](state: IState, payload: any[]): void {
+    state.districts = [];
+    state.districts = payload;
   },
 };
 
@@ -87,18 +100,18 @@ export const actions = <ActionTree<IState, RootState>>{
           .then(payload => commit(MutationTypes.SET_COUNTRIES, payload.data.value.countryAll.edges));
   },
 
-  async [ActionTypes.SEARCH_PATIENTS]({ commit }, query: string){
+  async [ActionTypes.FILTER_PROVINCES_BY_COUNTRY]({ commit }, countryUid: string){
     await urqlClient
-      .query(SEARCH_PATIENTS, { queryString: query })
+      .query(FILTER_PROVINCES_BY_COUNTRY, { uid: countryUid })
       .toPromise()
-      .then(result => commit(MutationTypes.DIRECT_SET_PATIENTS, result.data.patientSearch))
+      .then(result => commit(MutationTypes.SET_PROVINCES_DIRECT, result.data.provincesByCountryUid))
   },
 
-  async [ActionTypes.SEARCH_PATIENTS]({ commit }, query: string){
+  async [ActionTypes.FILTER_DISTRICTS_BY_PROVINCE]({ commit }, provinceUid: string){
     await urqlClient
-      .query(SEARCH_PATIENTS, { queryString: query })
+      .query(FILTER_DISTRICTS_BY_PROVINCE, { uid: provinceUid })
       .toPromise()
-      .then(result => commit(MutationTypes.DIRECT_SET_PATIENTS, result.data.patientSearch))
+      .then(result => commit(MutationTypes.SET_DISTRICTS_DIRECT, result.data.districtsByProvinceUid))
   }
 };
 
