@@ -11,6 +11,7 @@ from pydantic import BaseModel
 class SampleTypeBase(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
+    abbr: Optional[str] = None
     active: Optional[bool] = True
 
 

@@ -12,6 +12,7 @@
         class="w-64 h-10 ml-6 pl-4 pr-2 py-1 text-sm text-gray-700 placeholder-gray-600 border-1 border-gray-400 rounded-md  focus:placeholder-gray-500 focus:border-green-100 focus:outline-none focus:shadow-outline-purple form-input"
         type="text" placeholder="Search ..." aria-label="Search"
         @keyup="searchPatients($event)"
+        @focus="setPatientToNull()"
       />
     </div>
     <hr />
@@ -270,19 +271,19 @@ import { defineComponent, ref, reactive, computed } from 'vue';
 import { mapGetters, useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 import { useQuery } from '@urql/vue';
-import tabSamples from '../_components/sample/patientSampleTab.vue';
-import tabCases from '../_components/sample/patientCaseTab.vue';
-import tabLogs from '../_components/sample/patientLogTab.vue';
+import tabSamples from '../_components/table/SampleTable.vue';
+import tabCases from '../_components/table/CaseTable.vue';
+import tabLogs from '../_components/timeline/AuditLog.vue';
 import modal from '../_components/modals/simpleModal.vue';
 import { Patient } from '../../store/modules/patients';
-import { GET_ALL_PATIENTS, SEARCH_PATIENTS } from '../../graphql/patient/queries';
-import {  GET_ALL_CLIENTS } from '../../graphql/clients/queries';
+import { GET_ALL_PATIENTS, SEARCH_PATIENTS } from '../../graphql/patient.queries';
+import {  GET_ALL_CLIENTS } from '../../graphql/clients.queries';
 import {
   GET_ALL_COUNTRIES,
   FILTER_PROVINCES_BY_COUNTRY,
   FILTER_DISTRICTS_BY_PROVINCE,
-} from '../../graphql/admin/queries';
-import { ADD_PATIENT } from '../../graphql/patient/mutations';
+} from '../../graphql/admin.queries';
+import { ADD_PATIENT } from '../../graphql/patient.mutations';
 
 export const IPatient = typeof Patient;
 
@@ -403,6 +404,7 @@ export default defineComponent({
       patients: computed(() => store.getters.getPatients),
       isPatientSelected,
       selectPatient,
+      setPatientToNull,
       patientFormManager,
       savePatientForm,
       countries: computed(() => store.getters.getCountries),

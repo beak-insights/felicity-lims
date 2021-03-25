@@ -53,25 +53,25 @@ services:
             - ./postgres/init/:/docker-entrypoint-initdb.d/
             - db-data:/var/lib/postgresql/data
         ports:
-            - 5432:5432
+            - 5434:5432
         networks:
             - felicitynet
 
-    # pgadmin:
-    #     container_name: felicity.pgadmin
-    #     image: dpage/pgadmin4
-    #     environment:
-    #         PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@pgadmin.org}
-    #         PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-    #     volumes:
-    #         - pgadmin:/root/.pgadmin
-    #     ports:
-    #         - "${PGADMIN_PORT:-5050}:80"
-    #     networks:
-    #         - felicitynet
-    #     restart: unless-stopped
-    #     depends_on:
-    #         - felicity_db
+    pgadmin:
+        container_name: felicity.pgadmin
+        image: dpage/pgadmin4
+        environment:
+            PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@pgadmin.org}
+            PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+        volumes:
+            - pgadmin:/root/.pgadmin
+        ports:
+            - "${PGADMIN_PORT:-5050}:80"
+        networks:
+            - felicitynet
+        restart: unless-stopped
+        depends_on:
+            - felicity_db
 
     # nginx:
     #     container_name: felicity.nginx

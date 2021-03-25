@@ -269,6 +269,9 @@ class RecoverPassword(graphene.Mutation):
         # send_reset_password_email(
         #     email_to=user.email, email=user.email, token=password_reset_token
         # )
+        # TODO: MAYBE ADD SECURITY QUESTIONS TO RECOVER PASSWORD or give them a passphrase to remember
+        # TODO: send them a new passwod to their registered phone
+        # TODO: SEND USER A DEFAULT PASSWORD TO LOGIN WITH SO THEY CAN CHANGE LATER
         msg = "Password recovery email sent"
         ok = True
         return RecoverPassword(ok=ok, msg=msg)

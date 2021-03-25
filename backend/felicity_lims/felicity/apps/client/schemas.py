@@ -14,10 +14,10 @@ class ClientBase(BaseModel):
     district_uid: Optional[str] = None
     email: Optional[str] = None
     email_cc: Optional[str] = None
-    consent_email: Optional[str] = None
+    consent_email: Optional[bool] = None
     mobile_phone: Optional[str] = None
     business_phone: Optional[str] = None
-    consent_sms: Optional[str] = None
+    consent_sms: Optional[bool] = None
     active: Optional[bool] = True
 
 
@@ -45,4 +45,49 @@ class Client(ClientBaseInDB):
 
 # Properties stored in DB
 class ClientInDB(ClientBaseInDB):
+    pass
+
+#
+# Client Contact Schemas
+#
+
+
+# Shared properties
+class ClientContactBase(BaseModel):
+    client_uid: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[str] = None
+    email_cc: Optional[str] = None
+    mobile_phone: Optional[str] = None
+    consent_sms: Optional[bool] = False
+    business_phone: Optional[str] = None
+    is_active: Optional[bool] = True
+    is_superuser: Optional[bool] = False
+
+
+class ClientContactBaseInDB(ClientContactBase):
+    uid: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
+# Properties to receive via API on creation
+class ClientContactCreate(ClientContactBase):
+    client_uid: str
+
+
+# Properties to receive via API on update
+class ClientContactUpdate(ClientContactBase):
+    pass
+
+
+# Properties to return via API
+class ClientContact(ClientContactBaseInDB):
+    pass
+
+
+# Properties stored in DB
+class ClientContactInDB(ClientContactBaseInDB):
     pass

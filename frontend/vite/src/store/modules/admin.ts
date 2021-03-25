@@ -8,7 +8,7 @@ import {
   GET_ALL_COUNTRIES,
   FILTER_PROVINCES_BY_COUNTRY,
   FILTER_DISTRICTS_BY_PROVINCE,
-} from '../../graphql/admin/queries';
+} from '../../graphql/admin.queries';
 
 
 // state contract

@@ -5,9 +5,8 @@ import LaboratoryConf from '../views/admin/laboratory/index.vue';
 import InstrumentsConf from '../views/admin/instruments/index.vue';
 import PublicationConf from '../views/admin/publication/index.vue';
 import AnalysesConf from '../views/admin/analyses/index.vue';
-import ClientsConf from '../views/admin/clients/index.vue';
 import SuppliersConf from '../views/admin/suppliers/index.vue';
-import SampleTypesConf from '../views/admin/sampletypes/index.vue';
+import SampleConf from '../views/admin/sample/index.vue';
 import WSTemplatesConf from '../views/admin/worksheets/index.vue';
 
 
@@ -32,14 +31,6 @@ const adminRoutes = [
     path: 'location-conf',
     name: 'location-conf',
     component: LocationConf,
-    meta: {
-      requiresAuth: true,
-    },
-  },
-  {
-    path: 'clients-conf',
-    name: 'clients-conf',
-    component: ClientsConf,
     meta: {
       requiresAuth: true,
     },
@@ -79,7 +70,7 @@ const adminRoutes = [
   {
     path: 'sampletypes-conf',
     name: 'sampletypes-conf',
-    component: SampleTypesConf,
+    component: SampleConf,
     meta: {
       requiresAuth: true,
     },

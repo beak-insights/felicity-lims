@@ -7,7 +7,7 @@ import {
   District, 
   GenericLocation 
 } from '../../../store/common';
-import { ADD_COUNTRY, UPDATE_COUNTRY, ADD_PROVINCE, ADD_DISTRICT, UPDATE_DISTRICT, UPDATE_PROVINCE } from '../../../graphql/admin/mutations';
+import { ADD_COUNTRY, UPDATE_COUNTRY, ADD_PROVINCE, ADD_DISTRICT, UPDATE_DISTRICT, UPDATE_PROVINCE } from '../../../graphql/admin.mutations';
 import store from '../../../store';
 
 export const ICountry = typeof Country;

@@ -28,7 +28,6 @@ export default defineComponent({
   setup() {
       const configs = ref([
           { title: "Country, Provinces, Districts", path: "/admin/location-conf",},
-          { title: "Clients", path: "/admin/clients-conf",},
           { title: "Laboratory, Departments", path: "/admin/laboratory-conf",},
           { title: "Users, Groups", path: "/admin/users-conf",},
           { title: "Suppliers", path: "/admin/suppliers-conf",},

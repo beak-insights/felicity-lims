@@ -4,7 +4,7 @@ import { RootState } from '../state';
 import { ActionTree, GetterTree, MutationTree } from 'vuex';
 import { IClient, IDistrict, IProvince } from '../common'
 
-import { GET_ALL_PATIENTS, SEARCH_PATIENTS } from '../../graphql/patient/queries';
+import { GET_ALL_PATIENTS, SEARCH_PATIENTS } from '../../graphql/patient.queries';
 
 export interface IPatient {
   uid?: number,

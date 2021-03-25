@@ -13,7 +13,7 @@
 import { defineComponent, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuery } from '@urql/vue';
-import { GET_ALL_USERS } from '../../graphql/queries'
+import { GET_ALL_USERS } from '../../graphql/_queries'
 export default defineComponent({
   name: "DashBoard",
   setup() {

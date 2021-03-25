@@ -78,7 +78,7 @@ import { defineComponent, ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { useMutation } from '@urql/vue';
-import { AUTHENTICATE_USER } from '../../graphql/mutations';
+import { AUTHENTICATE_USER } from '../../graphql/_mutations';
 import { ActionTypes } from '../../store/actions';
 export default defineComponent({
   setup() {

@@ -21,15 +21,6 @@ class AbstractBaseUser(DBModel):
         return f"{self.first_name} {self.last_name}"
 
     @classmethod
-    def create(cls, user_in: schemas.UserCreate) -> schemas.User:
-        data = cls._import(user_in)
-        return super().create(**data)
-
-    def update(self, user_in: schemas.UserUpdate) -> schemas.User:
-        data = self._import(user_in)
-        return super().update(**data)
-
-    @classmethod
     def get_by_email(cls, email):
         user = cls.get(email=email)
         if not user:

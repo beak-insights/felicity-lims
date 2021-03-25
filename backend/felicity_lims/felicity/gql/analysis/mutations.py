@@ -22,15 +22,16 @@ logger = logging.getLogger(__name__)
 class CreateSampleType(graphene.Mutation):
     class Arguments:
         name = graphene.String(required=True)
+        abbr = graphene.String(required=True)
         description = graphene.String(required=True)
-        active = graphene.String(required=True)
+        active = graphene.Boolean(required=False)
     
     ok = graphene.Boolean()
     sampletype = graphene.Field(lambda: types.SampleTypeTyp)
         
     @staticmethod
-    def mutate(root, info, name, description, active=True, **kwargs):
-        if not name or not description:
+    def mutate(root, info, name, abbr, active=True, **kwargs):
+        if not name or not abbr:
             raise GraphQLError("Name and Description are mandatory")
         
         exists = models.SampleType.get(name=name)
@@ -39,7 +40,7 @@ class CreateSampleType(graphene.Mutation):
 
         incoming = {
             "name": name,
-            "description": description,
+            "abbr": abbr,
             "active": active
         }
         for k, v in kwargs.items():
@@ -55,8 +56,9 @@ class UpdateSampleType(graphene.Mutation):
     class Arguments:
         uid = graphene.Int(required=True)
         name = graphene.String(required=False)
+        abbr = graphene.String(required=False)
         description = graphene.String(required=False)
-        active = graphene.String(required=False)
+        active = graphene.Boolean(required=False)
     
     ok = graphene.Boolean()
     sampletype = graphene.Field(lambda: types.SampleTypeTyp)
@@ -88,7 +90,7 @@ class CreateProfile(graphene.Mutation):
     class Arguments:
         name = graphene.String(required=True)
         description = graphene.String(required=True)
-        active = graphene.String(required=True)
+        active = graphene.Boolean(required=True)
     
     ok = graphene.Boolean()
     profile = graphene.Field(lambda: types.ProfileType)

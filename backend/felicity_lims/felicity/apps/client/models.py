@@ -61,8 +61,20 @@ class Client(DBModel):
 class ClientContact(AbstractBaseUser):
     auth_uid = Column(Integer, ForeignKey('userauth.uid'), nullable=True)
     auth = relationship(UserAuth, backref=backref(conf.CLIENT_CONTACT, uselist=False))
+    email = Column(String, unique=False, index=True, nullable=True)
     email_cc = Column(String, nullable=True)
     consent_sms = Column(Boolean(), default=False)
+    client_uid = Column(Integer, ForeignKey('client.uid'), nullable=False)
+    client = relationship(Client, backref=backref('contacts', uselist=False))
+
+    @classmethod
+    def create(cls, contact_in: schemas.ClientContactCreate) -> schemas.ClientContact:
+        data = cls._import(contact_in)
+        return super().create(**data)
+
+    def update(self, contact_in: schemas.ClientContactUpdate) -> schemas.ClientContact:
+        data = self._import(contact_in)
+        return super().update(**data)
 
     @property
     def user_type(self):

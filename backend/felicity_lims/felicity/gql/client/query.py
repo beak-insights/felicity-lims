@@ -5,7 +5,7 @@ from graphene import (
 from graphene_sqlalchemy import SQLAlchemyConnectionField
 
 from felicity.apps.client import models
-from felicity.gql.client.types import ClientType
+from felicity.gql.client.types import ClientType, ClientContactType
 
 
 class ClientQuery(graphene.ObjectType):
@@ -16,6 +16,10 @@ class ClientQuery(graphene.ObjectType):
     client_by_uid = graphene.Field(lambda: ClientType, uid=graphene.String(default_value=""))
     clients_by_name = graphene.List(lambda: ClientType, name=graphene.String(default_value=""))
     client_search = graphene.List(lambda: ClientType, query_string=graphene.String(default_value=""))
+
+    # Client Contact
+    client_contact_all = SQLAlchemyConnectionField(ClientContactType.connection)
+    client_contact_by_client_uid = graphene.List(lambda: ClientContactType, client_uid=graphene.String(default_value=""))
 
     def resolve_client_by_uid(self, info, uid):
         client = models.Client.get(uid=uid)
@@ -41,3 +45,7 @@ class ClientQuery(graphene.ObjectType):
             for item in query:
                 combined.add(item)
         return list(combined)
+
+    def resolve_client_contact_by_client_uid(self, info, client_uid):
+        client_contact = models.ClientContact.where(client_uid=client_uid).all()
+        return client_contact

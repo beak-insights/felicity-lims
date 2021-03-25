@@ -10,6 +10,7 @@ from .abstract import (
     AbstractBaseUser,
     AbstractAuth
 )
+from felicity.apps.user import schemas
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -70,6 +71,15 @@ class UserAuth(AbstractAuth):
 class User(AbstractBaseUser):
     auth_uid = Column(Integer, ForeignKey('userauth.uid'))
     auth = relationship("UserAuth", backref=backref(conf.LABORATORY_CONTACT, uselist=False))
+
+    @classmethod
+    def create(cls, user_in: schemas.UserCreate) -> schemas.User:
+        data = cls._import(user_in)
+        return super().create(**data)
+
+    def update(self, user_in: schemas.UserUpdate) -> schemas.User:
+        data = self._import(user_in)
+        return super().update(**data)
 
     @property
     def user_type(self):
