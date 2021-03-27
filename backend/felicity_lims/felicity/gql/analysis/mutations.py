@@ -27,7 +27,7 @@ class CreateSampleType(graphene.Mutation):
         active = graphene.Boolean(required=False)
     
     ok = graphene.Boolean()
-    sampletype = graphene.Field(lambda: types.SampleTypeTyp)
+    sample_type = graphene.Field(lambda: types.SampleTypeTyp)
         
     @staticmethod
     def mutate(root, info, name, abbr, active=True, **kwargs):
@@ -49,7 +49,7 @@ class CreateSampleType(graphene.Mutation):
         obj_in = schemas.SampleTypeCreate(**incoming)
         sample_type = models.SampleType.create(obj_in)
         ok = True
-        return CreateSampleType(ok=ok, sampletype=sample_type)
+        return CreateSampleType(ok=ok, sample_type=sample_type)
     
     
 class UpdateSampleType(graphene.Mutation):
@@ -61,7 +61,7 @@ class UpdateSampleType(graphene.Mutation):
         active = graphene.Boolean(required=False)
     
     ok = graphene.Boolean()
-    sampletype = graphene.Field(lambda: types.SampleTypeTyp)
+    sample_type = graphene.Field(lambda: types.SampleTypeTyp)
         
     @staticmethod
     def mutate(root, info, uid, **kwargs):        
@@ -80,8 +80,72 @@ class UpdateSampleType(graphene.Mutation):
         sampletype_in = schemas.SampleTypeUpdate(**sampletype.to_dict())
         sampletype.update(sampletype_in)
         ok = True
-        return UpdateSampleType(ok=ok, sampletype=sampletype)
+        return UpdateSampleType(ok=ok, sample_type=sampletype)
 
+
+#
+# AnalysisCategory Mutations
+#
+class CreateAnalysisCategory(graphene.Mutation):
+    class Arguments:
+        name = graphene.String(required=True)
+        description = graphene.String(required=True)
+        active = graphene.Boolean(required=True)
+
+    ok = graphene.Boolean()
+    analysis_category = graphene.Field(lambda: types.AnalysisCategoryType)
+
+    @staticmethod
+    def mutate(root, info, name, description, active=True, **kwargs):
+        if not name or not description:
+            raise GraphQLError("Name and Description are mandatory")
+
+        exists = models.Profile.get(name=name)
+        if exists:
+            raise GraphQLError(f"A AnalysisCategory named {name} already exists")
+
+        incoming = {
+            "name": name,
+            "description": description,
+            "active": active
+        }
+        for k, v in kwargs.items():
+            incoming[k] = v
+
+        obj_in = schemas.AnalysisCategoryCreate(**incoming)
+        analysis_category = models.AnalysisCategory.create(obj_in)
+        ok = True
+        return CreateAnalysisCategory(ok=ok, analysis_category=analysis_category)
+
+
+class UpdateAnalysisCategory(graphene.Mutation):
+    class Arguments:
+        uid = graphene.Int(required=True)
+        name = graphene.String(required=False)
+        description = graphene.String(required=False)
+        active = graphene.Boolean(required=False)
+
+    ok = graphene.Boolean()
+    analysis_category = graphene.Field(lambda: types.AnalysisCategoryType)
+
+    @staticmethod
+    def mutate(root, info, uid, **kwargs):
+        analysis_category = models.AnalysisCategory.get(uid=uid)
+        if not analysis_category:
+            raise GraphQLError(f"AnalysisCategory with uid {uid} does not exist")
+
+        ac_data = jsonable_encoder(analysis_category)
+        for field in ac_data:
+            if field in kwargs:
+                try:
+                    setattr(analysis_category, field, kwargs[field])
+                except Exception as e:
+                    # raise GraphQLError(f"{e}")
+                    pass
+        profile_in = schemas.AnalysisCategoryUpdate(**analysis_category.to_dict())
+        analysis_category.update(profile_in)
+        ok = True
+        return UpdateAnalysisCategory(ok=ok, analysis_category=analysis_category)
 
 # 
 # Profile Mutations
@@ -123,10 +187,10 @@ class UpdateProfile(graphene.Mutation):
         uid = graphene.Int(required=True)
         name = graphene.String(required=False)
         description = graphene.String(required=False)
-        active = graphene.String(required=False)
+        active = graphene.Boolean(required=False)
     
     ok = graphene.Boolean()
-    sampletype = graphene.Field(lambda: types.ProfileType)
+    profile = graphene.Field(lambda: types.ProfileType)
         
     @staticmethod
     def mutate(root, info, uid, **kwargs):        
@@ -157,8 +221,8 @@ class CreateAnalysis(graphene.Mutation):
         description = graphene.String(required=True)
         keyword = graphene.String(required=True)
         profiles = graphene.List(graphene.String)
-        sampletypes = graphene.List(graphene.String)
-        active = graphene.String(required=True)
+        sample_types = graphene.List(graphene.String)
+        active = graphene.Boolean(required=True)
     
     ok = graphene.Boolean()
     analysis = graphene.Field(lambda: types.AnalysisType)
@@ -193,12 +257,12 @@ class CreateAnalysis(graphene.Mutation):
                 if not prof in incoming['profiles']:
                     incoming['profiles'].append(prof)
 
-        sampletypes = kwargs.get('sampletypes', None)
+        sample_types = kwargs.get('sample_types', None)
         incoming['sampletypes'] = []
-        if sampletypes:
-            for _uid in sampletypes:
+        if sample_types:
+            for _uid in sample_types:
                 stype = models.SampleType.get(uid=_uid)
-                if not stype in incoming['sampletypes']:
+                if not stype in incoming['sample_types']:
                     incoming['sampletypes'].append(stype)
 
         obj_in = schemas.AnalysisCreate(**incoming) # skip this stage if its not adding analyses and stypes
@@ -214,8 +278,8 @@ class UpdateAnalysis(graphene.Mutation):
         description = graphene.String(required=True)
         keyword = graphene.String(required=True)
         profiles = graphene.List(graphene.String)
-        sampletypes = graphene.List(graphene.String)
-        active = graphene.String(required=True)
+        sample_types = graphene.List(graphene.String)
+        active = graphene.Boolean(required=True)
     
     ok = graphene.Boolean()
     analysis = graphene.Field(lambda: types.AnalysisType)
@@ -242,15 +306,15 @@ class UpdateAnalysis(graphene.Mutation):
                 if not prof in analysis.profiles: # analysis_data['profiles'] ??
                     analysis.profiles.append(prof)
 
-        sampletypes = kwargs.get('sampletypes', None)
+        sample_types = kwargs.get('sample_types', None)
         analysis.sampletypes.clear()
-        if sampletypes:
-            for _uid in sampletypes:
+        if sample_types:
+            for _uid in sample_types:
                 stype = models.SampleType.get(uid=_uid)
                 if not stype in analysis.sampletypes:
                     analysis.sampletypes.append(stype)
                     
-        analysis_in = schemas.AnalysisUpdate(**analysis.to_dict(nested=True))
+        analysis_in = schemas.AnalysisUpdate(**analysis.to_dict(nested=False))
         analysis.update(analysis_in)
         
         ok = True
@@ -262,7 +326,7 @@ class UpdateAnalysis(graphene.Mutation):
 # 
 
 class ARSampleInputType(graphene.InputObjectType):
-      sampletype = graphene.Int()
+      sample_type = graphene.Int()
       profiles = graphene.List(graphene.String)
       analyses = graphene.List(graphene.String)
 
@@ -305,7 +369,7 @@ class CreateAnalysisRequest(graphene.Mutation):
 
         # 1. create samples
         for s in samples:
-            _st_uid = s['sampletype']
+            _st_uid = s['sample_type']
             _profiles = s['profiles']
             _analyses = s['analyses']
             stype = models.SampleType.get(uid=_st_uid)
@@ -423,8 +487,11 @@ class UpdateSample(graphene.Mutation):
 
 class AnalysisMutations(graphene.ObjectType):
     # SampleTye
-    create_sampletype = CreateSampleType.Field()
-    update_sampletype = UpdateSampleType.Field()
+    create_sample_type = CreateSampleType.Field()
+    update_sample_type = UpdateSampleType.Field()
+    # AnalysisCategory
+    create_analysis_category = CreateAnalysisCategory.Field()
+    update_analysis_category = UpdateAnalysisCategory.Field()
     # Profile
     create_profile = CreateProfile.Field()
     update_profile = UpdateProfile.Field()
@@ -432,5 +499,5 @@ class AnalysisMutations(graphene.ObjectType):
     create_analysis = CreateAnalysis.Field()
     update_analysis = UpdateAnalysis.Field()
     # AnalysisRequest
-    create_analysisrequest = CreateAnalysisRequest.Field()
-    update_analysisrequest = UpdateAnalysisRequest.Field()
+    create_analysis_request = CreateAnalysisRequest.Field()
+    update_analysis_request = UpdateAnalysisRequest.Field()

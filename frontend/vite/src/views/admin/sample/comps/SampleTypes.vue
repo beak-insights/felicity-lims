@@ -2,7 +2,8 @@
 
     <div class="container  mx-auto w-full my-4">
         <hr>
-        <!-- <h3 class="text-gray-900 text-xl">Sample Types</h3> -->
+          <button @click="FormManager(true, null)"
+           class="px-2 py-1 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Add Sample Type</button>
         <hr>
 
         <div class="overflow-x-auto mt-4">
@@ -12,31 +13,27 @@
                 <tr>
                     <th class="px-1 py-1 border-b-2 border-gray-300 text-left text-sm leading-4 text-black-500 tracking-wider">Sample Type</th>
                     <th class="px-1 py-1 border-b-2 border-gray-300 text-left text-sm leading-4 text-black-500 tracking-wider">Prefix</th>
-                    <th class="px-1 py-1 border-b-2 border-gray-300 text-left text-sm leading-4 text-black-500 tracking-wider"></th>
-                    <th class="px-1 py-1 border-b-2 border-gray-300">
-                        <button 
-                        @click="FormManager(true, null)"
-                        class="px-1 py-0 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Add Sample Type</button>
-                    </th>
+                    <th class="px-1 py-1 border-b-2 border-gray-300 text-left text-sm leading-4 text-black-500 tracking-wider">Active</th>
+                    <th class="px-1 py-1 border-b-2 border-gray-300"></th>
                 </tr>
                 </thead>
                 <tbody class="bg-white">
-                <tr>
+                <tr v-for="s_type in sampletypes" :key="s_type.uid">
                     <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
                     <div class="flex items-center">
                         <div>
-                        <div class="text-sm leading-5 text-gray-800">Whole Blood</div>
+                        <div class="text-sm leading-5 text-gray-800">{{ s_type.name }}</div>
                         </div>
                     </div>
                     </td>
                     <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
-                    <div class="text-sm leading-5 text-blue-900">WB</div>
+                    <div class="text-sm leading-5 text-blue-900">{{ s_type.abbr }}</div>
                     </td>
                     <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
-                    <div class="text-sm leading-5 text-blue-900"></div>
+                    <div class="text-sm leading-5 text-blue-900">{{ s_type.active }}</div>
                     </td>
                     <td class="px-1 py-1 whitespace-no-wrap text-right border-b border-gray-500 text-sm leading-5">
-                        <button @click="FormManager(false, cont)" class="px-2 py-1 mr-2 border-orange-500 border text-orange-500 rounded transition duration-300 hover:bg-orange-700 hover:text-white focus:outline-none">Edit</button>
+                        <button @click="FormManager(false, s_type)" class="px-2 py-1 mr-2 border-orange-500 border text-orange-500 rounded transition duration-300 hover:bg-orange-700 hover:text-white focus:outline-none">Edit</button>
                     </td>
                 </tr>
                 </tbody>
@@ -46,7 +43,7 @@
     </div>
 
       <!-- Location Edit Form Modal -->
-  <!-- <modal v-if="showModal" @close="showModal = false">
+  <modal v-if="showModal" @close="showModal = false">
     <template v-slot:header>
       <h3>{{ formTitle }}</h3>
     </template>
@@ -63,12 +60,31 @@
             />
           </label>
           <label class="block col-span-1 mb-2">
-            <span class="text-gray-700">Code</span>
+            <span class="text-gray-700">Prefix</span>
             <input
               class="form-input mt-1 block w-full"
-              v-model="form.code"
-              placeholder="Code ..."
+              v-model="form.abbr"
+              placeholder="Prefix ..."
             />
+          </label>
+          <label class="block col-span-2 mb-2">
+            <span class="text-gray-700">Description</span>
+            <textarea
+            cols="2"
+              class="form-input mt-1 block w-full"
+              v-model="form.description"
+              placeholder="Description ..."
+            />
+          </label>
+          <label for="toggle" class="text-xs text-gray-700 mr-4">Active
+            <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                <input 
+                type="checkbox" 
+                name="toggle" id="toggle" 
+                v-model="form.active"
+                class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer outline-none"/>
+                <label for="toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+            </div>
           </label>
         </div>
         <hr />
@@ -81,21 +97,90 @@
         </button>
       </form>
     </template>
-  </modal> -->
+  </modal>
 
 </template>
 
-<script>
-import { defineComponent, ref } from 'vue';
+
+<style>
+  /* CHECKBOX TOGGLE SWITCH */
+  /* @apply rules for documentation, these do not work as inline style */
+  .toggle-checkbox:checked {
+    @apply: right-0 border-green-400;
+    right: 0;
+    border-color: #68D391;
+  }
+  .toggle-checkbox:checked + .toggle-label {
+    @apply: bg-green-400;
+    background-color: #68D391;
+  }
+</style>
+
+<script lang="ts" scope="ts">
+import modal from '../../../_components/modals/simpleModal.vue';
+
+import { useMutation } from '@urql/vue';
+import { defineComponent, ref, reactive, computed } from 'vue';
+import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
+import { ActionTypes, SampleType, ISampleType } from '../../../../store/modules/samples';
+import { ADD_SAMPLE_TYPE, EDIT_SAMPLE_TYPE  } from '../../../../graphql/analyses.mutations';
+
+
 export default defineComponent({
   name: "tab-sample-types",
   components: {
-      
+    modal,
   },
   setup() {
+    const store = useStore();
+    
+    let showModal = ref(false);
+    let formTitle = ref('');
+    let form = reactive({ ...(new SampleType()) });
+    const formAction = ref(true);
 
-    return {  };
+    store.dispatch(ActionTypes.FETCH_SAMPLE_TYPES);
+    const { executeMutation: createSampleType } = useMutation(ADD_SAMPLE_TYPE);
+    const { executeMutation: updateSampleType } = useMutation(EDIT_SAMPLE_TYPE);
+
+    function addSampleType(): void {
+      createSampleType({ name: form.name, abbr: form.abbr, description: form.description, active: form.active }).then((result) => {
+       store.dispatch(ActionTypes.ADD_SAMPLE_TYPE, result);
+      });
+    }
+
+    function editSampleType(): void {
+      updateSampleType({ uid: form.uid, name: form.name, abbr: form.abbr, description: form.description, active: form.active }).then((result) => {
+        store.dispatch(ActionTypes.UPDATE_SAMPLE_TYPE, result);
+      });
+    }
+
+    function FormManager(create: boolean, obj: ISampleType):void {
+      formAction.value = create;
+      showModal.value = true;
+      formTitle.value = (create ? 'CREATE' : 'EDIT') + ' ' + "SAMPLE TYPE";
+      if (create) {
+        Object.assign(form, { ...(new SampleType()) });
+      } else {
+        Object.assign(form, { ...obj });
+      }
+    }
+
+    function saveForm():void {
+      if (formAction.value === true) addSampleType();
+      if (formAction.value === false) editSampleType();
+      showModal.value = false;
+    }
+
+    return {
+      showModal, 
+      sampletypes: computed(() =>store.getters.getSampleTypes),
+      FormManager,
+      form,
+      formTitle,
+      saveForm
+     };
   },
 });
 </script>

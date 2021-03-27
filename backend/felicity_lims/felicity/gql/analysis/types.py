@@ -8,6 +8,7 @@ from felicity.apps.analysis.models import (
     Profile,
     AnalysisRequest,
     AnalysisResult,
+    AnalysisCategory
 )
 
 
@@ -22,6 +23,13 @@ class SampleTypeTyp(SQLAlchemyObjectType):
 class SampleType(SQLAlchemyObjectType):
     class Meta:
         model = Sample
+        interfaces = (relay.Node, )
+
+
+# Graphene AnalysisCategory Type
+class AnalysisCategoryType(SQLAlchemyObjectType):
+    class Meta:
+        model = AnalysisCategory
         interfaces = (relay.Node, )
 
 

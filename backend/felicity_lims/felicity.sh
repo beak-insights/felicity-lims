@@ -3,7 +3,7 @@
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # create revisions
-# source ${__dir}/al_revision.sh "ini felicity $(date)"
+source ${__dir}/al_revision.sh "ini felicity $(date)"
 
 # run upgrade
 source ${__dir}/al_upgrade.sh

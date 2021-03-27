@@ -80,6 +80,43 @@ class ProfileInDB(ProfileBaseInDB):
     pass
 
 
+# AnalysisCategory Schemas
+#
+
+# Shared properties
+class AnalysisCategoryBase(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    active: Optional[bool] = True
+
+
+class AnalysisCategoryBaseInDB(AnalysisCategoryBase):
+    uid: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
+# Properties to receive via API on creation
+class AnalysisCategoryCreate(AnalysisCategoryBase):
+    pass
+
+
+# Properties to receive via API on update
+class AnalysisCategoryUpdate(AnalysisCategoryBase):
+    pass
+
+
+# Properties to return via API
+class AnalysisCategory(AnalysisCategoryBaseInDB):
+    pass
+
+
+# Properties stored in DB
+class AnalysisCategoryInDB(AnalysisCategoryBaseInDB):
+    pass
+
+
 #
 # Analysis Schemas
 # 

@@ -37,7 +37,7 @@ class ASTLink(DBModel):
 
 
 class Profile(DBModel):
-    """Sample"""
+    """Grouped Analysis e.g FBC, U&E's, MCS ..."""
     name = Column(String, nullable=False)
     description = Column(String, nullable=False)
     active = Column(Boolean(), default=False)
@@ -61,8 +61,24 @@ class APLink(DBModel):
     profile_uid = Column(Integer, ForeignKey('profile.uid'), primary_key=True)
 
 
+class AnalysisCategory(DBModel):
+    """Categorise Analysis"""
+    name = Column(String, nullable=False)
+    description = Column(String, nullable=False)
+    active = Column(Boolean(), default=False)
+
+    @classmethod
+    def create(cls, obj_in: schemas.AnalysisCategoryCreate) -> schemas.AnalysisCategory:
+        data = cls._import(obj_in)
+        return super().create(**data)
+
+    def update(self, obj_in: schemas.AnalysisCategoryUpdate) -> schemas.AnalysisCategory:
+        data = self._import(obj_in)
+        return super().update(**data)
+
+
 class Analysis(DBModel):
-    """Analysis Test"""
+    """Analysis Test/Service"""
     name = Column(String, nullable=False)
     description = Column(String, nullable=False)
     keyword = Column(String, nullable=False, unique=True)
