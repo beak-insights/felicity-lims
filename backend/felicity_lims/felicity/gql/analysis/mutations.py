@@ -191,6 +191,7 @@ class UpdateProfile(graphene.Mutation):
         name = graphene.String(required=False)
         keyword = graphene.String(required=False)
         description = graphene.String(required=False)
+        services = graphene.List(graphene.String)
         active = graphene.Boolean(required=False)
 
     ok = graphene.Boolean()
@@ -210,8 +211,19 @@ class UpdateProfile(graphene.Mutation):
                 except AttributeError as e:
                     # raise GraphQLError(f"{e}")
                     pass
+
         profile_in = schemas.ProfileUpdate(**profile.to_dict())
         profile.update(profile_in)
+
+        analyses = kwargs.get('services', None)
+        profile.analyses.clear()
+        if analyses:
+            for _uid in analyses:
+                anal = models.Analysis.get(uid=_uid)
+                if anal not in profile.analyses:  # analysis_data['profiles'] ??
+                    profile.analyses.append(anal)
+        profile.save()
+
         ok = True
         return UpdateProfile(ok=ok, profile=profile)
 
@@ -224,7 +236,6 @@ class CreateAnalysis(graphene.Mutation):
         name = graphene.String(required=True)
         description = graphene.String(required=True)
         keyword = graphene.String(required=True)
-        profiles = graphene.List(graphene.String)
         sample_types = graphene.List(graphene.String)
         category_uid = graphene.String(required=False)
         active = graphene.Boolean(required=True)
@@ -254,14 +265,6 @@ class CreateAnalysis(graphene.Mutation):
         for k, v in kwargs.items():
             incoming[k] = v
 
-        profiles = kwargs.get('profiles', None)
-        incoming['profiles'] = []
-        if profiles:
-            for _uid in profiles:
-                prof = models.Profile.get(uid=_uid)
-                if prof not in incoming['profiles']:
-                    incoming['profiles'].append(prof)
-
         sample_types = kwargs.get('sampletypes', None)
         incoming['sample_types'] = []
         if sample_types:
@@ -282,7 +285,6 @@ class UpdateAnalysis(graphene.Mutation):
         name = graphene.String(required=True)
         description = graphene.String(required=True)
         keyword = graphene.String(required=True)
-        profiles = graphene.List(graphene.String)
         category_uid = graphene.String(required=False)
         sample_types = graphene.List(graphene.String)
         active = graphene.Boolean(required=True)
@@ -303,14 +305,6 @@ class UpdateAnalysis(graphene.Mutation):
                     setattr(analysis, field, kwargs[field])
                 except AttributeError as e:
                     pass
-
-        profiles = kwargs.get('profiles', None)
-        analysis.profiles.clear()
-        if profiles:
-            for _uid in profiles:
-                prof = models.Profile.get(uid=_uid)
-                if prof not in analysis.profiles:  # analysis_data['profiles'] ??
-                    analysis.profiles.append(prof)
 
         sample_types = kwargs.get('sample_types', None)
         analysis.sampletypes.clear()
@@ -400,7 +394,7 @@ class CreateAnalysisRequest(graphene.Mutation):
             for p_uid in _profiles:
                 profile = models.Profile.get(uid=p_uid)
                 profiles.append(profile)
-                analyses_ = models.Analysis.where(uid__exact=profile.uid).all()
+                analyses_ = profile.analyses
                 for _an in analyses_:
                     _profiles_analyses.add(_an)
 
