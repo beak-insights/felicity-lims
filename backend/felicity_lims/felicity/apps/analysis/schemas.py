@@ -1,6 +1,7 @@
 from typing import Optional, List
+from datetime import datetime
 
-from pydantic import BaseModel
+from felicity.apps import BaseAuditModel
 
 
 # 
@@ -8,7 +9,7 @@ from pydantic import BaseModel
 # 
 
 # Shared properties
-class SampleTypeBase(BaseModel):
+class SampleTypeBase(BaseAuditModel):
     name: Optional[str] = None
     description: Optional[str] = None
     abbr: Optional[str] = None
@@ -47,9 +48,11 @@ class SampleTypeInDB(SampleTypeBaseInDB):
 # 
 
 # Shared properties
-class ProfileBase(BaseModel):
+class ProfileBase(BaseAuditModel):
     name: Optional[str] = None
     description: Optional[str] = None
+    keyword: Optional[str] = None
+    tat_length_minutes: Optional[int] = None
     active: Optional[bool] = True
 
 
@@ -84,7 +87,7 @@ class ProfileInDB(ProfileBaseInDB):
 #
 
 # Shared properties
-class AnalysisCategoryBase(BaseModel):
+class AnalysisCategoryBase(BaseAuditModel):
     name: Optional[str] = None
     description: Optional[str] = None
     active: Optional[bool] = True
@@ -122,13 +125,16 @@ class AnalysisCategoryInDB(AnalysisCategoryBaseInDB):
 # 
 
 # Shared properties
-class AnalysisBase(BaseModel):
+class AnalysisBase(BaseAuditModel):
     name: Optional[str] = None
     description: Optional[str] = None
     keyword: Optional[str] = None
     active: Optional[bool] = True
     profiles: Optional[List[Profile]] = []
     sampletypes: Optional[List[SampleType]] = []
+    tat_length_minutes: Optional[int] = None
+    unit: Optional[str] = None
+    category_uid: Optional[str] = None
 
 
 class AnalysisBaseInDB(AnalysisBase):
@@ -159,11 +165,49 @@ class AnalysisInDB(AnalysisBaseInDB):
 
 
 #
+# Result Option Schemas
+#
+
+# Shared properties
+class ResultOptionBase(BaseAuditModel):
+    option_key: Optional[str] = None
+    value: Optional[str] = None
+    analysis_uid: Optional[str] = None
+
+
+class ResultOptionBaseInDB(ResultOptionBase):
+    uid: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
+# Properties to receive via API on creation
+class ResultOptionCreate(ResultOptionBase):
+    pass
+
+
+# Properties to receive via API on update
+class ResultOptionUpdate(ResultOptionBase):
+    pass
+
+
+# Properties to return via API
+class ResultOption(ResultOptionBaseInDB):
+    pass
+
+
+# Properties stored in DB
+class ResultOptionInDB(ResultOptionBaseInDB):
+    pass
+
+
+#
 # AnalysisRequest Schemas
 # 
 
 # Shared properties
-class AnalysisRequestBase(BaseModel):
+class AnalysisRequestBase(BaseAuditModel):
     patient_uid: Optional[int] = None
     client_uid: Optional[int] = None
     request_id: Optional[str] = None
@@ -202,13 +246,15 @@ class AnalysisRequestInDB(AnalysisRequestBaseInDB):
 # 
 
 # Shared properties
-class SampleBase(BaseModel):
+class SampleBase(BaseAuditModel):
     analysisrequest_uid: Optional[int] = None
     sampletype_uid: Optional[int] = None
     profiles: Optional[List[Profile]] = []
     analyses: Optional[List[Analysis]] = []
     sample_id: Optional[str] = None
     priority: Optional[int] = 0
+    invalidated_by_uid : Optional[int] = None
+    date_invalidated: Optional[datetime] = None
     status: Optional[str] = None
 
 
@@ -240,13 +286,59 @@ class SampleInDB(SampleBaseInDB):
 
 
 #
+# Rejection Reason Schemas
+#
+
+# Shared properties
+class RejectionReasonBase(BaseAuditModel):
+    reason: Optional[str] = None
+
+
+class RejectionReasonBaseInDB(RejectionReasonBase):
+    uid: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
+# Properties to receive via API on creation
+class RejectionReasonCreate(RejectionReasonBase):
+    pass
+
+
+# Properties to receive via API on update
+class RejectionReasonUpdate(RejectionReasonBase):
+    pass
+
+
+# Properties to return via API
+class RejectionReason(RejectionReasonBaseInDB):
+    pass
+
+
+# Properties stored in DB
+class RejectionReasonInDB(RejectionReasonBaseInDB):
+    pass
+
+
+#
 # AnalysisResultBase Schemas
 # 
 
 # Shared properties
-class AnalysisResultBase(BaseModel):
+class AnalysisResultBase(BaseAuditModel):
     analysis_uid: Optional[int] = None
     sample_uid: Optional[int] = None
+    instrument_uid: Optional[int] = None
+    method_uid: Optional[int] = None
+    result: Optional[str] = None
+    analyst_uid: Optional[int] = None
+    submitted_by_uid: Optional[int] = None
+    date_submitted: Optional[datetime] = None
+    verified_by_uid: Optional[int] = None
+    date_verified: Optional[datetime] = None
+    invalidated_by_uid : Optional[int] = None
+    date_invalidated: Optional[datetime] = None
     status: Optional[str] = None
 
 

@@ -1,15 +1,17 @@
 from typing import Dict, TypeVar
-
+import logging
 from pydantic import BaseModel as PydanticBaseModel
 from sqlalchemy import Column, Integer
 from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
-from sqlalchemy_mixins import AllFeaturesMixin
+from sqlalchemy_mixins import AllFeaturesMixin, TimestampsMixin
 
 from felicity.database.session import SessionScoped
 
 InDBSchemaType = TypeVar("InDBSchemaType", bound=PydanticBaseModel)
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # noinspection PyPep8Naming
 class classproperty(object):
@@ -27,7 +29,7 @@ class classproperty(object):
 
 # Enhanced Base Model Class with some django-like super powers
 @as_declarative()
-class DBModel(AllFeaturesMixin):
+class DBModel(AllFeaturesMixin, TimestampsMixin):
     __name__: str
     __abstract__ = True
 
@@ -69,8 +71,9 @@ class DBModel(AllFeaturesMixin):
             self.session.add(self)
             self.session.flush()
             self.session.commit()
-        except:
+        except Exception as e:
             self.session.rollback()
+            logger.info(f"Session Save Error: {e}")
             raise
         return self
 

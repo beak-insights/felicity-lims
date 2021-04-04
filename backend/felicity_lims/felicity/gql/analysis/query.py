@@ -9,6 +9,11 @@ from felicity.gql.analysis import types as a_types
 from felicity.apps.analysis import models as a_models
 
 
+def resolve_profile_by_uid(info, uid):
+    profile = a_models.Profile.get(uid=uid)
+    return profile
+
+
 class AnalysisQuery(graphene.ObjectType):
     node = relay.Node.Field()
 
@@ -36,10 +41,12 @@ class AnalysisQuery(graphene.ObjectType):
     # AnalysisRequest Queries
     analysis_request_all = SQLAlchemyConnectionField(a_types.AnalysisRequestType.connection)
     analysis_request_by_uid = graphene.Field(lambda: a_types.AnalysisRequestType, uid=graphene.String(default_value=""))
+    analysis_requests_by_patient_uid = graphene.List(lambda: a_types.AnalysisRequestType, uid=graphene.String(default_value=""))
 
     # AnalysisResult Queries
     analysis_result_all = SQLAlchemyConnectionField(a_types.AnalysisResultType.connection)
     analysis_result_by_uid = graphene.Field(lambda: a_types.AnalysisResultType, uid=graphene.String(default_value=""))
+    analysis_result_by_sample_uid = graphene.List(lambda: a_types.AnalysisResultType, uid=graphene.String(default_value=""))
 
     def resolve_sample_type_by_uid(self, info, uid):
         sample_type = a_models.SampleType.get(uid=uid)
@@ -57,14 +64,18 @@ class AnalysisQuery(graphene.ObjectType):
         analysis = a_models.Analysis.get(uid=uid)
         return analysis
 
-    def resolve_profile_by_uid(self, info, uid):
-        profile = a_models.Profile.get(uid=uid)
-        return profile
-
     def resolve_analysis_request_by_uid(self, info, uid):
         analysis_request = a_models.AnalysisRequest.get(uid=uid)
         return analysis_request
 
+    def resolve_analysis_requests_by_patient_uid(self, info, uid):
+        analysis_requests = a_models.AnalysisRequest.where(patient_uid__exact=uid).all()
+        return analysis_requests
+
     def resolve_analysis_result_by_uid(self, info, uid):
         analysis_result = a_models.AnalysisResult.get(uid=uid)
         return analysis_result
+
+    def resolve_analysis_result_by_sample_uid(self, info, uid):
+        analysis_results = a_models.AnalysisResult.where(sample_uid__exact=uid)
+        return analysis_results

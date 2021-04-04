@@ -45,7 +45,7 @@ class Settings(BaseSettings):
             return None
         return v
 
-    POSTGRES_SERVER: str = getenv_value("POSTGRES_SERVER", 'felicity_db')
+    POSTGRES_SERVER: str = getenv_value("POSTGRES_SERVER", 'localhost') # felicity_db
     POSTGRES_USER: str = getenv_value("POSTGRES_USER", 'felicity')
     POSTGRES_PASSWORD: str = getenv_value("POSTGRES_PASSWORD", 'felicity')
     POSTGRES_DB: str = getenv_value("POSTGRES_DB", 'felicity_lims')

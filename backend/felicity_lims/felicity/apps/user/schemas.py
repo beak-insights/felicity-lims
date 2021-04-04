@@ -56,6 +56,7 @@ class AuthBase(BaseModel):
     password: Optional[str] = None
     login_retry: Optional[int] = 0
     is_blocked: Optional[bool] = False
+    user_type: Optional[str] = None
 
 
 # Properties to receive via API on creation

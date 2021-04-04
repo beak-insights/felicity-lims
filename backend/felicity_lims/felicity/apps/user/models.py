@@ -7,6 +7,7 @@ from felicity.apps.core.utils import is_valid_email
 from felicity.core.security import verify_password
 from . import conf
 from .abstract import (
+    DBModel,
     AbstractBaseUser,
     AbstractAuth
 )
@@ -17,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 # TODO: Refactor User to LaboratoryContact, UserAuth to ContactAuth
+
 
 class UserAuth(AbstractAuth):
     """Authentication class user access
@@ -29,7 +31,8 @@ class UserAuth(AbstractAuth):
 
     def acquire_user_type(self, user_type):
         _update = {**self.to_dict(), **{'user_type': user_type}}
-        self.update(**_update)
+        update_in = schemas.AuthUpdate(**_update)
+        self.update(update_in)
 
     def has_access(self, password):
         if self.is_blocked:
@@ -92,10 +95,16 @@ class User(AbstractBaseUser):
     def unlink_auth(self):
         auth = self.auth
         _update = {**self.to_dict(), **{'auth_uid': None, 'auth': None}}
-        self.update(**_update)
+        update_in = schemas.UserUpdate(**_update)
+        self.update(update_in)
         if not self.auth:
             auth.delete()
 
     def link_auth(self, auth_uid):
         _update = {**self.to_dict(), **{'auth_uid': auth_uid}}
-        self.update(**_update)
+        update_in = schemas.UserUpdate(**_update)
+        self.update(update_in)
+
+
+
+

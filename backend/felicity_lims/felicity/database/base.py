@@ -1,7 +1,3 @@
-# Import all the models, so that Base has them before being
-# imported by Alembic
-
-# Base Model
 from felicity.database.base_class import DBModel
 from felicity.apps.setup.models import Country
 from felicity.apps.setup.models import Province
@@ -20,6 +16,8 @@ from felicity.apps.analysis.models import SampleType
 from felicity.apps.analysis.models import Analysis
 from felicity.apps.analysis.models import Profile
 from felicity.apps.analysis.models import Sample
+from felicity.apps.analysis.models import ResultOption
+from felicity.apps.analysis.models import RejectionReason
 from felicity.apps.analysis.models import AnalysisRequest
 from felicity.apps.analysis.models import AnalysisResult
 from felicity.apps.analysis.models import AnalysisCategory

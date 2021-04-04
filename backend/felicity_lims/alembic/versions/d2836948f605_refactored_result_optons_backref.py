@@ -1,8 +1,8 @@
-"""ini felicity Sat Mar 27 08:21:41 UTC 2021
+"""refactored result optons backref
 
-Revision ID: 55afcb809948
-Revises: f04fd82e1b9f
-Create Date: 2021-03-27 08:21:41.966934
+Revision ID: d2836948f605
+Revises: ff2518b0587e
+Create Date: 2021-04-03 19:14:33.485883
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '55afcb809948'
-down_revision = 'f04fd82e1b9f'
+revision = 'd2836948f605'
+down_revision = 'ff2518b0587e'
 branch_labels = None
 depends_on = None
 

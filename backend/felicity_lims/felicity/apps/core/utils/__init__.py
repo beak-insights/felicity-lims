@@ -10,5 +10,5 @@ def is_valid_email(email):
 
 
 def sequencer(value, count):
-    """Generated a sequence with a specifies set count length"""
+    """Generates a sequence with a specifies set count length"""
     return f"{'0' * (count - len(str(value)))}{value}"

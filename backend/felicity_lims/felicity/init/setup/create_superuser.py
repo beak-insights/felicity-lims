@@ -11,7 +11,6 @@ def create_super_user() -> None:
             first_name="System",
             last_name="Administrator",
             email=settings.FIRST_SUPERUSER_EMAIL,
-            password=settings.FIRST_SUPERUSER_PASSWORD,
             is_superuser=True,
         )
         superuser = models.User.create(user_in=su_in)

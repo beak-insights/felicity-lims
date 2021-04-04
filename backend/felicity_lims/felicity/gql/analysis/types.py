@@ -8,7 +8,9 @@ from felicity.apps.analysis.models import (
     Profile,
     AnalysisRequest,
     AnalysisResult,
-    AnalysisCategory
+    AnalysisCategory,
+    ResultOption,
+    RejectionReason
 )
 
 
@@ -40,6 +42,13 @@ class AnalysisType(SQLAlchemyObjectType):
         interfaces = (relay.Node, )
 
 
+# Graphene AnalysisResult Type
+class ResultOptionType(SQLAlchemyObjectType):
+    class Meta:
+        model = ResultOption
+        interfaces = (relay.Node, )
+
+
 # Graphene Profile Type
 class ProfileType(SQLAlchemyObjectType):
     class Meta:
@@ -59,3 +68,10 @@ class AnalysisResultType(SQLAlchemyObjectType):
     class Meta:
         model = AnalysisResult
         interfaces = (relay.Node, )      
+
+
+# Graphene AnalysisResult Type
+class RejectionReasonType(SQLAlchemyObjectType):
+    class Meta:
+        model = RejectionReason
+        interfaces = (relay.Node, )

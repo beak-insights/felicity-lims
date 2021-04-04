@@ -12,6 +12,7 @@ class States:
         PUBLISHED = 'published'
         INVALIDATED = 'invalidated'
         CANCELLED = 'cancelled'
+        REJECTED = 'rejected'
 
     class Result:
         PENDING = 'pending'

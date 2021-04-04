@@ -108,6 +108,11 @@ class CreateDepartment(graphene.Mutation):
     def mutate(root, info, name, **kwargs): 
         if not name:
             raise GraphQLError("Please Provide a name for your department")
+
+        exists = models.Department.get(name=name)
+        if exists:
+            raise GraphQLError(f"A Department named {name} already exists")
+
         incoming = {
             "name": name,
         }
@@ -122,6 +127,7 @@ class CreateDepartment(graphene.Mutation):
                 
 class UpdateDepartment(graphene.Mutation):
     class Arguments:
+        uid = graphene.String(required=True)
         name = graphene.String(required=True)
         description = graphene.String(required=False)
         code = graphene.String(required=False)
@@ -167,6 +173,11 @@ class CreateSupplier(graphene.Mutation):
     def mutate(root, info, name, **kwargs): 
         if not name:
             raise GraphQLError("Please Provide a name for your supplier")
+
+        exists = models.Supplier.get(name=name)
+        if exists:
+            raise GraphQLError(f"A Supplier named {name} already exists")
+
         incoming = {
             "name": name,
         }
@@ -181,6 +192,7 @@ class CreateSupplier(graphene.Mutation):
                 
 class UpdateSupplier(graphene.Mutation):
     class Arguments:
+        uid = graphene.String(required=True)
         name = graphene.String(required=True)
         description = graphene.String(required=False)
         code = graphene.String(required=False)
@@ -227,6 +239,15 @@ class CreateInstrument(graphene.Mutation):
     def mutate(root, info, name, keyword, **kwargs): 
         if not name or not keyword:
             raise GraphQLError("Provide a name and a unique keyword for your instrument")
+
+        taken = models.Instrument.get(keyword=keyword)
+        if taken:
+            raise GraphQLError(f"Provided keyword already assigned to instrument {taken.name}")
+
+        exists = models.Instrument.get(name=name)
+        if exists:
+            raise GraphQLError(f"An Instrument named {name} already exists")
+
         incoming = {
             "name": name,
             "keyword": keyword
@@ -242,6 +263,7 @@ class CreateInstrument(graphene.Mutation):
                 
 class UpdateInstrument(graphene.Mutation):
     class Arguments:
+        uid = graphene.String(required=True)
         name = graphene.String(required=True)
         description = graphene.String(required=False)
         keyword = graphene.String(required=False)
@@ -254,10 +276,11 @@ class UpdateInstrument(graphene.Mutation):
     def mutate(root, info, uid, **kwargs):   
         if not uid:
             raise GraphQLError("No uid provided to idenity update obj")
+
         if 'keyword' in kwargs:
             keyword = kwargs.get('keyword')
             taken = models.Instrument.get(keyword=keyword)
-            if taken:
+            if taken and not (str(uid) == str(taken.uid)):
                 raise GraphQLError(f"Provided keyword already assigned to instrument {taken.name}")
         
         instrument = models.Instrument.get(uid=uid)
@@ -294,6 +317,17 @@ class CreateMethod(graphene.Mutation):
     def mutate(root, info, name, **kwargs): 
         if not name:
             raise GraphQLError("Provide a name for your method")
+
+        if 'keyword' in kwargs:
+            keyword = kwargs.get('keyword')
+            taken = models.Method.get(keyword=keyword)
+            if taken:
+                raise GraphQLError(f"Provided keyword already assigned to Method {taken.name}")
+
+        exists = models.Method.get(name=name)
+        if exists:
+            raise GraphQLError(f"A Method named {name} already exists")
+
         incoming = {
             "name": name,
         }
@@ -308,6 +342,7 @@ class CreateMethod(graphene.Mutation):
                 
 class UpdateMethod(graphene.Mutation):
     class Arguments:
+        uid = graphene.String(required=True)
         name = graphene.String(required=True)
         description = graphene.String(required=False)
         keyword = graphene.String(required=False)
@@ -323,7 +358,7 @@ class UpdateMethod(graphene.Mutation):
         if 'keyword' in kwargs:
             keyword = kwargs.get('keyword')
             taken = models.Method.get(keyword=keyword)
-            if taken:
+            if taken and not (str(uid) == str(taken.uid)):
                 raise GraphQLError(f"Provided keyword already assigned to method {taken.name}")
         
         method = models.Method.get(uid=uid)

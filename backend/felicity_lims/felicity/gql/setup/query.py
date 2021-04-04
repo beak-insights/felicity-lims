@@ -29,8 +29,8 @@ class SetupQuery(graphene.ObjectType):
     department_all = SQLAlchemyConnectionField(DepartmentType.connection)
     department_by_uid = graphene.Field(lambda: DepartmentType, uid=graphene.Int(default_value=None))
     # Instrument
-    instrumet_all = SQLAlchemyConnectionField(InstrumentType.connection)
-    instrumet_by_uid = graphene.Field(lambda: InstrumentType, uid=graphene.Int(default_value=None))
+    instrument_all = SQLAlchemyConnectionField(InstrumentType.connection)
+    instrument_by_uid = graphene.Field(lambda: InstrumentType, uid=graphene.Int(default_value=None))
     # Method
     method_all = SQLAlchemyConnectionField(MethodType.connection)
     method_by_uid = graphene.Field(lambda: MethodType, uid=graphene.Int(default_value=None))
