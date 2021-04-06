@@ -220,6 +220,16 @@ class Sample(BaseAuditDBModel, BaseMPTT):
         self.status = states.sample.CANCELLED
         self.save()
 
+    def submit(self):
+        self.status = states.sample.TO_BE_VERIFIED
+        self.save()
+
+    def verify(self):
+        self.status = states.sample.VERIFIED
+        self.save()
+
+        # DO REFLEX HERE
+
     @classmethod
     def create(cls, obj_in: schemas.SampleCreate) -> schemas.Sample:
         data = cls._import(obj_in)

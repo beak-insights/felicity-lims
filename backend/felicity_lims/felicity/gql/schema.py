@@ -13,6 +13,7 @@ from felicity.gql.patient.mutations import PatientMutations
 from felicity.gql.analysis.query import AnalysisQuery
 from felicity.gql.analysis.mutations import AnalysisMutations
 from felicity.gql.worksheet.query import WorkSheetQuery
+from felicity.gql.worksheet.mutations import WorkSheetMutations
 
 
 class Query(
@@ -23,7 +24,7 @@ class Query(
 
 class Mutation(
     SetupMutations, UserMutations, ClientMutations, 
-    PatientMutations, AnalysisMutations, 
+    PatientMutations, AnalysisMutations, WorkSheetMutations,
     graphene.ObjectType):
     pass
     

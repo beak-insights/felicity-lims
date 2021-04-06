@@ -518,6 +518,7 @@ class SubmitAnalysisResults(graphene.Mutation):
                 raise GraphQLError(f"AnalysisResult with uid {uid} not found")
 
             analysis_result = jsonable_encoder(a_result)
+
             for field in analysis_result:
                 if field in _ar:
                     try:
@@ -525,13 +526,24 @@ class SubmitAnalysisResults(graphene.Mutation):
                     except AttributeError as e:
                         pass
 
-            setattr(a_result, 'status', states.result.RESULTED)
+            # No Empty Results
+            result = getattr(a_result, 'result', None)
+            if not result or result.strip() == '' or len(result.strip()) == 0:
+                setattr(a_result, 'result', None)
+            else:
+                setattr(a_result, 'status', states.result.RESULTED)
 
             a_result_in = schemas.AnalysisResultUpdate(**a_result.to_dict())
             a_result.update(a_result_in)
 
-            # TODO: check if all sibling analyses for connected sample are to_be_verified and change sample state \
+            # check if all sibling analyses for connected sample are to_be_verified and change sample state \
             # to to_be_verified
+
+            statuses = [states.result.RESULTED]  # or not in [states.result.PENDING, states.result.RETRACTED]
+            siblings = a_result.sample.analysis_results
+            match = all([(sibling.status in statuses) for sibling in siblings])
+            if match:
+                a_result.sample.submit()
 
             return_results.append(a_result)
 

@@ -21,4 +21,6 @@ from felicity.apps.analysis.models import RejectionReason
 from felicity.apps.analysis.models import AnalysisRequest
 from felicity.apps.analysis.models import AnalysisResult
 from felicity.apps.analysis.models import AnalysisCategory
+from felicity.apps.worksheet.models import WorkSheetTemplate
+from felicity.apps.worksheet.models import WorkSheet
 from felicity.apps.job.models import Job

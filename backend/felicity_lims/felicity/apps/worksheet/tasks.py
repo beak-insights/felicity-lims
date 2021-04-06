@@ -22,12 +22,13 @@ def populate_worksheet_plate(job_uid: int):
     # create a template
     factory = utils.WorkSheetPlater(**plate_values)
     template = factory.create()
-    # get sample, filtered by analysis_service
+    # get sample, filtered by analysis_service and Sample Type
     samples = an_models.Sample.smart_query(
         filters={
             'assigned__eq': False,
-            'profiles__uid__in': [_p.uid for _p in ws.profiles],
+            # 'profiles__uid__in': [_p.uid for _p in ws.profiles],
             'analyses__uid__in': [_a.uid for _a in ws.analysis],
+            # 'sampletype_uid__exact': ws.sampletype,
         },
         sort_attrs=['-priority']
     )

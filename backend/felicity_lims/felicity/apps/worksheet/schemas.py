@@ -1,7 +1,6 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
 from pydantic import BaseModel
-
 
 # 
 # WorkSheet Schemas
@@ -58,16 +57,15 @@ class WorkSheetInDB(WorkSheetBaseInDB):
 class WSTemplateBase(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    worksheet_id: Optional[int] = None
-    instrument_uid: Optional[int] = None
-    analyses_uid: Optional[int] = None
+    instrument_uid: Optional[str] = None
+    sample_type_uid: Optional[str] = None
+    analyses: List[Optional[int]] = []
     reserved: Optional[Dict] = {}
-    number_of_samples: Optional[int] = None
-    worksheet_type: Optional[int] = 0
-    rows: Optional[int] = None
-    cols: Optional[int] = None
+    number_of_samples: Optional[str] = None
+    worksheet_type: Optional[str] = 'flat'
+    rows: Optional[str] = None
+    cols: Optional[str] = None
     row_wise: Optional[bool] = True
-    template: Optional[Dict] = {}
 
 
 class WSTemplateBaseInDB(WSTemplateBase):

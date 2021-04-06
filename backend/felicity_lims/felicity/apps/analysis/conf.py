@@ -7,8 +7,8 @@ class States:
     class Sample:
         PENDING = 'pending'
         RECEIVED = 'received'
-        TO_BE_VERIFIED = 'to_be_verified'
-        VERIFIED = 'verified'
+        TO_BE_VERIFIED = 'to_be_verified'  # un-authorised
+        VERIFIED = 'verified'  # authorised
         PUBLISHED = 'published'
         INVALIDATED = 'invalidated'
         CANCELLED = 'cancelled'
