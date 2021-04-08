@@ -89,6 +89,7 @@ export enum ActionTypes {
 export const getters = <GetterTree<IState, RootState>>{
   getClientContacts: (state) => state.clientContacts,
   getClients: (state) => state.clients,
+  getClientByName: (state) => (name: string) => state.clients?.find(cl => cl.name === name),
 };
 
 // Mutations

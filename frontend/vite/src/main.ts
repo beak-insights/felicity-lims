@@ -2,6 +2,11 @@ import { createApp } from 'vue'
 
 import urql from '@urql/vue';
 
+import VueSweetalert2 from 'vue-sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
+
+import 'notyf/notyf.min.css';
+
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library, dom } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'
@@ -25,6 +30,7 @@ app.component('font-awesome-icon', FontAwesomeIcon)
 app.component('default-layout', LayoutDashboard)
 app.component('empty-layout', LayoutEmpty)
 app.use(urql, { url: 'http://localhost:8000/felicity-gql'})
+app.use(VueSweetalert2);
 app.use(router)
 app.use(store)
 app.mount('#app')

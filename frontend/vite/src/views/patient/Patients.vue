@@ -1,19 +1,24 @@
 <template>
-  <div class="px-6">
-    <div class="flex items-center">
-      <h1 class="h1 my-4 font-bold text-dark-700">Work Sheets</h1>
+  <div class="">
+    <div class="flex justify-between">
+      <div class="flex items-center content-between">
+        <!-- <h1 class="h1 my-4 font-bold text-dark-700">Listing</h1> -->
+        <router-link  to="/patients/search"
+          class="px-4 my-2 p-1 text-sm border-blue-500 border text-dark-700 transition-colors duration-150 rounded-lg focus:outline-none hover:bg-blue-500 hover:text-gray-100">
+          Add Patient</router-link>
+        <input
+          class="w-64 ml-6 pl-4 pr-2 py-1 text-sm text-gray-700 placeholder-gray-600 border-1 border-gray-400 rounded-md  focus:placeholder-gray-500 focus:border-green-100 focus:outline-none focus:shadow-outline-purple form-input"
+          type="text" placeholder="Search ..." aria-label="Search"
+          @keyup="searchPatients($event)"
+          @focus="setPatientToNull()"
+        />
+      </div>
       <button
-        class="px-4 my-2 h-10 ml-8 text-sm border-blue-500 border text-dark-700 transition-colors duration-150 rounded-lg focus:outline-none hover:bg-blue-500 hover:text-gray-100"
-        @click="patientFormManager(true)"
-      >
-        Add Work Sheet
-      </button>
-      <input
-        class="w-64 h-10 ml-6 pl-4 pr-2 py-1 text-sm text-gray-700 placeholder-gray-600 border-1 border-gray-400 rounded-md  focus:placeholder-gray-500 focus:border-green-100 focus:outline-none focus:shadow-outline-purple form-input"
-        type="text" placeholder="Search ..." aria-label="Search"
-        @keyup="searchPatients($event)"
-      />
+        @click.prevent="patientFormManager(true)"
+          class="px-4 my-2 p-1 text-sm border-blue-500 border text-dark-700 transition-colors duration-150 rounded-lg focus:outline-none hover:bg-blue-500 hover:text-gray-100">
+          Quick Registration</button>
     </div>
+
     <hr />
 
     <div class="grid grid-cols-12 gap-4 mt-2">
@@ -83,7 +88,9 @@
                       ></path>
                     </svg>
                   </button>
-                </div>
+                  <router-link :to="{ name: 'patient-detail', query: { patientUid: patientForm.uid } }" 
+                  class="p-1 ml-2 border-white border text-gray-500 rounded transition duration-300 hover:border-blue-500 hover:text-blue-500 focus:outline-none">... more</router-link>
+                  </div>
               </div>
               <hr />
               <div class="grid grid-cols-2 mt-2">
@@ -139,10 +146,11 @@
             </a>
           </div>
         </nav>
+   
+        <tab-samples v-if="currentTab === 'samples'" :patientUid="patientForm.uid" />
+        <tab-cases v-if="currentTab === 'cases'" />
+        <tab-logs v-if="currentTab === 'logs'"/>
 
-        <keep-alive>
-          <component :is="currentTabComponent"></component>
-        </keep-alive>
       </section>
     </div>
   </div>
@@ -160,55 +168,55 @@
           <input class="form-input mt-1 block w-full" v-model="patientForm.clientPatientId" placeholder="Patient Unique Identifier" />
         </label>
         <div class="flex justify-between">
-          <label class="block mb-2">
+          <label class="block mb-2 w-full">
             <span class="text-gray-700">First Name</span>
             <input class="form-input mt-1 block w-full" v-model="patientForm.firstName" placeholder="First Name" />
           </label>
-          <label class="block mb-2 mx-2">
+          <label class="block mb-2 w-full mx-2">
             <span class="text-gray-700">Middle Name</span>
             <input class="form-input mt-1 block w-full" v-model="patientForm.middleName" placeholder="Middle Name" />
           </label>
-          <label class="block mb-2">
+          <label class="block mb-2 w-full">
             <span class="text-gray-700">Last Name</span>
             <input class="form-input mt-1 block w-full" v-model="patientForm.lastName" placeholder="Last Name" />
           </label>
         </div>
 
         <div class="flex justify-between">
-          <label class="block mb-2">
+          <label class="block mb-2 w-full">
             <span class="text-gray-700">Age</span>
             <input class="form-input mt-1 block w-full" type="number" v-model="patientForm.age" placeholder="Age" />
           </label>
-          <label class="block mb-2 mx-2">
+          <label class="block mb-2 mx-2 w-full">
             <span class="text-gray-700">Date of Birth</span>
             <input class="form-input mt-1 block w-full" type="date" v-model="patientForm.dateOfBirth" placeholder="Date of Birth" />
           </label>
-          <label class="inline-flex items-center -mb-6">
+          <label class="inline-flex items-center -mb-6 w-full">
             <input type="checkbox" class="form-checkbox text-green-500 mx-4" v-model="patientForm.ageDobEstimated" />
             <span class="ml-2">Age/DOB Estimated?</span>
           </label>
         </div>
 
         <div class="flex justify-between">
-          <label class="block mb-2">
+          <label class="block mb-2 w-full" >
             <span class="text-gray-700">Gender</span>
             <select class="form-select block w-full mt-1" v-model="patientForm.gender">
                <option></option>
               <option v-for="(sex, indx) in genders" :key="sex.index" :value="indx"> {{ sex }}</option>
             </select>
           </label>
-          <label class="block mb-2">
+          <label class="block mb-2 w-full" >
             <span class="text-gray-700">Mobile Number</span>
             <input class="form-input mt-1 block w-full" type="number" v-model="patientForm.phoneMobile" placeholder="Mobile Number" />
           </label>
-          <label class="inline-flex items-center -mb-6">
+          <label class="inline-flex items-center -mb-6 w-full">
             <input type="checkbox" class="form-checkbox text-green-500 mx-4" v-model="patientForm.consentSms" />
             <span class="ml-2">Consent to SMS</span>
           </label>
         </div>
 
         <!-- other identifiers: passport, client pid, national id -->
-        <label class="block mb-2">
+        <label class="block mb-2 w-full">
           <span class="text-gray-700">Primary Referrer</span>
           <select class="form-select block w-full mt-1" v-model="patientForm.clientUid">
               <option></option>
@@ -217,21 +225,21 @@
         </label>
 
         <div class="grid grid-cols-3 gap-x-4 mb-4">
-          <label class="block col-span-1 mb-2">
+          <label class="block col-span-1 mb-2 w-full">
             <span class="text-gray-700">Country</span>
             <select class="form-select block w-full mt-1" v-model="countryUid" @change="getProvinces($event)">
               <option></option>
               <option v-for="country in countries" :key="country.uid" :value="country.uid"> {{ country.name }} {{ country.uid }}</option>
             </select>
           </label>
-          <label class="block col-span-1 mb-2">
+          <label class="block col-span-1 mb-2 w-full">
             <span class="text-gray-700">Province</span>
             <select class="form-select block w-full mt-1" v-model="provinceUid" @change="getDistricts($event)">
                <option></option>
               <option v-for="province in provinces" :key="province.uid" :value="province.uid"> {{ province.name }} {{ province.uid }}</option>
             </select>
           </label>
-          <label class="block col-span-1 mb-2">
+          <label class="block col-span-1 mb-2 w-full">
             <span class="text-gray-700">District</span>
             <select class="form-select block w-full mt-1" v-model="patientForm.districtUid">
                <option></option>
@@ -255,7 +263,8 @@
 
 <style lang="postcss" scoped>
 .patient-scroll {
-  height: 700px;
+  /* min-height: calc(100vh - 250px); */
+  min-height: 100%;
 }
 
 .tab-active {
@@ -264,14 +273,14 @@
 }
 </style>
 
-<script scope="ts">
+<script lang="ts">
 import { useMutation } from '@urql/vue';
 import { defineComponent, ref, reactive, computed } from 'vue';
 import { mapGetters, useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 import { useQuery } from '@urql/vue';
-import tabSamples from '../patient/comps/SampleTable.vue';
-import tabCases from '../patient/comps/CaseTable.vue';
+import tabSamples from './comps/SampleTable.vue';
+import tabCases from './comps/CaseTable.vue';
 import tabLogs from '../_components/timeline/AuditLog.vue';
 import modal from '../_components/modals/simpleModal.vue';
 import { Patient } from '../../store/modules/patients';
@@ -287,10 +296,11 @@ import { ADD_PATIENT } from '../../graphql/patient.mutations';
 export const IPatient = typeof Patient;
 
 import { ActionTypes } from '../../store/modules/patients';
+import { ActionTypes as ClientActionTypes } from '../../store/modules/clients';
 import { ActionTypes as AdminActionTypes } from '../../store/modules/admin';
 
 export default defineComponent({
-  name: 'worksheets',
+  name: 'patient-search',
   components: {
     tabSamples,
     tabCases,
@@ -298,8 +308,10 @@ export default defineComponent({
     modal,
   },
   setup(context) {
-    const nullPatient = new Patient();
     let store = useStore();
+    let router = useRouter();
+
+    const nullPatient = new Patient();
     let createAction = ref(true);
     let showModal = ref(false);
 
@@ -319,10 +331,7 @@ export default defineComponent({
 
     store.dispatch(AdminActionTypes.FETCH_COUNTRIES);    
     store.dispatch(ActionTypes.FETCH_PATIENTS);
-
-    const { data: clients, fetching: CFetching, error: CError } = useQuery({
-      query: GET_ALL_CLIENTS,
-    });
+    store.dispatch(ClientActionTypes.FETCH_CLIENTS);
 
     const { executeMutation: createPatient } = useMutation(ADD_PATIENT);
 
@@ -403,10 +412,11 @@ export default defineComponent({
       patients: computed(() => store.getters.getPatients),
       isPatientSelected,
       selectPatient,
+      setPatientToNull,
       patientFormManager,
       savePatientForm,
       countries: computed(() => store.getters.getCountries),
-      clients,
+      clients: computed(() => store.getters.getClients),
       countryUid,
       provinces,
       provinceUid,
@@ -415,7 +425,7 @@ export default defineComponent({
       getDistricts,
       genders,
       getGender,
-      searchPatients
+      searchPatients,
     };
   },
 });

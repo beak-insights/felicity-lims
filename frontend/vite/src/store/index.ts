@@ -11,8 +11,11 @@ import { admin } from './modules/admin';
 import { clients } from './modules/clients';
 import { patients } from './modules/patients';
 import { samples } from './modules/samples';
+import { analyses } from './modules/analyses';
 import { cases } from './modules/cases';
 import { worksheets } from './modules/worksheets';
+import { toast } from './modules/toast';
+import { setup } from './modules/setup';
 
 export default createStore({
   state,
@@ -24,7 +27,10 @@ export default createStore({
     clients,
     patients,
     samples,
+    analyses,
     cases,
     worksheets,
+    setup,
+    toast,
   },
 });

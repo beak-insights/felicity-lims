@@ -1,13 +1,105 @@
 <template>
-
-    <div class="container  mx-auto w-full my-4">
-        <h5>Instruments</h5>
-        <hr>
+  <div class="">
+    <div class="container mx-auto w-full my-4">
+      <hr>
+      <button
+        class="px-2 py-1 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none"
+        @click="FormManager(true)"
+      > Add Instrument</button>
+      <hr>
+      <!-- <input
+        class="w-64 h-10 ml-6 pl-4 pr-2 py-1 text-sm text-gray-700 placeholder-gray-600 border-1 border-gray-400 rounded-md  focus:placeholder-gray-500 focus:border-green-100 focus:outline-none focus:shadow-outline-purple form-input"
+        type="text" placeholder="Search ..." aria-label="Search"
+        @keyup="searchProfile($event)"
+        @focus="setProfileToNull()"
+      /> -->
     </div>
+    <hr />
 
+    <div class="grid grid-cols-12 gap-4 mt-2">
+      <section class="col-span-4 overflow-y-scroll overscroll-contain patient-scrol">
+        <ul>
+          <li 
+          v-for="inst in instruments"
+          :key="inst.uid"
+          href="#"
+          @click.prevent.stop="selectInstrument(inst)"
+          :class="[
+            'bg-white w-full p-1 mb-1 rounded',
+            { 'border-gray-100 bg-green-100': inst.uid === instrument.uid },
+          ]">
+            <a class="cursor-pointer">
+              <div class="flex-grow p-1">
+                <div class="font-medium text-gray-500 hover:text-gray-700 flex justify-between">
+                  <span>{{ inst.name }}</span>
+                  <span class="text-sm text-gray-500"></span>
+                </div>
+              </div>
+            </a>
+          </li>
+        </ul>
+      </section>
 
-  <!-- Location Edit Form Modal -->
-  <!-- <modal v-if="showModal" @close="showModal = false">
+      <section class="col-span-8"  v-if="instrument?.uid !== undefined">
+        <div class="bg-white rounded-lg shadow-sm hover:shadow-lg duration-500 px-4 sm:px-6 md:px-2 py-4" >
+          <div class="grid grid-cols-12 gap-3">
+            <div class="col-span-12 px-3 sm:px-0">
+              <div class="flex justify-between sm:text-sm md:text-md lg:text-lg text-gray-700 font-bold">
+                <span>{{ instrument?.name }}</span>
+                <div>
+                  <button
+                    @click="FormManager(false)"
+                    class="ml-4 inline-flex items-center justify-center w-8 h-8 mr-2 border-blue-500 border text-gray-900 transition-colors duration-150 bg-white rounded-full focus:outline-none hover:bg-gray-200"
+                  >
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                      <path
+                        d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+                      ></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sample and Case Data -->
+        <nav class="bg-white px-6 pt-2 shadow-md mt-2">
+          <div class="-mb-px flex justify-start">
+            <a
+              v-for="tab in tabs"
+              :key="tab"
+              :class="[
+                'no-underline text-gray-500 uppercase tracking-wide font-bold text-xs py-1 mr-8 tab',
+                { 'tab-active': currentTab === tab },
+              ]"
+              @click="currentTab = tab"
+              href="#"
+            >
+              {{ tab }}
+            </a>
+          </div>
+        </nav>
+
+        <section class="mt-2 p-2 bg-white">
+          <div v-if="currentTab === 'view'">
+            <h3>General</h3>
+            <hr> 
+            <input type="text">
+          </div>
+          <div v-else-if="currentTab === 'configs'">
+            <h3>Analyses</h3>
+            <hr>
+              <input type="text">
+          </div>
+        </section>
+
+      </section>
+    </div>
+  </div>
+
+  <!-- AnaltsisProfile Form Modal -->
+  <modal v-if="showModal" @close="showModal = false">
     <template v-slot:header>
       <h3>{{ formTitle }}</h3>
     </template>
@@ -15,20 +107,29 @@
     <template v-slot:body>
       <form action="post" class="p-1">
         <div class="grid grid-cols-2 gap-x-4 mb-4">
-          <label class="block col-span-1 mb-2">
-            <span class="text-gray-700">Name</span>
+          <label class="block col-span-2 mb-2">
+            <span class="text-gray-700">Instrument Name</span>
             <input
               class="form-input mt-1 block w-full"
-              v-model="form.name"
+              v-model="instrument.name"
               placeholder="Name ..."
             />
           </label>
-          <label class="block col-span-1 mb-2">
-            <span class="text-gray-700">Code</span>
+          <label class="block col-span-2 mb-2">
+            <span class="text-gray-700">keyword</span>
             <input
               class="form-input mt-1 block w-full"
-              v-model="form.code"
-              placeholder="Code ..."
+              v-model="instrument.keyword"
+              placeholder="Keyword ..."
+            />
+          </label>
+          <label class="block col-span-2 mb-2">
+            <span class="text-gray-700">Description</span>
+            <textarea
+            cols="2"
+              class="form-input mt-1 block w-full"
+              v-model="instrument.description"
+              placeholder="Description ..."
             />
           </label>
         </div>
@@ -42,21 +143,91 @@
         </button>
       </form>
     </template>
-  </modal> -->
-  
+  </modal>
+
 </template>
 
-<script>
-import { defineComponent, ref } from 'vue';
+<script lang="ts">
+import modal from '../../../_components/modals/simpleModal.vue';
+
+import { useMutation } from '@urql/vue';
+import { defineComponent, ref, reactive, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
+import { ActionTypes, Instrument, IInstrument } from '../../../../store/modules/setup';
+import { ADD_INSTRUMENT, EDIT_INSTRUMENT  } from '../../../../graphql/instrument.mutations';
+
 export default defineComponent({
   name: "tab-instruments",
   components: {
-      
+    modal,
   },
   setup() {
+    let store = useStore();
 
-    return {  };
+    // each tab if just gonna be forms with updatable values on button click
+    let currentTab = ref('view');
+    const tabs = ['view', 'configs',];
+    
+    let showModal = ref(false);
+    let formTitle = ref('');
+    const formAction = ref(true);
+
+    let instrument = reactive({ ...new Instrument });
+
+    store.dispatch(ActionTypes.FETCH_INSTRUMENTS);    
+
+    const { executeMutation: createInstrument } = useMutation(ADD_INSTRUMENT);
+    const { executeMutation: updateInstrument } = useMutation(EDIT_INSTRUMENT);
+
+    function addInstrument(): void {
+      createInstrument({ name: instrument.name, keyword: instrument.keyword, description: instrument.description }).then((result) => {
+       store.dispatch(ActionTypes.ADD_INSTRUMENT, result);
+      });
+    }
+
+    function editInstrument(): void {
+      updateInstrument({ uid: instrument.uid, name: instrument.name, keyword: instrument.keyword, description: instrument.description }).then((result) => {
+        store.dispatch(ActionTypes.UPDATE_INSTRUMENT, result);
+      });
+    }
+
+    function selectInstrument(obj: IInstrument): void {
+      Object.assign(instrument, { ...obj})
+    }
+    
+    function resetInstrument(): void {
+      Object.assign(instrument, { ...new Instrument})
+    }
+
+    function FormManager(create: boolean, obj: IInstrument): void {
+      formAction.value = create;
+      showModal.value = true;
+      formTitle.value = (create ? 'CREATE' : 'EDIT') + ' ' + "ANALYSES INSTRUMENT";
+      if (create) {
+        Object.assign(instrument, { ...new Instrument });
+      } else {
+        Object.assign(instrument, { ...obj });
+      }
+    }
+
+    function saveForm():void {
+      if (formAction.value === true) addInstrument();
+      if (formAction.value === false) editInstrument();
+      showModal.value = false;
+    }
+
+    return { 
+      showModal,
+      formTitle,
+      tabs,
+      currentTab,
+      instruments: computed(() =>store.getters.getInstruments),
+      selectInstrument,
+      instrument,
+      FormManager,
+      saveForm,
+    };
   },
 });
 </script>

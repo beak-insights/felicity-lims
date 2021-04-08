@@ -22,13 +22,22 @@ background_tasks = BackgroundTasks()
 #
 # WorkSheetTemplate Mutations
 #
+
+class ReservedInputType(graphene.InputObjectType):
+    position = graphene.Int()
+    name = graphene.String(required=True)
+    row = graphene.String(required=False)
+    col = graphene.String(required=False)
+    sample_uid = graphene.String(required=False)
+
+
 class CreateWorkSheetTemplate(graphene.Mutation):
     class Arguments:
         name = graphene.String(required=True)
         sample_type_uid = graphene.String(required=True)
         analyses = graphene.List(graphene.String, required=True)
         description = graphene.String(required=False)
-        reserved = graphene.List(graphene.String)
+        reserved = graphene.List(ReservedInputType, required=True)
         number_of_samples = graphene.String(required=False)
         worksheet_type = graphene.String(required=False)
         rows = graphene.String(required=False)
@@ -64,9 +73,9 @@ class CreateWorkSheetTemplate(graphene.Mutation):
         incoming['reserved'] = []
         if reserved:
             positions = dict()
-            for key in reserved:
-                positions[key] = {'row': None, 'col': 1, 'name': 'Blank/QC', 'sample_uid': None}
-                incoming['reserved'] = positions
+            for item in reserved:
+                positions[item['position']] = item
+            incoming['reserved'] = positions
 
         _analyses = []
         if analyses:

@@ -1,13 +1,15 @@
 {
   "compilerOptions": {
+    "strict": true,
     "jsx": "vue",
     "outDir": "./dist",
-    "target": "es5", // es2017
+    "target": "es5", // es2017, esnext
     "module": "esnext", // commonjs
     "lib": [ // es2015
       "ESNext",
       "DOM"
     ],
+    "declaration": false,
     "sourceMap": true,
     "strict": true,
     "noImplicitAny": true,
@@ -28,23 +30,8 @@
     "./src/**/*.vue",
     "src/App.tsx",
     "src/orig.tsx"
-  ]
+  ],
+  "types": [
+    "vue-sweetalert2"
+  ],
 }
-{
-  "compilerOptions": {
-    /* Basic Options */
-    "target": "esnext",
-    "module": "esnext",
-    "strict": true,
-    "jsx": "preserve",
-    "lib": [
-      "ESNext",
-      "DOM"
-    ],
-    "declaration": false,
-    "sourceMap": true,
-    /* Strict Type-Checking Options */
-    /* Module Resolution Options */
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-  }

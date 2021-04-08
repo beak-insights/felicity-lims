@@ -7,7 +7,7 @@ import { IClient, IDistrict, IProvince } from '../common'
 import { GET_ALL_PATIENTS, SEARCH_PATIENTS } from '../../graphql/patient.queries';
 
 export interface IPatient {
-  uid?: number,
+  uid?: string,
   clientPatientId?: string;
   patientId?: string;
   firstName?: string;
@@ -30,7 +30,7 @@ export interface IPatient {
 
 export class Patient implements IPatient {
   constructor(
-    public uid?: number,
+    public uid?: string,
     public patientId?: string,
     public clientPatientId?: string,
     public firstName?: string,
@@ -82,6 +82,7 @@ export enum ActionTypes {
 // Getters
 export const getters = <GetterTree<IState, RootState>>{
   getPatients: (state) => state.patients,
+  getPatientByUid: (state) => (uid: string) => state.patients?.find(p => p.uid === uid),
 };
 
 // Mutations

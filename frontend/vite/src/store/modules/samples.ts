@@ -5,8 +5,12 @@ import { parseEdgeNodeToList } from '../../utils'
 import { ActionTree, GetterTree, MutationTree } from 'vuex';
 
 import {
-  GET_ALL_SAMPLE_TYPES
+  GET_ALL_SAMPLE_TYPES, 
+  GET_ALL_SAMPLES,
+  GET_ANALYSIS_REQUESTS_BY_PATIENT_UID,
+  GET_ANALYSIS_RESULTS_BY_SAMPLE_UID
 } from '../../graphql/analyses.queries';
+import { IAnalysisProfile, IAnalysisRequest, IAnalysisService, ISample } from './analyses';
 
 export interface ISampleType {
   uid?: string;
@@ -28,14 +32,66 @@ export class SampleType implements ISampleType{
   }
 }
 
+export interface ISampleRequest extends ISample {
+  uid?: string;
+  sampleId?: string;
+  priority?: string;
+  status?: string;
+  analysisRequest?: IAnalysisRequest;
+}
+
+export class SampleRequest implements ISampleRequest {
+  constructor(
+    public uid?: string, 
+    public sampleId?: string, 
+    public priority?: string,
+    public status?: string,
+    public analysisRequest?: IAnalysisRequest,
+    public sampleType?: ISampleType,
+    public profiles?: IAnalysisProfile[],
+    public analyses?: IAnalysisService[],
+     ){}
+}
+
+export interface IAnalysisResult {
+  uid?: string;
+  analysisUid?: string;
+  analysis?: IAnalysisService;
+  sampleUid?: string;
+  sample?: ISampleRequest;
+  status?: string;
+  result?: string;
+  editResult?: string;
+}
+
+export class AnalysisResult implements IAnalysisResult {
+  constructor(
+    public uid?: string,
+    public analysisUid?: string,
+    public analysis?: IAnalysisService,
+    public sampleUId?: string,
+    public sample?: ISampleRequest,
+    public status?: string,
+    public result?: string,
+  ) {
+    this.result = "";
+  }
+}
+
 // state contract
 export interface IState {
   sampleTypes: ISampleType[];
+  samples: ISampleRequest[];
+  analysisRequests: IAnalysisRequest[];
+  analysisResults: IAnalysisResult[];
 }
 
 export const initialState = () => {
   return <IState>{
     sampleTypes: [],
+    samples: [],
+    analysisRequests: [], // for patient detail
+    analysisResults: [],
   };
 };
 
@@ -43,21 +99,43 @@ export const state: IState = initialState();
 
 export enum MutationTypes {
   RESET_STATE = 'RESET_STATE',
+
   SET_SAMPLE_TYPES = 'SET_SAMPLE_TYPES',
   ADD_SAMPLE_TYPE = 'ADD_SAMPLE_TYPE',
-  UPDATE_SAMPLE_TYPE = 'UPDATE_SAMPLE_TYPE'
+  UPDATE_SAMPLE_TYPE = 'UPDATE_SAMPLE_TYPE',
+
+  SET_SAMPLES = 'SET_SAMPLES',
+
+  SET_ANALYSES_REQUESTS = 'SET_ANALYSES_REQUESTS',
+
+  SET_ANALYSES_RESULTS = 'SET_ANALYSES_RESULTS',
+  UPDATE_ANALYSIS_RESULTS = 'UPDATE_ANALYSIS_RESULTS',
 }
 
 export enum ActionTypes {
   RESET_STATE = 'RESET_STATE',
+
   FETCH_SAMPLE_TYPES = 'FETCH_SAMPLE_TYPES',
   ADD_SAMPLE_TYPE = 'ADD_SAMPLE_TYPE',
-  UPDATE_SAMPLE_TYPE = 'UPDATE_SAMPLE_TYPE'
+  UPDATE_SAMPLE_TYPE = 'UPDATE_SAMPLE_TYPE',
+
+  FETCH_SAMPLES = 'FETCH_SAMPLES',
+  ADD_SAMPLES = 'ADD_SAMPLES',
+
+  FETCH_ANALYSIS_REQUESTS_FOR_PATIENT = 'FETCH_ANALYSIS_REQUESTS_FOR_PATIENT',
+
+  FETCH_ANALYSIS_RESULTS_FOR_SAMPLE = 'FETCH_ANALYSIS_RESULTS_FOR_SAMPLE',
+  UPDATE_ANALYSIS_RESULTS = 'UPDATE_ANALYSIS_RESULTS',
+  
 }
 
 // Getters
 export const getters = <GetterTree<IState, RootState>>{
   getSampleTypes: (state) => state.sampleTypes,
+  getSampleTypeByName: (state) => (name: string) => state.sampleTypes?.find(st => st.name?.toString().toLowerCase().trim() === name.toString().toLowerCase().trim()),
+  getSamples: (state) => state.samples,
+  getAnalysisRequests: (state) => state.analysisRequests,
+  getAnalysisResults: (state) => state.analysisResults,
 };
 
 // Mutations
@@ -66,6 +144,7 @@ export const mutations = <MutationTree<IState>>{
     Object.assign(state, initialState());
   },
 
+  // SAMPLE TYPES
   [MutationTypes.SET_SAMPLE_TYPES](state: IState, payload: any[]): void {
     state.sampleTypes = [];
     state.sampleTypes = parseEdgeNodeToList(payload)
@@ -80,6 +159,41 @@ export const mutations = <MutationTree<IState>>{
     state.sampleTypes.push(payload);
   },
 
+  // SAMPLES
+  [MutationTypes.SET_SAMPLES](state: IState, payload: any[]): void {
+    state.samples = [];
+    let samples = parseEdgeNodeToList(payload);
+    samples?.forEach((sample: ISampleRequest) => {
+      sample.analyses = parseEdgeNodeToList(sample?.analyses) || [];
+      sample.profiles = parseEdgeNodeToList(sample?.profiles) || [];
+    });
+    state.samples = samples;
+  },
+
+  [MutationTypes.SET_ANALYSES_REQUESTS](state: IState, payload: IAnalysisRequest[]): void {
+    state.analysisRequests = [];
+    let requests = payload;
+    requests?.forEach(ar => {
+      ar.samples = parseEdgeNodeToList(ar?.samples) || [];
+      ar.samples?.forEach((sample: ISampleRequest) => {
+        sample.analyses = parseEdgeNodeToList(sample?.analyses) || [];
+        sample.profiles = parseEdgeNodeToList(sample?.profiles) || [];
+      })
+    });
+    state.analysisRequests = requests;
+  },
+
+  [MutationTypes.SET_ANALYSES_RESULTS](state: IState, payload: IAnalysisResult[]): void {
+    state.analysisResults = payload;
+  },
+
+  [MutationTypes.UPDATE_ANALYSIS_RESULTS](state: IState, payload: IAnalysisResult[]): void {
+    payload?.forEach(result => {
+      const index = state.analysisResults.findIndex(x => x.uid === result.uid);
+      state!.analysisResults[index] = result;
+    })
+  },
+
 };
 
 // Actions
@@ -88,6 +202,7 @@ export const actions = <ActionTree<IState, RootState>>{
     commit(MutationTypes.RESET_STATE);
   },
 
+  // SAMPLE TYPES
   async [ActionTypes.FETCH_SAMPLE_TYPES]({ commit }){
     await useQuery({ query: GET_ALL_SAMPLE_TYPES })
           .then(payload => commit(MutationTypes.SET_SAMPLE_TYPES, payload.data.value.sampleTypeAll));
@@ -99,6 +214,34 @@ export const actions = <ActionTree<IState, RootState>>{
 
   async [ActionTypes.ADD_SAMPLE_TYPE]({ commit }, payload ){
     commit(MutationTypes.ADD_SAMPLE_TYPE, payload.data.createSampleType.sampleType);
+  },
+
+  // SAMPLES
+  async [ActionTypes.FETCH_SAMPLES]({ commit }){
+    await useQuery({ query: GET_ALL_SAMPLES })
+          .then(payload => commit(MutationTypes.SET_SAMPLES, payload.data.value.sampleAll));
+  },
+
+  async [ActionTypes.ADD_SAMPLES]({ commit }, payload){
+    commit(MutationTypes.SET_SAMPLES, payload.data.createAnalysisRequest.analysisrequest.samples);
+  },
+
+  async [ActionTypes.FETCH_ANALYSIS_REQUESTS_FOR_PATIENT]({ commit }, uid){
+    await urqlClient
+    .query( GET_ANALYSIS_REQUESTS_BY_PATIENT_UID, { uid })
+    .toPromise()
+    .then(result => commit(MutationTypes.SET_ANALYSES_REQUESTS, result.data.analysisRequestsByPatientUid))
+  },
+
+  async [ActionTypes.FETCH_ANALYSIS_RESULTS_FOR_SAMPLE]({ commit }, uid){
+    await urqlClient
+    .query( GET_ANALYSIS_RESULTS_BY_SAMPLE_UID, { uid })
+    .toPromise()
+    .then(result => commit(MutationTypes.SET_ANALYSES_RESULTS, result.data.analysisResultBySampleUid))
+  },
+
+  async [ActionTypes.UPDATE_ANALYSIS_RESULTS]({ commit }, payload){
+    commit(MutationTypes.UPDATE_ANALYSIS_RESULTS, payload.data.submitAnalysisResults.analysisResults);
   },
 
 };

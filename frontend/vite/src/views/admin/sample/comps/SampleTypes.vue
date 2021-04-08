@@ -52,7 +52,7 @@
       <form action="post" class="p-1">
         <div class="grid grid-cols-2 gap-x-4 mb-4">
           <label class="block col-span-1 mb-2">
-            <span class="text-gray-700">Name</span>
+            <span class="text-gray-700">Sample Type Name</span>
             <input
               class="form-input mt-1 block w-full"
               v-model="form.name"

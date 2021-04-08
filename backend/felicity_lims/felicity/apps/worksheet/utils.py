@@ -1,6 +1,7 @@
 import copy
 
 from .conf import worksheet_types
+from felicity.apps.worksheet import models
 
 
 class WorkSheetPlater:
@@ -120,3 +121,20 @@ def add_samples(template: dict, samples, reserved: list):
         if c not in reserved:
             temp[c] = val
     return temp
+
+
+def create_plate_template(uid: str, model: str):
+    item_model = None
+    if model == 'wst':
+        item_model = models.WorkSheetTemplate.get(uid=uid)
+    if model == 'ws':
+        item_model = models.WorkSheet.get(uid=uid)
+
+    # get plate_template values
+    plate_values = item_model.plate_values()
+
+    # create a template
+    factory = WorkSheetPlater(**plate_values)
+    template = factory.create()
+    return template
+

@@ -6,13 +6,13 @@
       </div>
       <div class="col-span-10">
         <header-main />
-        <main class="bg-gray-100 p-4">
+        <main class="bg-gray-100 p-4 overflow-y-scroll overscroll-contain">
           <slot />
         </main>
-        <footer-main><slot /></footer-main>
       </div>
     </div>
   </div>
+  <!-- <footer-main><slot /></footer-main> -->
 </template>
 
 

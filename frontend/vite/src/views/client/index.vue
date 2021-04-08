@@ -206,7 +206,7 @@ import { mapGetters, useStore } from 'vuex';
 import { defineComponent, ref, reactive, computed } from 'vue';
 
 
-import tabSamples from '../_components/table/SampleTable.vue';
+import tabSamples from '../patient/comps/SampleTable.vue';
 import tabContacts from './comps/ContactTable.vue';
 import modal from '../_components/modals/simpleModal.vue';
 import { Client } from '../../store/modules/clients';
@@ -231,8 +231,6 @@ export default defineComponent({
   },
   setup() {
     const store = useStore();
-    store.dispatch(AdminActionTypes.FETCH_COUNTRIES);
-    store.dispatch(ActionTypes.FETCH_CLIENTS);
 
     let currentTab = ref('samples');
     const tabs = ['samples', 'contacts'];
@@ -253,6 +251,12 @@ export default defineComponent({
 
     let formTitle = ref('');
 
+    store.dispatch(AdminActionTypes.FETCH_COUNTRIES);
+    store.dispatch(ActionTypes.FETCH_CLIENTS);
+
+    const { executeMutation: createClient } = useMutation(ADD_CLIENT);
+    const { executeMutation: updateClient } = useMutation(EDIT_CLIENT);
+
     const provincesfilter = useQuery({
       query: FILTER_PROVINCES_BY_COUNTRY,
       variables: { uid: countryUid },
@@ -266,9 +270,6 @@ export default defineComponent({
       pause: computed(() => provinceUid !== null),
       requestPolicy: 'network-only',
     });
-
-    const { executeMutation: createClient } = useMutation(ADD_CLIENT);
-    const { executeMutation: updateClient } = useMutation(EDIT_CLIENT);
 
     function addClient() {
       createClient({ name: client.name, code: client.code, districtUid: client.districtUid }).then((result) => {

@@ -26,7 +26,8 @@
           <div class="modal-footer">
             <slot name="footer">
               <div class="flex justify-end">
-                <button class="modal-default-button text-red-500 border-red-200 border rounded py-1 px-2 transition-colors hover:outline-none hover:border-red-500" @click="$emit('close')">
+                <button class="modal-default-button text-red-500 border-red-200 border rounded py-1 px-2 transition-colors hover:outline-none hover:border-red-500" 
+                @click="$emit('close')">
                   Cancel
                 </button>
               </div>
@@ -59,7 +60,7 @@
 }
 
 .modal-container {
-  max-width: 750px;
+  max-width: 70%;
   margin: 0px auto;
   padding: 20px 30px;
   background-color: #fff;
