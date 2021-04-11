@@ -8,7 +8,7 @@ from felicity.database.base_class import DBModel
 from felicity.apps.core.utils import sequencer
 from felicity.apps.setup.models.setup import Instrument
 from felicity.apps.user.models import User
-from felicity.apps.analysis.models import Analysis, Profile, SampleType
+from felicity.apps.analysis.models import analysis as analysis_models
 from felicity.apps.worksheet import schemas
 
 
@@ -57,12 +57,12 @@ class WorkSheetTemplate(WSBase):
     """
     name = Column(String, unique=True, nullable=False)
     description = Column(String)
-    profiles = relationship(Profile, secondary="wstplink", backref="worksheet_templates")
-    analyses = relationship(Analysis, secondary="wstalink", backref="worksheet_templates")
+    profiles = relationship(analysis_models.Profile, secondary="wstplink", backref="worksheet_templates")
+    analyses = relationship(analysis_models.Analysis, secondary="wstalink", backref="worksheet_templates")
     instrument_uid = Column(Integer, ForeignKey('instrument.uid'), nullable=True)
     instrument = relationship(Instrument, backref='worksheet_templates')
     sample_type_uid = Column(Integer, ForeignKey('sampletype.uid'), nullable=False)
-    sample_type = relationship(SampleType, backref='worksheet_templates')
+    sample_type = relationship(analysis_models.SampleType, backref='worksheet_templates')
 
     @classmethod
     def create(cls, obj_in: schemas.WSTemplateCreate) -> schemas.WSTemplate:
@@ -94,12 +94,22 @@ class WorkSheet(WSBase):
     analyst_uid = Column(Integer, ForeignKey('user.uid'), nullable=False)
     analyst = relationship(User, backref='worksheets')
     worksheet_id = Column(String, index=True, unique=True, nullable=False)
-    profiles = relationship(Profile, secondary="wsplink", backref="worksheets")
-    analyses = relationship(Analysis, secondary="wsalink", backref="worksheets")
+    profiles = relationship(analysis_models.Profile, secondary="wsplink", backref="worksheets")
+    analyses = relationship(analysis_models.Analysis, secondary="wsalink", backref="worksheets")
     instrument_uid = Column(Integer, ForeignKey('instrument.uid'), nullable=True)
     instrument = relationship(Instrument, backref='worksheets')
     sample_type_uid = Column(Integer, ForeignKey('sampletype.uid'), nullable=False)
-    sample_type = relationship(SampleType, backref='worksheets')
+    sample_type = relationship(analysis_models.SampleType, backref='worksheets')
+    assigned_count = Column(Integer, nullable=False, default=0)
+
+    def reset_assigned_count(self):
+        count = self.analysis_results.count()
+        self.assigned_count = count
+        self.save()
+
+    def set_plate(self, fill):
+        self.plate = fill
+        self.save()
 
     @classmethod
     def create_worksheet_id(cls):

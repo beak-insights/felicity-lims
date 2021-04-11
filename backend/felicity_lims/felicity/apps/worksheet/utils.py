@@ -66,14 +66,14 @@ class WorkSheetPlater:
                 'row': None,
                 'col': 1,
                 'name': 'sample/dc/blank',
-                'sample_uid': 'sample uid',
+                'result_uid': 'result uid',
             }
 
         # Add Samples Here
         # self.add_samples()
 
         for k, v in self.reserved_positions.items():
-            self.template[k] = v
+            self.template[int(k)] = v
 
         if self.template_type == worksheet_types.GRID:
             self.make_grid_ready()

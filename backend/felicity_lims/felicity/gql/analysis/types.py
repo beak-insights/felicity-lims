@@ -1,17 +1,17 @@
 from graphene_sqlalchemy import SQLAlchemyObjectType
 from graphene import relay
 
-from felicity.apps.analysis.models import (
+from felicity.apps.analysis.models.analysis import (
     SampleType as SampleTypeModel,
     Sample,
     Analysis,
     Profile,
     AnalysisRequest,
-    AnalysisResult,
     AnalysisCategory,
     ResultOption,
     RejectionReason
 )
+from felicity.apps.analysis.models.results import AnalysisResult
 
 
 # Graphene SampleType Type

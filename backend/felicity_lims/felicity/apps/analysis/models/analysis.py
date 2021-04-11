@@ -10,8 +10,6 @@ from felicity.apps.client import models as ct_models
 from felicity.apps.core import BaseMPTT
 from felicity.apps.core.utils import sequencer
 from felicity.apps.patient import models as pt_models
-from felicity.apps.user.models import User
-from felicity.apps.setup.models.setup import Instrument, Method
 from felicity.apps import BaseAuditDBModel, DBModel
 
 logging.basicConfig(level=logging.INFO)
@@ -224,6 +222,14 @@ class Sample(BaseAuditDBModel, BaseMPTT):
         self.status = states.sample.TO_BE_VERIFIED
         self.save()
 
+    def assign(self):
+        self.assigned = True
+        self.save()
+
+    def un_assign(self):
+        self.assigned = False
+        self.save()
+
     def verify(self):
         self.status = states.sample.VERIFIED
         self.save()
@@ -242,35 +248,3 @@ class Sample(BaseAuditDBModel, BaseMPTT):
         data = self._import(obj_in)
         return super().update(**data)
 
-
-class AnalysisResult(BaseAuditDBModel, BaseMPTT):
-    """Test/Analysis Result
-    Number of analysis results per sample will be directly proportional to
-    the number of linked sample_analyses at minimum :)
-    """
-    sample_uid = Column(Integer, ForeignKey('sample.uid'), nullable=False)
-    sample = relationship('Sample', backref="analysis_results")
-    analysis_uid = Column(Integer, ForeignKey('analysis.uid'), nullable=False)
-    analysis = relationship('Analysis', backref="analysis_results")
-    instrument_uid = Column(Integer, ForeignKey('instrument.uid'), nullable=True)
-    instrument = relationship(Instrument)
-    method_uid = Column(Integer, ForeignKey('method.uid'), nullable=True)
-    method = relationship(Method)
-    result = Column(String, nullable=True)
-    analyst_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
-    submitted_by_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
-    date_submitted = Column(DateTime, nullable=True)
-    verified_by_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
-    date_verified = Column(DateTime, nullable=True)
-    invalidated_by_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
-    date_invalidated = Column(DateTime, nullable=True)
-    status = Column(String, nullable=False)
-
-    @classmethod
-    def create(cls, obj_in: schemas.AnalysisResultCreate) -> schemas.AnalysisResult:
-        data = cls._import(obj_in)
-        return super().create(**data)
-
-    def update(self, obj_in: schemas.AnalysisResultUpdate) -> schemas.AnalysisResult:
-        data = self._import(obj_in)
-        return super().update(**data)

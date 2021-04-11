@@ -10,8 +10,9 @@ from pydantic import BaseModel
 class WorkSheetBase(BaseModel):
     analyst_uid: Optional[int] = None
     template_uid: Optional[int] = None
-    worksheet_id: Optional[int] = None
+    worksheet_id: Optional[str] = None
     instrument_uid: Optional[int] = None
+    sample_type_uid: Optional[int] = None
     analyses_uid: Optional[int] = None
     reserved: Optional[Dict] = {}
     number_of_samples: Optional[int] = None

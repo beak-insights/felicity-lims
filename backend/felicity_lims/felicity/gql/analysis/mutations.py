@@ -143,6 +143,7 @@ class UpdateAnalysisCategory(graphene.Mutation):
                 except AttributeError as e:
                     # raise GraphQLError(f"{e}")
                     pass
+
         profile_in = schemas.AnalysisCategoryUpdate(**analysis_category.to_dict())
         analysis_category.update(profile_in)
         ok = True

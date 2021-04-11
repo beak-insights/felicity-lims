@@ -12,6 +12,11 @@ class Job(DBModel):
     status = Column(String)
     reason = Column(String)
 
+    def change_status(self, new_status, change_reason=""):
+        self.status = new_status
+        self.reason = change_reason
+        self.save()
+
     def increase_priority(self):
         if self.priority < conf.priorities.HIGH:
             self.priority += 1

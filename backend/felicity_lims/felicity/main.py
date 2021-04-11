@@ -12,6 +12,8 @@ if initialize_felicity():
     from starlette.graphql import GraphQLApp
     from felicity.gql.schema import gql_schema # noqa
 
+    from felicity.apps.job.sched import felicity_workforce_init, felicity_halt_workforce
+
     flims = FastAPI(
         title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"
     )
@@ -19,9 +21,11 @@ if initialize_felicity():
     @flims.on_event("startup")
     async def startup():
         await database.connect()
+        felicity_workforce_init()
 
     @flims.on_event("shutdown")
     async def shutdown():
+        felicity_halt_workforce()
         await database.disconnect()
         
     # Set all CORS enabled origins
