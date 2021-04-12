@@ -6,7 +6,8 @@ from fastapi.encoders import jsonable_encoder
 
 from felicity.apps.patient import models as pt_models
 from felicity.apps.client import models as ct_models
-from felicity.apps.analysis import models
+from felicity.apps.analysis.models import analysis as analysis_models
+from felicity.apps.analysis.models import results as result_models
 from felicity.apps.analysis import schemas
 from felicity.gql.analysis import types
 from felicity.apps.patient.models import logger
@@ -34,7 +35,7 @@ class CreateSampleType(graphene.Mutation):
         if not name or not abbr:
             raise GraphQLError("Name and Description are mandatory")
 
-        exists = models.SampleType.get(name=name)
+        exists = analysis_models.SampleType.get(name=name)
         if exists:
             raise GraphQLError(f"Sample Type: {name} already exists")
 
@@ -47,7 +48,7 @@ class CreateSampleType(graphene.Mutation):
             incoming[k] = v
 
         obj_in = schemas.SampleTypeCreate(**incoming)
-        sample_type = models.SampleType.create(obj_in)
+        sample_type = analysis_models.SampleType.create(obj_in)
         ok = True
         return CreateSampleType(ok=ok, sample_type=sample_type)
 
@@ -65,7 +66,7 @@ class UpdateSampleType(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, uid, **kwargs):
-        sampletype = models.SampleType.get(uid=uid)
+        sampletype = analysis_models.SampleType.get(uid=uid)
         if not sampletype:
             raise GraphQLError(f"Sample type with uid {uid} does not exist")
 
@@ -101,7 +102,7 @@ class CreateAnalysisCategory(graphene.Mutation):
         if not name or not description:
             raise GraphQLError("Name and Description are mandatory")
 
-        exists = models.AnalysisCategory.get(name=name)
+        exists = analysis_models.AnalysisCategory.get(name=name)
         if exists:
             raise GraphQLError(f"A AnalysisCategory named {name} already exists")
 
@@ -114,7 +115,7 @@ class CreateAnalysisCategory(graphene.Mutation):
 
         logger.info("hello there 2")
         obj_in = schemas.AnalysisCategoryCreate(**incoming)
-        analysis_category = models.AnalysisCategory.create(obj_in)
+        analysis_category = analysis_models.AnalysisCategory.create(obj_in)
         ok = True
         return CreateAnalysisCategory(ok=ok, analysis_category=analysis_category)
 
@@ -131,7 +132,7 @@ class UpdateAnalysisCategory(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, uid, **kwargs):
-        analysis_category = models.AnalysisCategory.get(uid=uid)
+        analysis_category = analysis_models.AnalysisCategory.get(uid=uid)
         if not analysis_category:
             raise GraphQLError(f"AnalysisCategory with uid {uid} does not exist")
 
@@ -168,7 +169,7 @@ class CreateProfile(graphene.Mutation):
         if not name or not description:
             raise GraphQLError("Name and Description are mandatory")
 
-        exists = models.Profile.get(name=name)
+        exists = analysis_models.Profile.get(name=name)
         if exists:
             raise GraphQLError(f"A Profile named {name} already exists")
 
@@ -181,7 +182,7 @@ class CreateProfile(graphene.Mutation):
             incoming[k] = v
 
         obj_in = schemas.ProfileCreate(**incoming)
-        profile = models.Profile.create(obj_in)
+        profile = analysis_models.Profile.create(obj_in)
         ok = True
         return CreateProfile(ok=ok, profile=profile)
 
@@ -200,7 +201,7 @@ class UpdateProfile(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, uid, **kwargs):
-        profile = models.Profile.get(uid=uid)
+        profile = analysis_models.Profile.get(uid=uid)
         if not profile:
             raise GraphQLError(f"Profile with uid {uid} does not exist")
 
@@ -220,7 +221,7 @@ class UpdateProfile(graphene.Mutation):
         profile.analyses.clear()
         if analyses:
             for _uid in analyses:
-                anal = models.Analysis.get(uid=_uid)
+                anal = analysis_models.Analysis.get(uid=_uid)
                 if anal not in profile.analyses:  # analysis_data['profiles'] ??
                     profile.analyses.append(anal)
         profile.save()
@@ -249,11 +250,11 @@ class CreateAnalysis(graphene.Mutation):
         if not name or not description:
             raise GraphQLError("Name and Description are mandatory")
 
-        exists = models.Analysis.get(name=name)
+        exists = analysis_models.Analysis.get(name=name)
         if exists:
             raise GraphQLError(f"A analysis named {name} already exists")
 
-        exists = models.Analysis.get(keyword=keyword)
+        exists = analysis_models.Analysis.get(keyword=keyword)
         if exists:
             raise GraphQLError(f"Analysis Keyword {keyword} is not unique")
 
@@ -270,12 +271,12 @@ class CreateAnalysis(graphene.Mutation):
         incoming['sample_types'] = []
         if sample_types:
             for _uid in sample_types:
-                stype = models.SampleType.get(uid=_uid)
+                stype = analysis_models.SampleType.get(uid=_uid)
                 if stype not in incoming['sample_types']:
                     incoming['sampletypes'].append(stype)
 
         obj_in = schemas.AnalysisCreate(**incoming)  # skip this stage if its not adding analyses and stypes
-        analysis = models.Analysis.create(obj_in)
+        analysis = analysis_models.Analysis.create(obj_in)
         ok = True
         return CreateAnalysis(ok=ok, analysis=analysis)
 
@@ -295,7 +296,7 @@ class UpdateAnalysis(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, uid, **kwargs):
-        analysis = models.Analysis.get(uid=uid)
+        analysis = analysis_models.Analysis.get(uid=uid)
         if not analysis:
             raise GraphQLError(f"Analysis with uid {uid} does not exist -- cannot update")
 
@@ -311,7 +312,7 @@ class UpdateAnalysis(graphene.Mutation):
         analysis.sampletypes.clear()
         if sample_types:
             for _uid in sample_types:
-                stype = models.SampleType.get(uid=_uid)
+                stype = analysis_models.SampleType.get(uid=_uid)
                 if stype not in analysis.sampletypes:
                     analysis.sampletypes.append(stype)
 
@@ -362,26 +363,26 @@ class CreateAnalysisRequest(graphene.Mutation):
         incoming = {
             "patient_uid": patient_uid,
             "client_uid": client_uid,
-            "request_id": None,  # models.AnalysisRequest.create_request_id(),
+            "request_id": None,  # analysis_models.AnalysisRequest.create_request_id(),
             "client_request_id": kwargs.get('client_request_id', None)
         }
 
         obj_in = schemas.AnalysisRequestCreate(**incoming)
-        analysisrequest = models.AnalysisRequest.create(obj_in)
+        analysisrequest = analysis_models.AnalysisRequest.create(obj_in)
 
         # 1. create samples
         for s in samples:
             _st_uid = s['sample_type']
             _profiles = s['profiles']
             _analyses = s['analyses']
-            stype = models.SampleType.get(uid=_st_uid)
+            stype = analysis_models.SampleType.get(uid=_st_uid)
             if not stype:
                 raise GraphQLError(f"Error, failed to retrieve sample type {_st_uid}")
 
             sample_in = {
                 'analysisrequest_uid': analysisrequest.uid,
                 'sampletype_uid': _st_uid,
-                'sample_id': None,  # models.Sample.create_sample_id(sampletype=stype),
+                'sample_id': None,  # analysis_models.Sample.create_sample_id(sampletype=stype),
                 'priority': priority,
                 'status': states.sample.PENDING
             }
@@ -393,7 +394,7 @@ class CreateAnalysisRequest(graphene.Mutation):
             logger.info(s)
             logger.info(_profiles)
             for p_uid in _profiles:
-                profile = models.Profile.get(uid=p_uid)
+                profile = analysis_models.Profile.get(uid=p_uid)
                 profiles.append(profile)
                 analyses_ = profile.analyses
                 for _an in analyses_:
@@ -401,13 +402,13 @@ class CreateAnalysisRequest(graphene.Mutation):
 
             # make sure the selected analyses are not part of the selected profiles
             for a_uid in _analyses:
-                analysis = models.Analysis.get(uid=a_uid)
+                analysis = analysis_models.Analysis.get(uid=a_uid)
                 if analysis not in _profiles_analyses:
                     analyses.append(analysis)
                     _profiles_analyses.add(analysis)
 
             sample_schema = schemas.SampleCreate(**sample_in)
-            sample = models.Sample.create(sample_schema)
+            sample = analysis_models.Sample.create(sample_schema)
             sample.analyses = analyses
             sample.profiles = profiles
             sample.save()
@@ -420,7 +421,7 @@ class CreateAnalysisRequest(graphene.Mutation):
                     'status': states.result.PENDING
                 }
                 a_result_schema = schemas.AnalysisResultCreate(**a_result_in)
-                models.AnalysisResult.create(a_result_schema)
+                result_models.AnalysisResult.create(a_result_schema)
 
         ok = True
         return CreateAnalysisRequest(ok=ok, analysisrequest=analysisrequest)
@@ -442,7 +443,7 @@ class UpdateAnalysisRequest(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, uid, **kwargs):
-        analysisrequest = models.AnalysisRequest.get(uid=uid)
+        analysisrequest = analysis_models.AnalysisRequest.get(uid=uid)
         if not analysisrequest:
             raise GraphQLError(f"AnalysisRequest with uid {uid} does not exist")
 
@@ -480,7 +481,7 @@ class UpdateSample(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, uid, **kwargs):
-        sample = models.Sample.get(uid=uid)
+        sample = analysis_models.Sample.get(uid=uid)
         if not sample:
             raise GraphQLError(f"Sample with uid {uid} not found")
         if kwargs.get('cancel'):
@@ -514,7 +515,7 @@ class SubmitAnalysisResults(graphene.Mutation):
 
         for _ar in analysis_results:
             uid = _ar['uid']
-            a_result = models.AnalysisResult.get(uid=uid)
+            a_result = result_models.AnalysisResult.get(uid=uid)
             if not a_result:
                 raise GraphQLError(f"AnalysisResult with uid {uid} not found")
 
@@ -537,7 +538,7 @@ class SubmitAnalysisResults(graphene.Mutation):
             a_result_in = schemas.AnalysisResultUpdate(**a_result.to_dict())
             a_result.update(a_result_in)
 
-            # check if all sibling analyses for connected sample are to_be_verified and change sample state \
+            # check if all sibling analyses for connected sample are resulted and change sample state \
             # to to_be_verified
 
             statuses = [states.result.RESULTED]  # or not in [states.result.PENDING, states.result.RETRACTED]
@@ -545,6 +546,55 @@ class SubmitAnalysisResults(graphene.Mutation):
             match = all([(sibling.status in statuses) for sibling in siblings])
             if match:
                 a_result.sample.submit()
+
+            # try to submit associated worksheet
+            if a_result.worksheet:
+                a_result.worksheet.submit()
+
+            return_results.append(a_result)
+
+        ok = True
+        return SubmitAnalysisResults(ok, analysis_results=return_results)
+
+
+class VerifyAnalysisResults(graphene.Mutation):
+    class Arguments:
+        analyses = graphene.List(graphene.String, required=True)
+
+    ok = graphene.Boolean()
+    analysis_results = graphene.List(lambda: types.AnalysisResultType)
+
+    @staticmethod
+    def mutate(root, info, analyses, **kwargs):
+        return_results = []
+
+        if len(analyses) == 0:
+            raise GraphQLError(f"No analyses to verify are provided!")
+
+        for _ar_uid in analyses:
+            a_result = result_models.AnalysisResult.get(uid=_ar_uid)
+            if not a_result:
+                raise GraphQLError(f"AnalysisResult with uid {_ar_uid} not found")
+
+            # No Empty Results
+            status = getattr(a_result, 'status', None)
+            if status == states.result.RESULTED:
+                a_result.verify()
+            else:
+                continue
+
+            # check if all sibling analyses for connected sample are verified and change sample state \
+            # to verified
+
+            statuses = [states.result.VERIFIED]
+            siblings = a_result.sample.analysis_results
+            match = all([(sibling.status in statuses) for sibling in siblings])
+            if match:
+                a_result.sample.verify()
+
+            # try to submit associated worksheet
+            if a_result.worksheet:
+                a_result.worksheet.verify()
 
             return_results.append(a_result)
 
@@ -570,3 +620,4 @@ class AnalysisMutations(graphene.ObjectType):
     update_analysis_request = UpdateAnalysisRequest.Field()
     # AnalysisResults
     submit_analysis_results = SubmitAnalysisResults.Field()
+    verify_analysis_results = VerifyAnalysisResults.Field()

@@ -6,7 +6,8 @@ from graphene import (
 from graphene_sqlalchemy import SQLAlchemyConnectionField
 
 from felicity.gql.analysis import types as a_types
-from felicity.apps.analysis import models as a_models
+from felicity.apps.analysis.models import analysis as a_models
+from felicity.apps.analysis.models import results as r_models
 
 
 def resolve_profile_by_uid(info, uid):
@@ -73,9 +74,9 @@ class AnalysisQuery(graphene.ObjectType):
         return analysis_requests
 
     def resolve_analysis_result_by_uid(self, info, uid):
-        analysis_result = a_models.AnalysisResult.get(uid=uid)
+        analysis_result = r_models.AnalysisResult.get(uid=uid)
         return analysis_result
 
     def resolve_analysis_result_by_sample_uid(self, info, uid):
-        analysis_results = a_models.AnalysisResult.where(sample_uid__exact=uid)
+        analysis_results = r_models.AnalysisResult.where(sample_uid__exact=uid)
         return analysis_results

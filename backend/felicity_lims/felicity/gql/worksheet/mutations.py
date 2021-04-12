@@ -11,7 +11,7 @@ from felicity.apps.job import (
 )
 from felicity.apps.job.sched import felicity_resume_workforce
 from felicity.apps.user import models as user_models
-from felicity.apps.worksheet import models, schemas, tasks
+from felicity.apps.worksheet import models, schemas, tasks, conf
 from felicity.gql.worksheet.types import WorkSheetType, WorkSheetTemplateType
 from felicity.apps.job.conf import actions, categories, priorities, states
 from felicity.apps.analysis import models as analysis_models
@@ -193,6 +193,7 @@ class CreateWorkSheet(graphene.Mutation):
             "rows": ws_temp.rows,
             "cols": ws_temp.cols,
             "row_wise": ws_temp.row_wise,
+            "state": conf.worksheet_states.PENDING_ASSIGNMENT,
         }
 
         ws_schema = schemas.WorkSheetCreate(**incoming)
@@ -271,9 +272,67 @@ class UpdateWorkSheet(graphene.Mutation):
         return CreateWorkSheet(worksheet=ws, ok=ok)
 
 
+#
+# Laboratory Mutations
+#
+class UpdateWorkSheetApplyTemplate(graphene.Mutation):
+    class Arguments:
+        worksheet_uid = graphene.Int(required=True)
+        template_uid = graphene.Int(required=True)
+
+    ok = graphene.Boolean()
+    worksheet = graphene.Field(lambda: WorkSheetType)
+
+    @staticmethod
+    def mutate(root, info, template_uid, worksheet_uid, **kwargs):
+        if not template_uid or not worksheet_uid:
+            raise GraphQLError("Template and Worksheet are required")
+
+        ws = models.WorkSheet.get(uid=worksheet_uid)
+        if not ws:
+            raise GraphQLError(f"WorkSheet {worksheet_uid} does not exist")
+
+        ws_temp = models.WorkSheetTemplate.get(uid=template_uid)
+        if not ws_temp:
+            raise GraphQLError(f"WorkSheet Template {template_uid} does not exist")
+
+        incoming = {
+            "template_uid": template_uid,
+            "instrument_uid": ws_temp.instrument_uid,
+            "sample_type_uid": ws_temp.sample_type_uid,
+            "reserved": ws_temp.reserved,
+            "number_of_samples": ws_temp.number_of_samples,
+            "rows": ws_temp.rows,
+            "cols": ws_temp.cols,
+            "row_wise": ws_temp.row_wise,
+            "state": conf.worksheet_states.PENDING_ASSIGNMENT,
+        }
+
+        ws_schema = schemas.WorkSheetUpdate(**incoming)
+        ws.update(ws_schema)
+        ws.analyses = ws_temp.analyses
+        ws.save()
+
+        # Add a job
+        job_schema = job_schemas.JobCreate(
+            action=actions.WS_ASSIGN,
+            category=categories.WORKSHEET,
+            priority=priorities.MEDIUM,
+            job_id=ws.uid,
+            status=states.PENDING
+        )
+        job = job_models.Job.create(job_schema)
+        # felicity_resume_workforce()
+        tasks.populate_worksheet_plate(job.uid)
+
+        ok = True
+        return UpdateWorkSheetApplyTemplate(worksheet=ws, ok=ok)
+
+
 class WorkSheetMutations(graphene.ObjectType):
     # WorkSheet Template
     create_worksheet_template = CreateWorkSheetTemplate.Field()
     update_worksheet_template = UpdateWorkSheetTemplate.Field()
     # WorkSheet
     create_worksheet = CreateWorkSheet.Field()
+    update_worksheet_apply_template = UpdateWorkSheetApplyTemplate.Field()

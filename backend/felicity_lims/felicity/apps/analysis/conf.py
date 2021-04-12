@@ -18,6 +18,8 @@ class States:
         PENDING = 'pending'
         RESULTED = 'resulted'
         RETRACTED = 'retracted'
+        TO_BE_VERIFIED = 'to_be_verified'  # un-authorised
+        VERIFIED = 'verified'  # authorised
 
     def __init__(self):
         self.sample = self.Sample()

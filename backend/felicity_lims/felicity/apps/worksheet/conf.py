@@ -19,6 +19,7 @@ worksheet_types = WSTypes()
 class WSStates(object):
     """Worksheet States
     """
+    PENDING_ASSIGNMENT = 'pending_assignment'
     OPEN = 'open'
     TO_BE_VERIFIED = 'to_be_verified'
     VERIFIED = 'verified'

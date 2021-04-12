@@ -9,7 +9,9 @@ from felicity.apps.core.utils import sequencer
 from felicity.apps.setup.models.setup import Instrument
 from felicity.apps.user.models import User
 from felicity.apps.analysis.models import analysis as analysis_models
-from felicity.apps.worksheet import schemas
+from felicity.apps.analysis import conf as analysis_conf
+from felicity.apps.worksheet import schemas, conf
+
 
 
 class WSBase(DBModel):
@@ -103,9 +105,38 @@ class WorkSheet(WSBase):
     assigned_count = Column(Integer, nullable=False, default=0)
 
     def reset_assigned_count(self):
-        count = self.analysis_results.count()
+        count = len(self.analysis_results)
         self.assigned_count = count
         self.save()
+
+    def change_state(self, state):
+        self.state = state
+        self.save()
+
+    def has_processed_samples(self):
+        states = [
+            analysis_conf.states.result.RESULTED,
+            analysis_conf.states.result.TO_BE_VERIFIED,
+            analysis_conf.states.result.VERIFIED]
+        processed = any([res.status in states for res in self.analysis_results])
+        return processed
+
+    def submit(self):
+        if self.state != conf.worksheet_states.TO_BE_VERIFIED:
+            states = [
+                analysis_conf.states.result.RESULTED,
+                analysis_conf.states.result.TO_BE_VERIFIED,
+                analysis_conf.states.result.VERIFIED]
+
+            if all([res.status in states for res in self.analysis_results]):
+                self.change_state(conf.worksheet_states.TO_BE_VERIFIED)
+
+    def verify(self):
+        if self.state != conf.worksheet_states.VERIFIED:
+            states = [analysis_conf.states.result.VERIFIED]
+
+            if all([res.status in states for res in self.analysis_results]):
+                self.change_state(conf.worksheet_states.VERIFIED)
 
     def set_plate(self, fill):
         self.plate = fill

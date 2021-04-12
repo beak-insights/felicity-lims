@@ -3,7 +3,7 @@ import logging
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import relationship
 
-from felicity.apps.analysis import schemas
+from felicity.apps.analysis import schemas, conf
 from felicity.apps.analysis.models import analysis as analysis_models
 from felicity.apps.core import BaseMPTT
 from felicity.apps.setup.models.setup import Instrument, Method
@@ -48,6 +48,10 @@ class AnalysisResult(BaseAuditDBModel, BaseMPTT):
     def un_assign(self, ws_number):
         self.worksheet_uid = None
         self.assigned = False
+        self.save()
+
+    def verify(self):
+        self.status = conf.states.result.VERIFIED
         self.save()
 
     @classmethod
