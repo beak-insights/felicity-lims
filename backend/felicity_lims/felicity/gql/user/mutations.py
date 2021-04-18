@@ -23,9 +23,32 @@ from felicity.apps.user import models as user_models
 from felicity.apps.user import schemas as user_schemas
 from felicity.gql.user.types import UserType 
 from felicity.gql.user.types import UserAuthType
+from felicity.gql import AuthorizedMutation, anonymous_return, AuthenticationRequired
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def simple_task(message: str):
+    time.sleep(4)
+    logger.info(f"finished task: {message}")
+    return message
+
+
+class CreateUserxx(graphene.Mutation):
+    class Input:
+        firstname = graphene.String(required=True)
+        lastname = graphene.String(required=True)
+        email = graphene.String(required=True)
+        token = graphene.String(required=True)
+        open_reg = graphene.Boolean(required=False)
+
+    ok = graphene.Boolean()
+    user = graphene.Field(lambda: UserType)
+
+    @anonymous_return(AuthenticationRequired.default_message)
+    def mutate(root, info, **kwargs):
+        return CreateUserxx(user=None, ok=True)
 
 
 class CreateUser(graphene.Mutation):
@@ -284,6 +307,7 @@ class RecoverPassword(graphene.Mutation):
 class UserMutations(graphene.ObjectType):
     # User Specific
     create_user = CreateUser.Field()
+    create_userxx = CreateUserxx.Field()
     update_user = UpdateUser.Field()
     
     # Authentication Specific

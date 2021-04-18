@@ -1,8 +1,18 @@
 from felicity.init import initialize_felicity
 if initialize_felicity():
-    from fastapi import FastAPI
+    import logging
+    from typing import List
+    from fastapi import FastAPI, WebSocket
     from starlette.middleware.cors import CORSMiddleware
     from graphql.execution.executors.asyncio import AsyncioExecutor
+
+    from starlette.middleware.authentication import AuthenticationMiddleware
+    from starlette.authentication import (
+        AuthenticationBackend, AuthenticationError, SimpleUser, UnauthenticatedUser,
+        AuthCredentials
+    )
+    import base64
+    import binascii
 
     from felicity.database.session import database # noqa
 
@@ -11,8 +21,41 @@ if initialize_felicity():
 
     from starlette.graphql import GraphQLApp
     from felicity.gql.schema import gql_schema # noqa
+    from felicity.gql.deps import get_current_active_user
 
     from felicity.apps.job.sched import felicity_workforce_init, felicity_halt_workforce
+
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    class FelicityAuthBackend(AuthenticationBackend):
+        async def authenticate(self, request):
+            # logger.info(f"trial middle ware: {request}")
+            # logger.info(f"trial middle ware: {dir(request)}")
+            if "Authorization" not in request.headers:
+                return
+
+            # logger.info(f"Authorization checking: {request.headers}")
+
+            auth = request.headers["Authorization"]
+            try:
+                scheme, credentials = auth.split()
+                if scheme.lower() == 'basic':
+                    decoded = base64.b64decode(credentials).decode("ascii")
+                    username, _, password = decoded.partition(":")
+                    # TODO: You'd want to verify the username and password here.
+                elif scheme.lower() == 'bearer':
+                    """"get is active user from token"""
+                    logger.info(f"credentials bearer: {credentials}")
+                    user = get_current_active_user(credentials)
+                    logger.info(f"User from token: {user}")
+                    username, _, password = user.auth.user_name, None, None
+                else:
+                    return
+            except (ValueError, UnicodeDecodeError, binascii.Error) as exc:
+                raise AuthenticationError('Invalid auth credentials')
+
+            return AuthCredentials(["authenticated"]), SimpleUser(username)
 
     flims = FastAPI(
         title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"
@@ -37,6 +80,33 @@ if initialize_felicity():
             allow_methods=["*"],
             allow_headers=["*"],
         )
+        flims.add_middleware(
+            AuthenticationMiddleware,
+            backend=FelicityAuthBackend()
+        )
 
     flims.include_router(api_router, prefix=settings.API_V1_STR)
     flims.add_route("/felicity-gql", GraphQLApp(schema=gql_schema, executor_class=AsyncioExecutor))
+
+    class ConnectionManager:
+        def __init__(self):
+            self.connections: List[WebSocket] = []
+
+        async def connect(self, websocket: WebSocket):
+            await websocket.accept()
+            self.connections.append(websocket)
+
+        async def broadcast(self, data: str):
+            for connection in self.connections:
+                await connection.send_text(data)
+
+
+    manager = ConnectionManager()
+
+
+    @flims.websocket("/ws")
+    async def websocket_endpoint(websocket: WebSocket):
+        await manager.connect(websocket)
+        while True:
+            data = await websocket.receive_text()
+            await manager.broadcast(f"Client {data}")

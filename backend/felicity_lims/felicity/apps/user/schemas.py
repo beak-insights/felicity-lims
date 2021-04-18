@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, EmailStr
 
@@ -87,3 +87,80 @@ class Auth(AuthInDBBase):
 # Additional properties stored in DB
 class AuthInDB(AuthInDBBase):
     hashed_password: str
+
+
+#
+#  Permission Schema
+#
+
+# Shared properties
+class PermissionBase(BaseModel):
+    action: Optional[str] = None
+    target: Optional[str] = None
+    active: bool = False
+
+
+# Properties to receive via API on creation
+class PermissionCreate(PermissionBase):
+    pass
+
+
+# Properties to receive via API on update
+class PermissionUpdate(PermissionBase):
+    uid: Optional[str] = None
+
+
+class PermissionInDBBase(PermissionBase):
+    uid: Optional[int] = None
+
+    class Config:
+        orm_mode = True
+
+
+# Additional properties to return via API
+class Permission(PermissionInDBBase):
+    pass
+
+
+# Additional properties stored in DB
+class PermissionInDB(PermissionInDBBase):
+    pass
+
+
+#
+#  Group Schema
+#
+
+# Shared properties
+class GroupBase(BaseModel):
+    name: Optional[str] = None
+    members: Optional[List[User]] = None
+    permissions: Optional[List[Permission]] = None
+    active: bool = False
+
+
+# Properties to receive via API on creation
+class GroupCreate(GroupBase):
+    pass
+
+
+# Properties to receive via API on update
+class GroupUpdate(GroupBase):
+    uid: Optional[str] = None
+
+
+class GroupInDBBase(GroupBase):
+    uid: Optional[int] = None
+
+    class Config:
+        orm_mode = True
+
+
+# Additional properties to return via API
+class Group(GroupInDBBase):
+    pass
+
+
+# Additional properties stored in DB
+class GroupInDB(GroupInDBBase):
+    pass

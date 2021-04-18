@@ -9,6 +9,8 @@ from felicity.apps.setup.models import Instrument
 from felicity.apps.setup.models import Method
 from felicity.apps.user.models import UserAuth
 from felicity.apps.user.models import User
+from felicity.apps.user.models import Permission
+from felicity.apps.user.models import Group
 from felicity.apps.client.models import Client
 from felicity.apps.client.models import ClientContact
 from felicity.apps.patient.models import Patient

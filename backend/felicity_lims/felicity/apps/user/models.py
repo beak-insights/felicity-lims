@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship, backref
 
 from felicity.apps.core.utils import is_valid_email
@@ -106,5 +106,58 @@ class User(AbstractBaseUser):
         self.update(update_in)
 
 
+class Permission(DBModel):
+    action = Column(String, nullable=False)   # e.g create, modify
+    target = Column(String, nullable=False)  # e.g sample, worksheet
+    active = Column(Boolean(), default=True)
+
+    @classmethod
+    def create(cls, obj_in):
+        data = cls._import(obj_in)
+        return super().create(**data)
+
+    def update(self, obj_in):
+        data = self._import(obj_in)
+        return super().update(**data)
 
 
+class GULink(DBModel):
+    """Many to Many Link between Group and User
+    """
+    user_uid = Column(Integer, ForeignKey('user.uid'), primary_key=True)
+    group_uid = Column(Integer, ForeignKey('group.uid'), primary_key=True)
+
+
+class GPLink(DBModel):
+    """Many to Many Link between Group and Permission
+    """
+    permission_uid = Column(Integer, ForeignKey('permission.uid'), primary_key=True)
+    group_uid = Column(Integer, ForeignKey('group.uid'), primary_key=True)
+
+
+class Group(DBModel):
+    name = Column(String, unique=True, index=True, nullable=False)
+    members = relationship(User, secondary="gulink", backref="groups")
+    permissions = relationship(Permission, secondary="gplink", backref="groups")
+    active = Column(Boolean(), default=True)
+
+    @classmethod
+    def create(cls, obj_in):
+        data = cls._import(obj_in)
+        return super().create(**data)
+
+    def update(self, obj_in):
+        data = self._import(obj_in)
+        return super().update(**data)
+
+    def add_member(self, member):
+        self.members.add(member)
+
+    def remove_member(self, member):
+        self.members.remove(member)
+
+    def add_perm(self, perm):
+        self.permissions.add(perm)
+
+    def remove_perm(self, perm):
+        self.permissions.remove(perm)

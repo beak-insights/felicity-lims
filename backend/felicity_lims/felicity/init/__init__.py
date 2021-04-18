@@ -2,6 +2,7 @@ import logging
 
 from felicity.init.checks.db import check_db_conn_status
 from felicity.init.setup.create_superuser import create_super_user
+from felicity.init.setup.groups_perms import create_groups, create_permissions
 from felicity.init.setup.setup_laboratory import create_laboratory
 
 logging.basicConfig(level=logging.INFO)
@@ -15,6 +16,8 @@ def initialize_felicity() -> bool:
     
     # Felicity LIMS Setup
     create_super_user()
+    create_groups()
+    create_permissions()
     create_laboratory()
     
     logger.info("Felicity LIMS Initializing Success :) YaY")
