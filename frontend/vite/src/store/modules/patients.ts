@@ -4,7 +4,7 @@ import { RootState } from '../state';
 import { ActionTree, GetterTree, MutationTree } from 'vuex';
 import { IClient, IDistrict, IProvince } from '../common'
 
-import { GET_ALL_PATIENTS, SEARCH_PATIENTS } from '../../graphql/patient.queries';
+import { GET_ALL_PATIENTS, SEARCH_PATIENTS, GET_PATIENT_BY_UID } from '../../graphql/patient.queries';
 
 export interface IPatient {
   uid?: string,
@@ -53,11 +53,13 @@ export class Patient implements IPatient {
 // state contract
 export interface IState {
   patients?: IPatient[];
+  patient?: IPatient | null;
 }
 
 export const initialState = () => {
   return <IState>{
     patients: [],
+    patient: null,
   };
 };
 
@@ -67,6 +69,7 @@ export enum MutationTypes {
   RESET_STATE = 'RESET_STATE',
   CLEAR_PATIENT = 'CLEAR_PATIENT',
   SET_PATIENTS = 'SET_PATIENTS',
+  SET_PATIENT = 'SET_PATIENT',
   DIRECT_SET_PATIENTS = 'DIRECT_SET_PATIENTS',
   ADD_PATIENT = 'ADD_PATIENT',
 }
@@ -74,6 +77,7 @@ export enum MutationTypes {
 export enum ActionTypes {
   RESET_STATE = 'RESET_STATE',
   CLEAR_PATIENT = 'CLEAR_PATIENT',
+  FETCH_PATIENT_BY_UID = 'FETCH_PATIENT_BY_UID',
   FETCH_PATIENTS= 'FETCH_PATIENTS',
   SEARCH_PATIENTS= 'SEARCH_PATIENTS',
   ADD_PATIENT = 'ADD_PATIENT',
@@ -83,6 +87,7 @@ export enum ActionTypes {
 export const getters = <GetterTree<IState, RootState>>{
   getPatients: (state) => state.patients,
   getPatientByUid: (state) => (uid: string) => state.patients?.find(p => p.uid === uid),
+  getPatient: (state) => state.patient,
 };
 
 // Mutations
@@ -99,6 +104,10 @@ export const mutations = <MutationTree<IState>>{
   [MutationTypes.DIRECT_SET_PATIENTS](state: IState, patients: IPatient[]): void {
     state.patients = [];
     state.patients = patients;
+  },
+
+  [MutationTypes.SET_PATIENT](state: IState, payload: IPatient): void {
+    state.patient = payload;
   },
 
   [MutationTypes.ADD_PATIENT](state: IState, payload: IPatient): void {
@@ -120,6 +129,13 @@ export const actions = <ActionTree<IState, RootState>>{
   async [ActionTypes.FETCH_PATIENTS]({ commit }){
     await useQuery({ query: GET_ALL_PATIENTS })
           .then(payload => commit(MutationTypes.SET_PATIENTS, payload.data.value.patientAll.edges));
+  },
+
+  async [ActionTypes.FETCH_PATIENT_BY_UID]({ commit }, uid){
+    await urqlClient
+    .query( GET_PATIENT_BY_UID, { uid })
+    .toPromise()
+    .then(result => commit(MutationTypes.SET_PATIENT, result.data.patientByUid))
   },
 
   async [ActionTypes.SEARCH_PATIENTS]({ commit }, query: string){

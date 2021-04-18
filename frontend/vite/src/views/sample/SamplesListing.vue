@@ -3,26 +3,13 @@
         <div class="my-4 flex sm:flex-row flex-col">
         <div class="flex flex-row mb-1 sm:mb-0">
             <div class="relative">
-                <select class="appearance-none h-full rounded-l border block  w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
-                    <option>5</option>
-                    <option>10</option>
-                    <option>20</option>
-                </select>
-                <div
-                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                        <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                    </svg>
-                </div>
-            </div>
-            <div class="relative">
-                <select
-                    class="appearance-none h-full rounded-r border-t sm:rounded-r-none sm:border-r-0 border-r border-b block appearance-none w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:border-l focus:border-r focus:bg-white focus:border-gray-500">
-                    <option>All</option>
-                    <option>Receiced</option>
-                    <option>Verified</option>
-                    <option>To be Verified</option>
-                    <option>Published</option>
+                <select v-model="filterStatus"
+                class="appearance-none h-full rounded-l border block  w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
+                   <option value="">All</option>
+                    <option value="pending">Pending</option>
+                    <option value="resulted">Resulted</option>
+                    <option value="to_be_verified">To be Verified</option>
+                    <option value="verified">Verified</option>
                 </select>
                 <div
                     class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
@@ -40,9 +27,12 @@
                     </path>
                 </svg>
             </span>
-            <input placeholder="Search by Profile ..."
+            <input placeholder="Search ..."
+                v-model="filterText"
                 class="appearance-none rounded-r rounded-l sm:rounded-l-none border border-gray-400 border-b block pl-8 pr-6 py-2 w-full bg-white text-sm placeholder-gray-400 text-gray-700 focus:bg-white focus:placeholder-gray-600 focus:text-gray-700 focus:outline-none" />
-        </div>
+        </div><button @click.prevent="filterSamples()"
+      class="px-2 py-1 ml-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Filter ...</button>
+      
     </div>
 
     <hr>
@@ -84,7 +74,7 @@
                 <div class="flex items-center">
                     <div>
                     <div class="text-sm leading-5 text-gray-800">
-                      <router-link :to="{ name: 'patient-sample-detail', query: { patientUid: sample?.analysisrequest?.patient?.uid  }, params: { sample: JSON.stringify(sample) }}">{{ sample.sampleId }}</router-link>
+                      <router-link :to="{ name: 'patient-sample-detail', query: { patientUid: sample?.analysisrequest?.patient?.uid, sampleUid:sample?.uid  }}">{{ sample.sampleId }}</router-link>
                     </div>
                     </div>
                 </div>
@@ -119,6 +109,44 @@
         </table>
         </div>
     </div>
+
+
+  <section class="flex justify-between">
+    <div></div>
+    <div class="my-4 flex sm:flex-row flex-col">
+      <button @click.prevent="showMoreSamples()"
+      class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none"
+      :disabled="!pageInfo?.hasNextPage">Show More</button>
+      <div class="flex flex-row mb-1 sm:mb-0">
+          <div class="relative">
+              <select class="appearance-none h-full rounded-l border block  w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+               v-model="sampleBatch" :disabled="!pageInfo?.hasNextPage">
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                  <option value="250">250</option>
+                  <option value="500">500</option>
+                  <option value="1000">1000</option>
+                  <option value="5000">5000</option>
+                  <option value="10000">10000</option>
+              </select>
+              <div
+                  class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                  <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                      <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                  </svg>
+              </div>
+          </div>
+      </div>
+      <div class="block relative">
+          <input :placeholder="sampleCount"
+              class="appearance-none rounded-r rounded-l sm:rounded-l-none border border-gray-400 border-b block pl-8 pr-6 py-2 w-full bg-white text-sm placeholder-gray-400 text-gray-700 focus:bg-white focus:placeholder-gray-600 focus:text-gray-700 focus:outline-none" disabled/>
+      </div>
+    </div>
+  </section>
+
+
+
   </div>
 
   <!-- Location Edit Form Modal -->
@@ -267,11 +295,22 @@ export default defineComponent({
     let formTitle = ref('');
     let form = reactive({ ...(new AnalysisRequest()) });
     const formAction = ref(true);
+    let pageInfo = computed(() => store.getters.getPageInfo)
+    let filterText = ref("");
+    let filterStatus = ref("");
+    let sampleBatch = ref(25);
+    let sampleParams = reactive({ 
+      first: sampleBatch.value, 
+      after: "",
+      status: "", 
+      text: "", 
+      filterAction: false
+    });
 
     store.dispatch(SampleActionTypes.FETCH_SAMPLE_TYPES);
     store.dispatch(ActionTypes.FETCH_ANALYSES_SERVICES);
     store.dispatch(ActionTypes.FETCH_ANALYSES_PROFILES);
-    store.dispatch(SampleActionTypes.FETCH_SAMPLES);
+    store.dispatch(SampleActionTypes.FETCH_SAMPLES, sampleParams);
     const samples = computed(() =>store.getters.getSamples)
 
     // const { executeMutation: createAnalysisCategory } = useMutation(ADD_ANALYSIS_SERVICE);
@@ -303,6 +342,27 @@ export default defineComponent({
 
     function removeSample(index): void {
         form.samples?.splice(index, 1);
+    }
+
+    function showMoreSamples(): void {
+      sampleParams.first = sampleBatch.value;
+      sampleParams.after = pageInfo?.value?.endCursor;
+      sampleParams.text = filterText.value;
+      sampleParams.status = filterStatus.value;
+      sampleParams.filterAction = false;
+      console.log(sampleParams, pageInfo)
+      store.dispatch(SampleActionTypes.FETCH_SAMPLES, sampleParams);
+    }
+
+    function filterSamples(): void {
+      sampleBatch.value = 50;
+      sampleParams.first = 50;
+      sampleParams.after = "";
+      sampleParams.text = filterText.value;
+      sampleParams.status = filterStatus.value;
+      sampleParams.filterAction = true;
+      console.log(sampleParams)
+      store.dispatch(SampleActionTypes.FETCH_SAMPLES, sampleParams);
     }
 
     function FormManager(create: boolean, obj: IAnalysisCategory):void {
@@ -337,7 +397,14 @@ export default defineComponent({
       addSample,
       removeSample,
       samples,
-      profileAnalysesText
+      sampleCount: computed(() => store.getters.getSamples?.length + " of " + store.getters.getSampleCount + " samples"),
+      showMoreSamples,
+      filterSamples,
+      sampleBatch,
+      filterStatus,
+      filterText,
+      profileAnalysesText,
+      pageInfo
     };
   },
 });

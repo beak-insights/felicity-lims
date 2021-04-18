@@ -21,8 +21,8 @@
         </nav>
 
         <div>
-          <tab-samples v-if="currentTab === 'samples'" :patientUid="patient?.uid"/>
-          <tab-cases v-if="currentTab === 'cases'" />
+          <tab-worksheet-results v-if="currentTab === 'detail'" />
+          <tab-assign-samples v-if="currentTab === 'assign-samples'"/>
           <tab-logs v-if="currentTab === 'logs'"/>
         </div>
 
@@ -45,38 +45,30 @@
 </style>
 
 <script lang="ts">
-import tabSamples from '../comps/SampleTable.vue';
-import tabCases from '../comps/CaseTable.vue';
+import tabAssignSamples from './WorkSheetAssign.vue';
+import tabWorksheetResults from './WorkSheetResults.vue';
 import tabLogs from '../../_components/timeline/AuditLog.vue';
 
 import { defineComponent, ref, toRefs, computed, PropType } from 'vue';
 
 export default defineComponent({
-  name: 'patient-search',
+  name: 'worksheet-detail',
   components: {
-    tabSamples,
-    tabCases,
+    tabAssignSamples,
+    tabWorksheetResults,
     tabLogs,
   },
-  props: {
-    patient: { 
-      type: Object as PropType<IPatient>,
-      required: true
-    }
-  },
+
   setup(props) {
 
-    let currentTab = ref('samples');
-    const tabs = ['samples', 'cases', 'logs'];
+    let currentTab = ref('detail');
+    const tabs = ['detail', 'assign-samples', 'logs'];
     let currentTabComponent = computed(() => 'tab-' + currentTab.value);
-
-    const  { patient } = toRefs(props);
 
     return {
       tabs,
       currentTab,
       currentTabComponent,
-      patient,
     };
   },
 });

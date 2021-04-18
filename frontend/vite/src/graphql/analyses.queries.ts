@@ -134,9 +134,17 @@ export const GET_ALL_ANALYSES_CATEGORIES = gql`
 
 
 export const GET_ALL_SAMPLES = gql`
-    query getAllSamples {
-        sampleAll {
+    query getAllSamples($first: Int!, $after: String, $status: String, $text: String) {
+      	sampleCount(status:$status, text:$text)
+        sampleAll(first:$first, after:$after, status:$status, text:$text) {
+        	pageInfo {
+              hasNextPage
+              hasPreviousPage
+              endCursor
+              startCursor
+            }
             edges {
+                cursor
                 node {
                     uid
                     analysisrequest {
@@ -244,10 +252,18 @@ query getAnalysesRequestsByPatientUid($uid: String!) {
 export const GET_ANALYSIS_RESULTS_BY_SAMPLE_UID = gql`
     query getAnalysesResultsBySampleUid($uid: String!) {
         analysisResultBySampleUid(uid: $uid) {
-            uid
+        uid
         status
         sampleUid
         result
+          method {
+            uid
+            name
+          }
+          instrument {
+            uid
+            name
+          }
         sample{
           uid
           sampleId
@@ -281,6 +297,53 @@ export const GET_ANALYSIS_RESULTS_BY_SAMPLE_UID = gql`
         updatedAt
         updatedByUid
         }
+
+        sampleByUid(uid: $uid){
+        uid
+        analysisrequest {
+            uid
+            clientRequestId
+            patient {
+                uid
+                firstName
+                lastName
+                clientPatientId
+                gender
+                dateOfBirth
+                age
+                ageDobEstimated
+                consentSms
+            }
+            client {
+                uid
+                name
+            }
+        }
+        sampletype {
+            uid
+            name
+        }
+        sampleId
+        priority
+        status
+        analyses {
+            edges {
+                node {
+                    uid
+                    name
+                }
+            }
+        }
+        profiles {
+            edges {
+                node {
+                    uid
+                    name
+                }
+            }
+        }
+        }
+
     }`;
 
 

@@ -18,6 +18,10 @@ export const ADD_WORKSHEET_TEMPLATE= gql`
             uid
             name
           }
+          sampleType {
+            uid
+            name
+          }
           description
           analyses {
             edges {
@@ -29,5 +33,91 @@ export const ADD_WORKSHEET_TEMPLATE= gql`
           }
           state
         }
+  }
+}`;
+
+export const EDIT_WORKSHEET_TEMPLATE= gql`
+  mutation EditWorkSheetTemplate($uid:String!, $name: String!, $sampleTypeUid: String!, $description: String, $reserved: [ReservedInputType]!, $numberOfSamples: String!, $worksheetType: String, $instrumentUid: String, $cols:  String, $rows:  String, $analyses: [String]!, $rowWise: Boolean){
+  updateWorksheetTemplate(uid: $uid, name: $name, sampleTypeUid: $sampleTypeUid, description: $description reserved: $reserved, numberOfSamples: $numberOfSamples, worksheetType: $worksheetType, instrumentUid: $instrumentUid, cols: $cols, rows: $rows, analyses: $analyses, rowWise: $rowWise)
+  {
+    worksheetTemplate {
+          uid
+          name
+          reserved
+          plate
+          numberOfSamples
+          rows
+          cols
+          rowWise
+          worksheetType
+          instrument {
+            uid
+            name
+          }
+          sampleType {
+            uid
+            name
+          }
+          description
+          analyses {
+            edges {
+              node {
+                uid
+                name
+              }
+            }
+          }
+          state
+        }
+  }
+}`;
+
+
+export const ADD_WORKSHEET_= gql`
+  mutation AddWorkSheet($analystUid:String!, $templateUid: String!){
+    updateWorksheetApplyTemplate(analystUid: $worksheetUid, templateUid: $templateUid)
+  {
+    worksheet {
+      uid
+      numberOfSamples
+      sampleType {
+        name
+        name
+      }
+      instrument {
+        uid
+        name
+      }
+      template {
+        uid
+        name
+      }
+      plate
+    }
+  }
+}`;
+
+
+export const EDIT_WORKSHEET_APPLY_TEMPLATE= gql`
+  mutation EditWorkSheetApplyTemplate($worksheetUid:Int!, $templateUid: Int!){
+    updateWorksheetApplyTemplate(worksheetUid: $worksheetUid, templateUid: $templateUid)
+  {
+    worksheet {
+      uid
+      numberOfSamples
+      sampleType {
+        name
+        name
+      }
+      instrument {
+        uid
+        name
+      }
+      template {
+        uid
+        name
+      }
+      plate
+    }
   }
 }`;

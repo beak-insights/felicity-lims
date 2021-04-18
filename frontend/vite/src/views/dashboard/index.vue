@@ -15,6 +15,20 @@
     <button @click="doInfo" type="button" class="btn btn-info">Info</button>
     <button @click="doQuestion" type="button" class="btn btn-primary">QUESTION?</button>
   </div>
+  <hr>
+  <section>
+    <h1>WebSocket Chat</h1>
+        <form action="" >
+            <label>Item ID: <input type="text" id="itemId" autocomplete="off" value="foo"/></label>
+            <label>Token: <input type="text" id="token" autocomplete="off" value="some-key-token"/></label>
+            <button  @click.prevent="connect()">Connect</button>
+            <hr>
+            <label>Message: <input type="text" id="messageText" autocomplete="off"/></label>
+            <button @click.prevent="sendMessage()">Send</button>
+        </form>
+        <ul id='messages'>
+        </ul>
+  </section>
 
 
   </div>
@@ -56,6 +70,37 @@ export default defineComponent({
       store.dispatch(ActionTypes.ALERT_QUESTION, "yi doQuestion le")
     }
 
+    // function
+
+
+
+    let ws = ref(null);
+
+    function connect() {
+        var itemId = document.getElementById("itemId")
+        var token = document.getElementById("token")
+        ws = new WebSocket("ws://localhost:8000/ws");
+        ws.onmessage = function(event) {
+            var messages = document.getElementById('messages')
+            var message = document.createElement('li')
+            var content = document.createTextNode(event.data)
+            message.appendChild(content)
+            messages.appendChild(message)
+        };
+    }
+
+    function sendMessage() {
+        var input = document.getElementById("messageText")
+        ws.send(input.value)
+        input.value = ''
+    }
+
+
+    //
+
+
+
+
     return { 
       data, 
       fetching, 
@@ -64,7 +109,10 @@ export default defineComponent({
       doError,
       doWarning,
       doInfo,
-      doQuestion
+      doQuestion,
+      ws,
+      connect,
+      sendMessage
     };
   },
 });

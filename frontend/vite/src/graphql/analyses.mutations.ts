@@ -266,3 +266,48 @@ export const SUBMIT_ANALYSIS_RESULTS = gql`
       }
   }
 `; 
+
+export const VERIFY_ANALYSIS_RESULTS = gql`
+  mutation VerifyAnalysisResults ($analyses: [String]!) {
+    verifyAnalysisResults(analyses: $analyses){
+      analysisResults {
+        uid
+        status
+        sampleUid
+        result
+        sample{
+          uid
+          sampleId
+          status
+          rejectionReasons {
+            edges {
+              node {
+                uid
+                reason
+              }
+            }
+          }
+        }
+        analysisUid
+        analysis{
+          uid
+          name
+          unit
+          resultoptions {
+            edges {
+              node {
+                uid
+                optionKey
+                value
+              }
+            }
+          }
+        }
+        createdAt
+        createdByUid
+        updatedAt
+        updatedByUid
+        }
+      }
+  }
+`; 

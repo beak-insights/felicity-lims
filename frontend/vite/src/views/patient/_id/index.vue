@@ -4,12 +4,12 @@
       <div class="grid grid-cols-12 gap-3">
         <!-- Meta Column -->
         <div class="sm:col-span-2 text-center hidden sm:block">
-          <div class="inline-block font-md text-medium mb-2">{{ patient.patientId }}</div>
+          <div class="inline-block font-md text-medium mb-2">{{ patient?.patientId }}</div>
           <!-- Age -->
           <div
             class="grid grid-rows-2 mx-auto mb-1 py-1 w-4/5 2lg:w-3/5 rounded-md bg-green-400"
           >
-            <div class="inline-block font-medium text-2xl text-white">{{ patient.age }}</div>
+            <div class="inline-block font-medium text-2xl text-white">{{ patient?.age }}</div>
             <div class="inline-block font-medium text-white text-sm lg:text-md">Yrs Old</div>
           </div>
         </div>
@@ -20,7 +20,7 @@
           >
             <span>{{ patient?.firstName }} {{ patient?.lasstName }}</span>
             <div>
-              <span class="font-medium text-md">{{ patient.dateOfBirth }}</span>
+              <span class="font-medium text-md">{{ patient?.dateOfBirth }}</span>
               <button
                 @click="showModal = true"
                 class="ml-4 inline-flex items-center justify-center w-8 h-8 mr-2 border-blue-500 border text-gray-900 transition-colors duration-150 bg-white rounded-full focus:outline-none hover:bg-gray-200"
@@ -61,7 +61,7 @@
               <div class="col-span-2 flex mt-2">
                 <span class="text-gray-800 text-sm font-medium w-16">Client Patient ID</span>
                 <span class="text-gray-600 text-sm md:text-md">{{
-                  patient.clientPatientId
+                  patient?.clientPatientId
                 }}</span>
               </div>
             </div>
@@ -70,7 +70,7 @@
       </div>
     </div>
     
-    <router-view :patient="patient" />
+    <router-view  />
 
   </div>
 
@@ -221,8 +221,8 @@ export default defineComponent({
     const genders = ["Male", "Female", "Missing", "Trans Gender"]
     let getGender = pos => genders[pos];
 
-    let patient = reactive({ ...new Patient });
-    Object.assign(patient, { ...store.getters.getPatientByUid(route.query.patientUid) });
+    store.dispatch(ActionTypes.FETCH_PATIENT_BY_UID, route.query.patientUid)
+    let patient = computed(() => store.getters.getPatient);
 
     store.dispatch(AdminActionTypes.FETCH_COUNTRIES);
 

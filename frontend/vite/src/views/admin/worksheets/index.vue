@@ -4,7 +4,7 @@
       <h1 class="h1 my-4 font-bold text-dark-700">WorkSheet Templates</h1>
         <button
           class="p-2 my-2 ml-8 text-sm border-blue-500 border text-dark-700 transition-colors duration-150 rounded-lg focus:outline-none hover:bg-blue-500 hover:text-gray-100"
-          @click="FormManager(true, 'client')"
+          @click="FormManager(true, null)"
         >
           Add Template
         </button>
@@ -26,7 +26,7 @@
             >
               <span>{{ wst.name }}</span>
             </a>
-            <a href="#" @click="FormManager(false)" class="px-2 cursor">
+            <a href="#" @click="FormManager(false, wst)" class="px-2 cursor">
               <font-awesome-icon icon="pen" />
             </a>
           </div>
@@ -44,7 +44,7 @@
                 <span>{{ workSheetTemplate.name }}</span>
                 <div>
                   <button
-                    @click="FormManager(false)"
+                    @click="FormManager(false, workSheetTemplate)"
                     class="ml-4 inline-flex items-center justify-center w-8 h-8 mr-2 border-blue-500 border text-gray-900 transition-colors duration-150 bg-white rounded-full focus:outline-none hover:bg-gray-200"
                   >
                     <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
@@ -68,10 +68,6 @@
                     <span
                     class="text-gray-600 text-sm md:text-md ml-1"
                     v-for="anal in  workSheetTemplate.analyses" :key="anal.uid">{{ anal?.name }},</span>
-                  </div>
-                  <div class="flex">
-                    <span class="text-gray-800 text-sm font-medium w-1/2">Code:</span>
-                    <span class="text-gray-600 text-sm md:text-md">{{ workSheetTemplate?.name }}</span>
                   </div>
                 </div>
                 <div class="col-span-1">
@@ -273,21 +269,21 @@
         <div class="grid grid-cols-3 gap-x-4 mb-4">
           <label class="block col-span-1 mb-2">
             <span class="text-gray-700">Instrument</span>
-            <select class="form-select block w-full mt-1" v-model="workSheetTemplate.instrument">
+            <select class="form-select block w-full mt-1" v-model="workSheetTemplate.instrument.uid">
               <option></option>
               <option v-for="instrument in instruments" :key="instrument.uid" :value="instrument.uid">{{ instrument.name }}</option>
             </select>
           </label>
           <label class="block col-span-1 mb-2">
             <span class="text-gray-700">SampleType</span>
-            <select class="form-select block w-full mt-1" v-model="workSheetTemplate.sampleType">
+            <select class="form-select block w-full mt-1" v-model="workSheetTemplate.sampleType.uid">
                <option></option>
               <option v-for="stype in sampleTypes" :key="stype.uid" :value="stype.uid"> {{ stype.name }} {{ stype.uid }}</option>
             </select>
           </label>
           <label class="block col-span-1 mb-2">
             <span class="text-gray-700">Anslysis Service</span>
-            <select class="form-select block w-full mt-1" v-model="workSheetTemplate.analyses[0]">
+            <select class="form-select block w-full mt-1" v-model="workSheetTemplate.analyses[0].uid">
                <option></option>
               <option v-for="service in services" :key="service.uid" :value="service.uid"> {{ service.name }} {{ service.uid }}</option>
             </select>
@@ -298,10 +294,10 @@
         <section id="samples">
             <hr>
             <div class="flex justify-between items-center py-2">
-                <h5>Samples</h5>
+                <h5>Reserved Positions</h5>
                 <button
                 @click.prevent="addReserved()"
-                class="px-2 py-1 mr-2 border-green-500 border text-green-500 rounded transition duration-300 hover:bg-green-700 hover:text-white focus:outline-none">Add Sample</button>
+                class="px-2 py-1 mr-2 border-green-500 border text-green-500 rounded transition duration-300 hover:bg-green-700 hover:text-white focus:outline-none">Add Reserve Slot</button>
             </div>
             <hr class="mb-4">
             <div v-for="(reserved, index) in workSheetTemplate.reserved" :key="index">
@@ -374,11 +370,11 @@ import { useMutation, useQuery } from '@urql/vue';
 import { mapGetters, useStore } from 'vuex';
 import { defineComponent, ref, reactive, computed } from 'vue';
 
-import { ADD_WORKSHEET_TEMPLATE } from '../../../graphql/worksheet.mutations';
+import { ADD_WORKSHEET_TEMPLATE, EDIT_WORKSHEET_TEMPLATE } from '../../../graphql/worksheet.mutations';
 import { ActionTypes, WorkSheetTemplate, IWorkSheetTemplate, Reserved } from '../../../store/modules/worksheets';
-import { ActionTypes as AnalysisActionTypes } from '../../../store/modules/analyses';
-import { ActionTypes as SampleActionTypes } from '../../../store/modules/samples';
-import { ActionTypes as SetupActionTypes } from '../../../store/modules/setup';
+import { ActionTypes as AnalysisActionTypes, AnalysisService } from '../../../store/modules/analyses';
+import { ActionTypes as SampleActionTypes, SampleType } from '../../../store/modules/samples';
+import { ActionTypes as SetupActionTypes, Instrument } from '../../../store/modules/setup';
 
 export default defineComponent({
   name: 'worksheet-templates',
@@ -404,13 +400,15 @@ export default defineComponent({
     store.dispatch(ActionTypes.FETCH_WORKSHEET_TEMPLATES);
 
     const { executeMutation: createWorksheetTemplate } = useMutation(ADD_WORKSHEET_TEMPLATE);
+    const { executeMutation: updateWorksheetTemplate } = useMutation(EDIT_WORKSHEET_TEMPLATE);
+
     const workSheetTemplates = computed(() => store.getters.getWorkSheetTemplates);
 
     function addWorksheetTemplate() {
       createWorksheetTemplate({ 
         name: workSheetTemplate.name,
-        sampleTypeUid: workSheetTemplate.sampleType,
-        instrumentUid: workSheetTemplate.instrument,
+        sampleTypeUid: workSheetTemplate.sampleType.uid,
+        instrumentUid: workSheetTemplate.instrument.uid,
         description: workSheetTemplate.description,
         reserved: workSheetTemplate.reserved,
         numberOfSamples: workSheetTemplate.numberOfSamples,
@@ -418,14 +416,32 @@ export default defineComponent({
         cols:  workSheetTemplate.cols,
         rows:  workSheetTemplate.rows,
         rowWise:  workSheetTemplate.rowWise,
-        analyses: workSheetTemplate.analyses
+        analyses: workSheetTemplate.analyses[0]?.uid
        }).then((result) => {
-        console.log(result.data)
+        store.dispatch(ActionTypes.ADD_WORKSHEET_TEMPLATE, result)
+      });
+    }
+
+    function editWorksheetTemplate() {
+      updateWorksheetTemplate({ 
+        uid: workSheetTemplate.uid,
+        name: workSheetTemplate.name,
+        sampleTypeUid: workSheetTemplate.sampleType.uid,
+        instrumentUid: workSheetTemplate.instrument.uid,
+        description: workSheetTemplate.description,
+        reserved: workSheetTemplate.reserved,
+        numberOfSamples: workSheetTemplate.numberOfSamples,
+        worksheetType: workSheetTemplate.worksheetType,
+        cols:  workSheetTemplate.cols,
+        rows:  workSheetTemplate.rows,
+        rowWise:  workSheetTemplate.rowWise,
+        analyses: workSheetTemplate.analyses[0]?.uid
+       }).then((result) => {
+        store.dispatch(ActionTypes.UPDATE_WORKSHEET_TEMPLATE, result)
       });
     }
 
     function generatePreview(wst: IWorkSheetTemplate): void {
-      console.log("create preview for: ", wst);
       let items = [];
       const indexes = Array.from({length: wst?.numberOfSamples + wst?.reserved?.length}, (x, i) => i + 1);
       
@@ -468,19 +484,26 @@ export default defineComponent({
       }
     }
 
-    function FormManager(create) {
+    function FormManager(create, obj) {
       createItem.value = create;
-      formTitle.value = (create ? 'CREATE' : 'EDIT') + ' ' + "WOKKSHEET TEMPLATES";
+      formTitle.value = (create ? 'CREATE' : 'EDIT') + ' ' + "WOKKSHEET TEMPLATE";
       showModal.value = true;
       if (create) {
-        Object.assign(workSheetTemplate, { ...(new WorkSheetTemplate()) });
+        let wst = new WorkSheetTemplate();
+        wst.instrument = new Instrument;
+        wst.sampleType = new SampleType;
+        wst.analyses = [new AnalysisService];
+        Object.assign(workSheetTemplate, { ...wst });
       } else {
-        Object.assign(workSheetTemplate, { ...obj });
+        selectWorkSheetTemplate(obj)
+        console.log(obj);
       }
     }
 
     function saveForm() {
+      console.log("save object ", workSheetTemplate);
       if (createItem.value) addWorksheetTemplate();
+      if (!createItem.value) editWorksheetTemplate();
       showModal.value = false;
     }
 

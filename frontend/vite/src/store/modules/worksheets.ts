@@ -4,12 +4,11 @@ import { RootState } from '../state';
 import { ActionTree, GetterTree, MutationTree } from 'vuex';
 
 import {
-  GET_ALL_WORKSHEET_TEMPLATES,
+  GET_ALL_WORKSHEET_TEMPLATES, GET_ALL_WORKSHEETS, GET_WORKSHEET_BY_UID
 } from '../../graphql/worksheet.queries';
 import { IInstrument } from './setup';
 import { IAnalysisService } from './analyses';
-import { parseEdgeNodeToList } from '../../utils';
-import { X_OK } from 'constants';
+import { parseEdgeNodeToList, snakeToCamel } from '../../utils';
 
 
 export interface IReserved {
@@ -17,16 +16,12 @@ export interface IReserved {
   row?: number;
   col?: number;
   name?: string;
-  sampleUid?: string;
 }
 
 export class Reserved implements IReserved {
   constructor(
     public position: number,
-    public row?: number,
-    public col?: number,
     public name?: string,
-    public sampleUid?: string,
   ){}
 }
 
@@ -65,7 +60,7 @@ export class WorkSheetTemplate implements IWorkSheetTemplate {
       this.analyses = [];
       this.worksheetType = 'flat';
       this.rowWise = true;
-      this.reserved = [new Reserved(1,undefined,undefined,'Blank',''), new Reserved(2,undefined,undefined,'Control',''), new Reserved(3,undefined,undefined,'Control','')];
+      this.reserved = [new Reserved(1,"Blank"), new Reserved(2,"Control"), new Reserved(3,"Control")];
   }
 }
 
@@ -108,12 +103,14 @@ export class WorkSheet implements IWorkSheet {
 export interface IState {
   workSheetTemplates: IWorkSheetTemplate[];
   workSheets: IWorkSheet[];
+  workSheet: IWorkSheet | null;
 }
 
 export const initialState = () => {
   return <IState>{
     workSheetTemplates: [],
     workSheets: [],
+    workSheet: null,
   };
 };
 
@@ -123,22 +120,37 @@ export enum MutationTypes {
   RESET_STATE = 'RESET_STATE',
 
   SET_WORKSHEETS = 'SET_WORKSHEETS',
+  SET_WORKSHEET = 'SET_WORKSHEET',
+  REMOVE_WORKSHEET = 'REMOVE_WORKSHEET',
 
   SET_WORKSHEET_TEMPLATES = 'SET_WORKSHEET_TEMPLATES',
+  ADD_WORKSHEET_TEMPLATE = 'ADD_WORKSHEET_TEMPLATE',
+  UPDATE_WORKSHEET_TEMPLATE = 'UPDATE_WORKSHEET_TEMPLATE',
 }
 
 export enum ActionTypes {
   RESET_STATE = 'RESET_STATE',
 
   FETCH_WORKSHEETS = 'FETCH_WORKSHEETS',
+  FETCH_WORKSHEET_BY_UID = 'FETCH_WORKSHEET_BY_UID',
+  REMOVE_WORKSHEET = 'REMOVE_WORKSHEET',
 
   FETCH_WORKSHEET_TEMPLATES = 'FETCH_WORKSHEET_TEMPLATES',
+  ADD_WORKSHEET_TEMPLATE = 'ADD_WORKSHEET_TEMPLATE',
+  UPDATE_WORKSHEET_TEMPLATE = 'UPDATE_WORKSHEET_TEMPLATE',
+}
+
+function sortAnalysisResults(ws: any): IWorkSheet {
+  ws.analysisResults = ws?.analysisResults?.sort((a: any, b: any) => (a.uid > b.uid) ? 1 : -1);
+  return ws;
 }
 
 // Getters
 export const getters = <GetterTree<IState, RootState>>{
   getWorkSheetTemplates: (state) => state.workSheetTemplates,
   getWorkSheets: (state) => state.workSheets,
+  getWorkSheet: (state) => state.workSheet,
+  getWorkSheetByUid: (state) => (uid: string) => state.workSheets?.find(ws => ws.uid === uid),
 };
 
 // Mutations
@@ -147,25 +159,68 @@ export const mutations = <MutationTree<IState>>{
     Object.assign(state, initialState());
   },
 
-  [MutationTypes.SET_WORKSHEETS](state: IState, payload: any): void {
-    state.workSheets = [];
-    let wst = parseEdgeNodeToList(payload);
-    wst?.forEach((worksheet: IWorkSheetTemplate) => {
-      worksheet.analyses = parseEdgeNodeToList(worksheet?.analyses) || [];
-    });
-    state.workSheets = wst;
-  },
-
+  // WorkSheet Templates
   [MutationTypes.SET_WORKSHEET_TEMPLATES](state: IState, payload: any): void {
     state.workSheetTemplates = [];
     let wst = parseEdgeNodeToList(payload);
     wst?.forEach((template: IWorkSheetTemplate) => {
       template.analyses = parseEdgeNodeToList(template?.analyses) || [];
       const data: any = template.reserved;
-      template.reserved = Object.entries(JSON.parse(data)) as any[];
+      const reserved = Object.entries(JSON.parse(data)) as any[];
+      let new_res: IReserved[] = [];
+      reserved?.forEach(item => new_res.push(item[1] as IReserved || {}));
+      template.reserved = new_res;
     });
     state.workSheetTemplates = wst;
   },
+
+  [MutationTypes.UPDATE_WORKSHEET_TEMPLATE](state: IState, payload: IWorkSheetTemplate): void {
+    const index = state.workSheetTemplates.findIndex(x => x.uid === payload.uid);
+    let wst = payload;
+    wst.analyses = parseEdgeNodeToList(wst?.analyses) || [];
+    const data: any = wst.reserved;
+    const reserved = Object.entries(JSON.parse(data)) as any[];
+    let new_res: IReserved[] = [];
+    reserved?.forEach(item => new_res.push(item[1] as IReserved || {}));
+    wst.reserved = new_res;
+    state!.workSheetTemplates[index] = wst;
+  },
+
+  [MutationTypes.ADD_WORKSHEET_TEMPLATE](state: IState, payload: IWorkSheetTemplate): void {
+    let wst = payload;
+    wst.analyses = parseEdgeNodeToList(wst?.analyses) || [];
+    const data: any = wst.reserved;
+    const reserved = Object.entries(JSON.parse(data)) as any[];
+    let new_res: IReserved[] = [];
+    reserved?.forEach(item => new_res.push(item[1] as IReserved || {}));
+    wst.reserved = new_res;
+    state.workSheetTemplates.push(wst);
+  },
+
+  // WorkSheetS
+  [MutationTypes.SET_WORKSHEETS](state: IState, payload: any): void {
+    state.workSheets = [];
+    let wst = parseEdgeNodeToList(payload);
+    wst?.forEach((workSheet: any) => {
+      workSheet.analyses = parseEdgeNodeToList(workSheet?.analyses) || [];
+    });
+    state.workSheets = wst;
+  },
+
+  [MutationTypes.SET_WORKSHEET](state: IState, payload: any): void {
+    let wst = payload;
+    wst.analyses = parseEdgeNodeToList(wst?.analyses) || [];
+    wst.analysisResults = parseEdgeNodeToList(wst?.analysisResults) || [];
+    wst.analysisResults?.forEach((ar: any) => {
+      ar.analysis.resultoptions = parseEdgeNodeToList(ar?.analysis?.resultoptions) || [];
+    });
+    state.workSheet = sortAnalysisResults(wst);
+  },
+
+  [MutationTypes.REMOVE_WORKSHEET](state: IState): void {
+    state.workSheet = null;
+  },
+
 };
 
 // Actions
@@ -174,10 +229,37 @@ export const actions = <ActionTree<IState, RootState>>{
     commit(MutationTypes.RESET_STATE);
   },
 
+  // WorkSheet Templates
   async [ActionTypes.FETCH_WORKSHEET_TEMPLATES]({ commit }){
     await useQuery({ query: GET_ALL_WORKSHEET_TEMPLATES })
           .then(payload => commit(MutationTypes.SET_WORKSHEET_TEMPLATES, payload.data.value.worksheetTemplateAll));
   },
+
+  async [ActionTypes.UPDATE_WORKSHEET_TEMPLATE]({ commit }, payload ){
+    commit(MutationTypes.UPDATE_WORKSHEET_TEMPLATE, payload.data.updateWorksheetTemplate.worksheetTemplate);
+  },
+
+  async [ActionTypes.ADD_WORKSHEET_TEMPLATE]({ commit }, payload ){
+    commit(MutationTypes.ADD_WORKSHEET_TEMPLATE, payload.data.createWorksheetTemplate.worksheetTemplate);
+  },
+
+  // WorkSheetS
+  async [ActionTypes.FETCH_WORKSHEETS]({ commit }){
+    await useQuery({ query: GET_ALL_WORKSHEETS })
+          .then(payload => commit(MutationTypes.SET_WORKSHEETS, payload.data.value.worksheetAll));
+  },
+
+  async [ActionTypes.FETCH_WORKSHEET_BY_UID]({ commit }, uid){
+    await urqlClient
+    .query( GET_WORKSHEET_BY_UID, { worksheetUid: uid })
+    .toPromise()
+    .then(result => commit(MutationTypes.SET_WORKSHEET, result.data.worksheetByUid))
+  },
+
+  async [ActionTypes.REMOVE_WORKSHEET]({ commit } ){
+    commit(MutationTypes.REMOVE_WORKSHEET);
+  },
+
 };
 
 // namespaced: true,

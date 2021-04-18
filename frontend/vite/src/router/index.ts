@@ -14,6 +14,9 @@ import SamplesView from '../views/sample/index.vue';
 import SamplesListing from '../views/sample/SamplesListing.vue';
 import SamplesAdd from '../views/sample/SamplesAdd.vue';
 import WorkSheetsView from '../views/worksheet/index.vue';
+import WorkSheetListing from '../views/worksheet/WorkSheetListing.vue';
+import WorkSheetSingleView from '../views/worksheet/_id/index.vue';
+import WorkSheetDetail from '../views/worksheet/_id/WorkSheetDetail.vue';
 import AboutView from '../views/About.vue';
 import AdminView from '../views/admin/index.vue';
 import PageNotFound from '../views/404.vue';
@@ -124,6 +127,34 @@ const routes: RouteRecordRaw[] = [
     path: '/worksheets',
     name: 'WorkSheets',
     component: WorkSheetsView,
+    children: [
+      {
+        path: '',
+        name: 'worksheet-listing',
+        component: WorkSheetListing,
+        meta: {
+          requiresAuth: true,
+        },
+      },
+      {
+        path: 'single',
+        name: 'worksheet-single',
+        component: WorkSheetSingleView,
+        children: [
+          {
+            path: '',
+            name: 'worksheet-detail',
+            component: WorkSheetDetail,
+            meta: {
+              requiresAuth: true,
+            },
+          }
+        ],
+        meta: {
+          requiresAuth: true,
+        },
+      },
+    ],
     meta: {
       requiresAuth: true,
     },

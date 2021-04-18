@@ -43,3 +43,17 @@ export default {
     parseUrlParams,
     startsWith,
 };
+
+
+
+let data = {
+    'id':'123',
+    'employee_name': 'John',
+    'employee_type': 'new'  
+ }
+ 
+
+ export const snakeToCamel = (s: any) => s.replace(/(_\w)/g, (k: any) => k[1].toUpperCase());
+ 
+// Example : data = Object.entries(data).reduce((x,[k,v]) => (x[snakeToCamel(k)]=v) && x, {})
+ 

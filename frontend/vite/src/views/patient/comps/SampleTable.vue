@@ -38,7 +38,7 @@
                             <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
                             <div class="flex items-center">
                                 <div>
-                                <router-link :to="{ name: 'patient-sample-detail', query: { patientUid: sample?.analysisrequest?.patient?.uid  }, params: { sample: JSON.stringify(sample) }}">{{ sample.sampleId }}</router-link>
+                                <router-link :to="{ name: 'patient-sample-detail', query: { patientUid: request.patient?.uid, sampleUid: sample?.uid  }}">{{ sample.sampleId }}</router-link>
                                 </div>
                             </div>
                             </td>

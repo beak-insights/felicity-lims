@@ -49,12 +49,12 @@ class SampleFilterableConnectionField(SQLAlchemyConnectionField):
                     arg["status__exact"] = _status
                 arg[_filter] = f"%{_text}%"
                 logger.warning(f" args built: {arg}")
-                queryset = a_models.Sample.where(**arg)
+                queryset = model.where(**arg)
                 for item in queryset:
                     combined.add(item)
         else:
             if _status:
-                queryset = a_models.Sample.where(status__exact=_status)
+                queryset = model.where(status__exact=_status)
             else:
                 queryset = queryset
 
