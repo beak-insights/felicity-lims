@@ -2,6 +2,7 @@ import logging
 from graphql import GraphQLError
 from graphene import relay
 import graphene
+import graphene_sqlalchemy
 from abc import abstractmethod
 
 logging.basicConfig(level=logging.INFO)
@@ -72,3 +73,15 @@ def is_authenticated(request):
 def same_origin(request):
     # logger.info(f"same origin: {request.headers.get('sec-fetch-site', 'unknown')}")
     return request.headers.get('sec-fetch-site', 'unknown') == "same-origin"
+
+
+class FilterableConnectionField(graphene_sqlalchemy.SQLAlchemyConnectionField):
+    RELAY_ARGS = ['first', 'last', 'before', 'after', 'sort']
+
+    @classmethod
+    def get_query(cls, model, info, **args):
+        query = super(FilterableConnectionField, cls).get_query(model, info, **args)
+        for field, value in args.items():
+            if field not in cls.RELAY_ARGS:
+                query = query.filter(getattr(model, field) == value)
+        return query

@@ -73,29 +73,29 @@ export const EDIT_WORKSHEET_TEMPLATE= gql`
 }`;
 
 
-export const ADD_WORKSHEET_= gql`
-  mutation AddWorkSheet($analystUid:String!, $templateUid: String!){
-    updateWorksheetApplyTemplate(analystUid: $worksheetUid, templateUid: $templateUid)
-  {
-    worksheet {
-      uid
-      numberOfSamples
-      sampleType {
-        name
-        name
-      }
-      instrument {
+export const ADD_WORKSHEET = gql`
+  mutation AddWorkSheet($analystUid:Int!, $templateUid: Int!){
+    createWorksheet(analystUid: $analystUid, templateUid: $templateUid)
+    {
+      worksheet {
         uid
-        name
+        numberOfSamples
+        sampleType {
+          name
+          name
+        }
+        instrument {
+          uid
+          name
+        }
+        template {
+          uid
+          name
+        }
+        plate
       }
-      template {
-        uid
-        name
-      }
-      plate
     }
-  }
-}`;
+  }`;
 
 
 export const EDIT_WORKSHEET_APPLY_TEMPLATE= gql`

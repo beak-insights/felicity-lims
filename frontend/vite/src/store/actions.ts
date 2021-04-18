@@ -1,11 +1,21 @@
 import { ActionTree } from 'vuex';
+import { useQuery } from '@urql/vue';
+import { urqlClient } from '../urql';
 
 import { IState, RootState, IAuth } from './state';
 import { MutationTypes } from './mutations';
 
+import {
+  GET_GROUPS_AND_PERMISSIONS, GET_ALL_USERS
+} from '../graphql/_queries';
+
 export enum ActionTypes {
   RESET_STATE = 'RESET_STATE',
   PERSIST_AUTH_DATA = 'PERSIST_AUTH_DATA',
+
+  FETCH_GROUPS_AND_PERMISSIONS = 'FETCH_GROUPS_AND_PERMISSIONS',
+  FETCH_USERS = 'FETCH_USERS',
+  UPDATE_GROUPS_PERMISSIONS = 'UPDATE_GROUPS_PERMISSIONS',
 }
 
 export const actions = <ActionTree<IState, RootState>>{
@@ -13,13 +23,29 @@ export const actions = <ActionTree<IState, RootState>>{
     commit(MutationTypes.RESET_STATE);
   },
 
+  async [ActionTypes.FETCH_USERS]({ commit }) {
+    await useQuery({ query: GET_ALL_USERS })
+          .then(payload => commit(MutationTypes.SET_USERS, payload.data.value.userAll));
+  },
+
+  // Auth
   async [ActionTypes.PERSIST_AUTH_DATA]({ commit }, payload) {
-    console.log(payload.data.authenticateUser)
     const authData = payload.data.authenticateUser;
     localStorage.setItem('fwt', authData.token); // Felicity Web Token
     localStorage.setItem('fuser', authData.user); // Felicity User
     await commit(MutationTypes.PERSIST_AUTH_DATA, authData);
   },
+
+  // Groups and permissions
+  async [ActionTypes.FETCH_GROUPS_AND_PERMISSIONS]({ commit }, payload) {
+    await useQuery({ query: GET_GROUPS_AND_PERMISSIONS })
+          .then(payload => commit(MutationTypes.SET_GROUPS_AND_PERMISSIONS, payload.data.value));
+  },
+
+  async [ActionTypes.UPDATE_GROUPS_PERMISSIONS]({ commit }, payload) {
+    commit(MutationTypes.UPDATE_GROUPS_PERMISSIONS, payload.data.updateGroupsAndPermissions);
+  },
+
 };
 
 

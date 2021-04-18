@@ -129,7 +129,7 @@
             <span class="text-gray-700">Analyst</span>
             <select class="form-select block w-full mt-1" v-model="form.analystUid">
                <option></option>
-              <option v-for="analyst in analysts" :key="analyst.uid" :value="analyst.uid">{{ analystText(analyst) }} </option>
+              <option v-for="analyst in analysts" :key="analyst.uid" :value="analyst.uid">{{ analystName(analyst) }} </option>
             </select>
           </label>
           <label class="block col-span-1 mb-2">
@@ -164,8 +164,8 @@ import { defineComponent, ref, reactive, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { ActionTypes, IWorkSheet } from '../../store/modules/worksheets';
-// import { * } from '../../graphql/worksheet.mutations';
-
+import { ActionTypes as BaseActionTypes } from '../../store/actions';
+import { ADD_WORKSHEET } from '../../graphql/worksheet.mutations'
 export default defineComponent({
   name: "Samples",
   components: {
@@ -182,24 +182,18 @@ export default defineComponent({
     store.dispatch(ActionTypes.REMOVE_WORKSHEET)
     store.dispatch(ActionTypes.FETCH_WORKSHEETS);
     store.dispatch(ActionTypes.FETCH_WORKSHEET_TEMPLATES);
+    store.dispatch(BaseActionTypes.FETCH_USERS);
     // fetch instruments, analysts, methods
     const woksheets = computed(() =>store.getters.getWorkSheets)
 
-    // const { executeMutation: createAnalysisCategory } = useMutation(ADD_ANALYSIS_SERVICE);
-    // const { executeMutation: updateAnalysisCategory } = useMutation(EDIT_ANALYSIS_SERVICE);
+    const { executeMutation: createWorkSheet } = useMutation(ADD_WORKSHEET);
 
-    // function addAnalysesCategory(): void {
-    //   console.log(form)
-    //   createAnalysisCategory({ name: form.name, description: form.description, active: form.active}).then((result) => {
-    //    store.dispatch(ActionTypes.ADD_ANALYSES_CATEGORY, result);
-    //   });
-    // }
-
-    // function editAnalysesCategory(): void {
-    //   updateAnalysisCategory({ uid: form.uid, name: form.name, description: form.description, active: form.active}).then((result) => {
-    //     store.dispatch(ActionTypes.UPDATE_ANALYSES_CATEGORY, result);
-    //   });
-    // }
+    function addWorksheet(): void {
+      console.log(form)
+      createWorkSheet(form).then((result) => {
+       store.dispatch(ActionTypes.ADD_ANALYSES_CATEGORY, result);
+      });
+    }
 
     function analysesText(analyses: IAnalysis[]): string {
         let names = [];
@@ -222,9 +216,8 @@ export default defineComponent({
     }
 
     function saveForm():void {
-      // if (formAction.value === true) addWorksheet();
+      if (formAction.value === true) addWorksheet();
       // showModal.value = false;
-      console.log(form)
     }
 
     return {

@@ -13,13 +13,20 @@ export interface IState {
   isAuthenticated: boolean;
   token: string ;
   auth?: IAuth | null;
+  groups: any[];
+  permissions: any[];
+  users: any[];
 }
 
 export const initialState = () => {
   return <IState>{
     title: 'Felicity LIMS',
+    isAuthenticated: false,
     auth: null,
     token: "",
+    groups: [],
+    permissions: [],
+    users: [],
   };
 };
 
