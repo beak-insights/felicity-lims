@@ -55,7 +55,8 @@
                       <div class="text-sm leading-5 text-blue-900">{{ user?.auth?.userType }}</div>
                     </td>
                     <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
-                        <span class=""
+                        <span
+                          v-if="user?.auth"
                           :class="[
                             'block h-4 w-4 rounded-full bottom-0 right-0',
                             !user?.isBlocked ? 'bg-green-400' : 'bg-red-400' ,
@@ -63,7 +64,13 @@
                         ></span>
                     </td>
                     <td class="px-1 py-1 whitespace-no-wrap text-right border-b border-gray-500 text-sm leading-5">
-                        <button @click="UserFormManager(false, user)" class="px-2 py-1 mr-2 border-orange-500 border text-orange-500 rounded transition duration-300 hover:bg-orange-700 hover:text-white focus:outline-none">Edit</button>
+                        <button @click="UserFormManager(false, user)" class="px-2 py-1 mr-2 border-orange-500 border text-orange-500 rounded transition duration-300 hover:bg-orange-700 hover:text-white focus:outline-none">Edit User</button>
+                        <button
+                        v-if="!user?.auth"
+                         @click="UserAuthFormManager(true, user)" class="px-2 py-1 mr-2 border-orange-500 border text-orange-500 rounded transition duration-300 hover:bg-orange-700 hover:text-white focus:outline-none">Add Auth</button>
+                                                 <button
+                        v-if="user?.auth"
+                         @click="UserAuthFormManager(false, user)" class="px-2 py-1 mr-2 border-orange-500 border text-orange-500 rounded transition duration-300 hover:bg-orange-700 hover:text-white focus:outline-none">Edit Auth</button>
                     </td>
                 </tr>
                 </tbody>
@@ -88,7 +95,7 @@
             <span class="text-gray-700">First Name</span>
             <input
               class="form-input mt-1 block w-full"
-              v-model="userForm.firstName"
+              v-model="form.firstName"
               placeholder="First Name ..."
             />
           </label>
@@ -96,7 +103,7 @@
             <span class="text-gray-700">Last Name</span>
             <input
               class="form-input mt-1 block w-full"
-              v-model="userForm.lastName"
+              v-model="form.lastName"
               placeholder="Last Name ..."
             />
           </label>
@@ -105,16 +112,23 @@
             <input
               class="form-input mt-1 block w-full"
               type="email"
-              v-model="userForm.email"
+              v-model="form.email"
               placeholder="Email ..."
             />
+          </label>
+          <label class="block col-span-1 mb-2">
+            <span class="text-gray-700">Group</span>
+            <select class="form-select block w-full mt-1" v-model="form.groupUid">
+               <option></option>
+              <option v-for="group in groups" :key="group.uid" :value="group.uid">{{ group?.name }}</option>
+            </select>
           </label>
           <label for="toggle" class=" block col-span-2 text-xs text-gray-700 mt-4">Active
             <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
                 <input 
                 type="checkbox" 
                 name="toggle" id="toggle" 
-                v-model="userForm.active"
+                v-model="form.active"
                 class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer outline-none"/>
                 <label for="toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
             </div>
@@ -123,7 +137,64 @@
         <hr />
         <button
           type="button"
-          @click.prevent="saveForm()"
+          @click.prevent="saveUserForm()"
+          class="-mb-4 w-full border border-green-500 bg-green-500 text-white rounded-md px-4 py-2 m-2 transition-colors duration-500 ease select-none hover:bg-green-600 focus:outline-none focus:shadow-outline"
+        >
+          Save Form
+        </button>
+      </form>
+    </template>
+  </modal>
+
+      <!-- UserAuthForm Modal -->
+  <modal v-if="showUserAuthModal" @close="showUserAuthModal = false">
+    <template v-slot:header>
+      <h3>{{ formTitle }}</h3>
+    </template>
+
+    <template v-slot:body>
+      <form action="post" class="p-1">
+        <div class="grid grid-cols-2 gap-x-4 mb-4">
+          <label class="block col-span-1 mb-2">
+            <span class="text-gray-700">UserName</span>
+            <input
+              class="form-input mt-1 block w-full"
+              v-model="form.username"
+              placeholder="First Name ..."
+            />
+          </label>
+          <label class="block col-span-1 mb-2">
+            <span class="text-gray-700">Password</span>
+            <input
+              class="form-input mt-1 block w-full"
+              v-model="form.password"
+              placeholder="Last Name ..."
+            />
+          </label>
+          <label class="block col-span-1 mb-2">
+            <span class="text-gray-700">Confirm Password</span>
+            <input
+              class="form-input mt-1 block w-full"
+              type="email"
+              v-model="form.passwordc"
+              placeholder="Email ..."
+            />
+          </label>
+          <label for="toggle" class=" block col-span-2 text-xs text-gray-700 mt-4">Blocked
+            <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                <input 
+                type="checkbox" 
+                name="toggle" id="toggle" 
+                v-model="form.isBlocked"
+                class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer outline-none"/>
+                <label for="toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+            </div>
+          </label>
+        </div>
+        <hr />
+        <button
+          type="button"
+          @click.prevent="saveUserAuthForm()"
           class="-mb-4 w-full border border-green-500 bg-green-500 text-white rounded-md px-4 py-2 m-2 transition-colors duration-500 ease select-none hover:bg-green-600 focus:outline-none focus:shadow-outline"
         >
           Save Form
@@ -140,8 +211,10 @@ import modal from '../../../_components/modals/simpleModal.vue';
 
 import { defineComponent, ref, computed, reactive } from 'vue';
 import { useRouter } from 'vue-router';
-import  { useStore } from 'vuex';
+import { useStore } from 'vuex';
+import { useMutation } from '@urql/vue';
 import { ActionTypes } from '../../../../store/actions';
+import { ADD_USER, EDIT_USER, ADD_USER_AUTH, EDIT_USER_AUTH  } from '../../../../graphql/_mutations';
 export default defineComponent({
   name: "tab-users",
   components: {
@@ -151,13 +224,44 @@ export default defineComponent({
     let store = useStore();
 
     let showUserModal = ref(false);
+    let showUserAuthModal = ref(false);
     let formTitle = ref('');
-    let userForm = reactive({ ...new Object });
-    const userFormAction = ref(true);
+    let form = reactive({ ...new Object });
+    const formAction = ref(true);
 
+    store.dispatch(ActionTypes.FETCH_GROUPS_AND_PERMISSIONS);
     store.dispatch(ActionTypes.FETCH_USERS);
     let users = computed(() => store.getters.getUsers)
-    
+
+    const { executeMutation: createUser } = useMutation(ADD_USER);
+    const { executeMutation: updateUser } = useMutation(EDIT_USER);
+    const { executeMutation: createUserAuth } = useMutation(ADD_USER_AUTH);
+    const { executeMutation: updateUserAuth } = useMutation(EDIT_USER_AUTH);
+
+    function addUser(): void {
+      createUser(form).then((result) => {
+       console.log(result)
+      });
+    }
+
+    function editUser(): void {
+      updateUser(form).then((result) => {
+       console.log(result)
+      });
+    }
+
+    function addUserAuth(): void {
+      createUserAuth(form).then((result) => {
+       console.log(result)
+      });
+    }
+
+    function editUserAuth(): void {
+      updateUserAuth(form).then((result) => {
+       console.log(result)
+      });
+    }
+
     function userGroupsName(user: any): void {
         let groups = [];
         user?.groups?.forEach(a => groups.push(g.name));
@@ -165,7 +269,7 @@ export default defineComponent({
     }
 
     function UserFormManager(create, obj): void {
-      userFormAction.value = create;
+      formAction.value = create;
       showUserModal.value = true;
       formTitle.value = (create ? 'CREATE' : 'EDIT') + ' ' + "USER";
       if (create) {
@@ -173,10 +277,53 @@ export default defineComponent({
         user.firstName = "";
         user.lastName = "";
         user.email = "";
-        Object.assign(userForm, { ...user });
+        user.active = true;
+        user.groupUid = undefined;
+        Object.assign(form, { ...user });
       } else {
-        Object.assign(userForm, { ...obj });
+        obj.userUid = obj?.uid;
+        Object.assign(form, { ...obj });
       }
+    }
+
+    function saveUserForm(): void {
+      console.log(form)
+      if(formAction.value){
+        addUser()
+      } else {
+        editUser()
+      }
+      showUserModal.value = false;
+    }
+
+    function UserAuthFormManager(create, obj): void {
+      console.log(obj)
+      formAction.value = create;
+      showUserAuthModal.value = true;
+      formTitle.value = (create ? 'ADD' : 'EDIT') + ' AUTHENTICATION ' + "FOR USER " + obj?.firstName;
+      let userAuth = new Object;
+      userAuth.userUid = obj?.uid;
+      userAuth.password = "";
+      userAuth.passwordc = "";
+      if (create) {
+        userAuth.username = "";
+        userAuth.isBlocked = false;
+        Object.assign(form, { ...userAuth });
+      } else {
+        userAuth.username = obj?.auth?.userName;
+        userAuth.isBlocked = obj?.auth?.isBlocked;
+        Object.assign(form, { ...userAuth });
+      }
+    }
+
+    function saveUserAuthForm(): void {
+        console.log(form)
+        if(formAction.value){
+          addUserAuth()
+        } else {
+          editUserAuth()
+        }
+        showUserAuthModal.value = false;      
     }
 
     return {  
@@ -184,8 +331,13 @@ export default defineComponent({
       userGroupsName,
       UserFormManager, 
       showUserModal,
+      groups: computed(() => store.getters.getGroups),
       formTitle,
-      userForm,
+      form,
+      saveUserForm,
+      showUserAuthModal,
+      UserAuthFormManager,
+      saveUserAuthForm
     };
   },
 });

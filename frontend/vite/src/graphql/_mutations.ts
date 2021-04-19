@@ -15,7 +15,7 @@ export const AUTHENTICATE_USER = gql`
 
 
 export const ADD_USER = gql`
-  mutation addUser($firstName: String!, $lastName: String!, $email: String, $active: Boolean) {
+  mutation addUser($firstName: String!, $lastName: String!, $email: String!) {
     createUser(
     firstName: $firstName, 
     lastName: $lastName, 
@@ -50,8 +50,8 @@ export const ADD_USER = gql`
 `;
 
 
-export const UPDATE_USER = gql`
-  mutation editUser($userUid: Int!, $firstName: String!, $lastName: String, $email: String,  $active: Boolean) {
+export const EDIT_USER = gql`
+  mutation editUser($userUid: Int!, $firstName: String!, $lastName: String, $email: String) {
     updateUser(
       userUid: $userUid,
       firstName: $firstName, 
