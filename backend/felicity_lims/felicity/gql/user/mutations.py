@@ -175,7 +175,7 @@ class CreateUserAuth(graphene.Mutation):
 class UpdateUserAuth(graphene.Mutation):
     class Arguments:
         user_uid = graphene.Int(required=True)
-        user_name = graphene.String(required=False)
+        username = graphene.String(required=False)
         password = graphene.String(required=False)
         passwordc = graphene.String(required=False)
 
@@ -187,7 +187,7 @@ class UpdateUserAuth(graphene.Mutation):
         """
         fetch update instance using uid from frontend
         """
-        if not 'user_name' in kwargs and not 'password' in kwargs:
+        if not 'username' in kwargs and not 'password' in kwargs:
             raise GraphQLError("Provide username and password to update")
             
         # current_super_user = deps.get_current_active_superuser(token=token)
@@ -201,14 +201,14 @@ class UpdateUserAuth(graphene.Mutation):
         auth = user.auth
         auth_in = user_schemas.AuthUpdate(**auth.to_dict())
         
-        if 'user_name' in kwargs:
-            username = kwargs.get('user_name', None)
+        if 'username' in kwargs:
+            username = kwargs.get('username', None)
             if username:
                 username_taken = user_models.UserAuth.get_by_username(username=username)
                 if username_taken:
                     raise GraphQLError(f"The username {username} is already taken")
             else:
-                del kwargs['user_name'] # username cannot be empty
+                del kwargs['username'] # username cannot be empty
                 # raise GraphQLError("Username cannot be empty")  
             auth_in.user_name = username             
 
@@ -225,7 +225,7 @@ class UpdateUserAuth(graphene.Mutation):
         
         auth.update(auth_in)
         ok = True
-        return UpdateUserAuth(ok=ok, user=auth.user)
+        return UpdateUserAuth(ok=ok, user=user)
 
 
 class AuthenticateUser(graphene.Mutation):
