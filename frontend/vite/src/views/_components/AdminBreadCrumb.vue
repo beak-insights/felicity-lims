@@ -17,7 +17,7 @@
 
 <script lang="ts">
 import { useStore } from 'vuex';
-import { ActionTypes } from '../../../store/modules/admin';
+import { ActionTypes } from '../../store/modules/admin';
 export default {
   name: 'item-setting',
   props: {

@@ -16,12 +16,14 @@ from felicity.gql.analysis.query import AnalysisQuery
 from felicity.gql.analysis.mutations import AnalysisMutations
 from felicity.gql.worksheet.query import WorkSheetQuery
 from felicity.gql.worksheet.mutations import WorkSheetMutations
+from felicity.gql.markdown.query import MarkDownQuery
+from felicity.gql.markdown.mutations import MarkdownMutations
 
 
 class Query(
     SetupQuery, UserQuery, ClientQuery,
     PatientQuery, AnalysisQuery, WorkSheetQuery,
-    AuditLogQuery,
+    AuditLogQuery, MarkDownQuery,
     graphene.ObjectType
 ):
     pass
@@ -30,6 +32,7 @@ class Query(
 class Mutation(
     SetupMutations, UserMutations, ClientMutations,
     PatientMutations, AnalysisMutations, WorkSheetMutations,
+    MarkdownMutations,
     graphene.ObjectType
 ):
     pass

@@ -50,7 +50,7 @@
                 </td>
                 <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
                   <div class="text-sm leading-5 text-gray-800">
-                    <router-link :to="{ name: 'patient-sample-detail', query: { patientUid: result?.sample?.analysisrequest?.patient?.uid, sampleUid: result?.sample?.uid  }}">{{ result?.sample?.sampleId }} </router-link>
+                    <router-link :to="{ name: 'sample-detail', query: { patientUid: result?.sample?.analysisrequest?.patient?.uid, sampleUid: result?.sample?.uid  }}">{{ result?.sample?.sampleId }} </router-link>
                   </div>
                   <span v-if="viewDetail">
                     <div class="text-sm leading-5 text-blue-900">

@@ -6,7 +6,7 @@ import { IState, RootState, IAuth } from './state';
 import { MutationTypes } from './mutations';
 
 import {
-  GET_GROUPS_AND_PERMISSIONS, GET_ALL_USERS
+  GET_GROUPS_AND_PERMISSIONS, GET_ALL_USERS, GET_AUDIT_LOG_FOR_TARGET
 } from '../graphql/_queries';
 
 export enum ActionTypes {
@@ -16,6 +16,9 @@ export enum ActionTypes {
   FETCH_GROUPS_AND_PERMISSIONS = 'FETCH_GROUPS_AND_PERMISSIONS',
   FETCH_USERS = 'FETCH_USERS',
   UPDATE_GROUPS_PERMISSIONS = 'UPDATE_GROUPS_PERMISSIONS',
+
+  FETCH_AUDIT_LOGS = 'FETCH_AUDIT_LOGS',
+  RESET_AUDIT_LOGS = 'RESET_AUDIT_LOGS'
 }
 
 export const actions = <ActionTree<IState, RootState>>{
@@ -32,7 +35,8 @@ export const actions = <ActionTree<IState, RootState>>{
   async [ActionTypes.PERSIST_AUTH_DATA]({ commit }, payload) {
     const authData = payload.data.authenticateUser;
     localStorage.setItem('fwt', authData.token); // Felicity Web Token
-    localStorage.setItem('fuser', authData.user); // Felicity User
+    localStorage.setItem('fuser', authData.user?.firstName + " " + authData.user?.lastName); // Felicity User
+    localStorage.setItem('fuid', authData.user?.uid); // Felicity UserUid
     await commit(MutationTypes.PERSIST_AUTH_DATA, authData);
   },
 
@@ -44,6 +48,18 @@ export const actions = <ActionTree<IState, RootState>>{
 
   async [ActionTypes.UPDATE_GROUPS_PERMISSIONS]({ commit }, payload) {
     commit(MutationTypes.UPDATE_GROUPS_PERMISSIONS, payload.data.updateGroupsAndPermissions);
+  },
+
+  // audit logs
+  async [ActionTypes.RESET_AUDIT_LOGS]({ commit }) {
+    commit(MutationTypes.RESET_AUDIT_LOGS);
+  },
+
+  async [ActionTypes.FETCH_AUDIT_LOGS]({ commit }, params){
+    await urqlClient
+    .query( GET_AUDIT_LOG_FOR_TARGET, params)
+    .toPromise()
+    .then(result => commit(MutationTypes.SET_AUDIT_LOGS, result.data.auditLogsFilter))
   },
 
 };

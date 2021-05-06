@@ -3,6 +3,7 @@ from graphene import relay
 
 from felicity.apps.user.models import User, UserAuth, Group, Permission # noqa
 
+
 # Graphene User Type
 class UserType(SQLAlchemyObjectType):
     class Meta:

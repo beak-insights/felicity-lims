@@ -47,7 +47,7 @@
 <script lang="ts">
 import tabAssignSamples from './WorkSheetAssign.vue';
 import tabWorksheetResults from './WorkSheetResults.vue';
-import tabLogs from '../../_components/timeline/AuditLog.vue';
+import tabLogs from '../../_components/AuditLog.vue';
 
 import { defineComponent, ref, toRefs, computed, PropType } from 'vue';
 

@@ -4,7 +4,10 @@ import { RootState } from '../state';
 import { ActionTree, GetterTree, MutationTree } from 'vuex';
 import { IClient, IDistrict } from '../common'
 
-import { GET_ALL_CLIENTS, SEARCH_CLIENTS, GET_CLIENT_CONTACTS_BY_CLIENT_UID } from '../../graphql/clients.queries';
+import { GET_ALL_CLIENTS, 
+  SEARCH_CLIENTS, 
+  GET_CLIENT_CONTACTS_BY_CLIENT_UID, 
+  GET_CLIENT_BY_UID } from '../../graphql/clients.queries';
 
 export class Client implements IClient {
   constructor(
@@ -53,12 +56,14 @@ export class ClientContact implements IClientContact {
 // state contract
 export interface IState {
   clients?: IClient[];
+  client?: IClient | null;
   clientContacts?: IClientContact[];
 }
 
 export const initialState = () => {
   return <IState>{
     clients: [],
+    client: null,
     clientContacts: [],
   };
 };
@@ -72,6 +77,7 @@ export enum MutationTypes {
   UPDATE_CREATED_CLIENT_CONTACT = 'UPDATE_CREATED_CLIENT_CONTACT',
   SET_CLIENTS = 'SET_CLIENTS',
   SET_CLIENTS_DIRECT = 'SET_CLIENTS_DIRECT',
+  SET_CLIENT = 'SET_CLIENT',
 }
 
 export enum ActionTypes {
@@ -82,6 +88,7 @@ export enum ActionTypes {
   UPDATE_CREATED_CLIENT_CONTACT = 'UPDATE_CREATED_CLIENT_CONTACT',
   SET_CLIENTS = 'SET_CLIENTS',
   FETCH_CLIENTS = 'FETCH_CLIENTS',
+  FETCH_CLIENT_BY_UID = 'FETCH_CLIENT_BY_UID',
   SEARCH_CLIENTS = 'SEARCH_CLIENTS'
 }
 
@@ -89,6 +96,7 @@ export enum ActionTypes {
 export const getters = <GetterTree<IState, RootState>>{
   getClientContacts: (state) => state.clientContacts,
   getClients: (state) => state.clients,
+  getClient: (state) => state.client,
   getClientByName: (state) => (name: string) => state.clients?.find(cl => cl.name === name),
 };
 
@@ -101,6 +109,10 @@ export const mutations = <MutationTree<IState>>{
   [MutationTypes.SET_CLIENTS](state: IState, payload: any[]): void {
     state.clients = [];
     payload?.forEach(obj => state.clients?.push(obj?.node));
+  },  
+  
+  [MutationTypes.SET_CLIENT](state: IState, payload: IClient): void {
+    state.client = payload;
   },
 
   [MutationTypes.SET_CLIENTS_DIRECT](state: IState, clients: IClient[]): void {
@@ -155,6 +167,14 @@ export const actions = <ActionTree<IState, RootState>>{
   async [ActionTypes.UPDATE_CREATED_CLIENT_CONTACT]({ commit }, payload: IClientContact) {
     commit(MutationTypes.UPDATE_CREATED_CLIENT_CONTACT, payload);
   },
+
+  async [ActionTypes.FETCH_CLIENT_BY_UID]({ commit }, uid){
+    await urqlClient
+    .query( GET_CLIENT_BY_UID, { uid })
+    .toPromise()
+    .then(result => commit(MutationTypes.SET_CLIENT, result.data.clientByUid))
+  },
+
 
 };
 

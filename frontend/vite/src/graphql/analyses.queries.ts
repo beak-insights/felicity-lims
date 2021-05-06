@@ -134,9 +134,9 @@ export const GET_ALL_ANALYSES_CATEGORIES = gql`
 
 
 export const GET_ALL_SAMPLES = gql`
-    query getAllSamples($first: Int!, $after: String, $status: String, $text: String) {
-      	sampleCount(status:$status, text:$text)
-        sampleAll(first:$first, after:$after, status:$status, text:$text) {
+    query getAllSamples($first: Int!, $after: String, $status: String, $text: String, $clientUid: String) {
+      	sampleCount(status:$status, text:$text, clientUid: $clientUid)
+        sampleAll(first:$first, after:$after, status:$status, text:$text, clientUid: $clientUid) {
         	pageInfo {
               hasNextPage
               hasPreviousPage
@@ -248,6 +248,65 @@ query getAnalysesRequestsByPatientUid($uid: String!) {
   }
 
 }`;
+
+
+
+
+export const GET_ANALYSIS_REQUESTS_BY_CLIENT_UID = gql`
+query getAnalysesRequestsByClientUid($uid: String!) {
+  analysisRequestsByClientUid(uid: $uid) {
+    uid
+    clientRequestId
+    patient {
+      uid
+      firstName
+      lastName
+      clientPatientId
+      gender
+      dateOfBirth
+      age
+      ageDobEstimated
+      consentSms
+    }
+    client {
+      uid
+      name
+    }
+    samples {
+      edges {
+        node {
+          uid
+          sampletype {
+            uid
+            name
+          }
+          sampleId
+          priority
+          status
+          analyses {
+            edges {
+              node {
+                uid
+                name
+              }
+            }
+          }
+          profiles {
+            edges {
+              node {
+                uid
+                name
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+}`;
+
+
 
 export const GET_ANALYSIS_RESULTS_BY_SAMPLE_UID = gql`
     query getAnalysesResultsBySampleUid($uid: String!) {

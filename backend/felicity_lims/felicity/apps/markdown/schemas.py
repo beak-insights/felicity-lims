@@ -1,33 +1,9 @@
-from typing import Optional
+from typing import Optional, List
+from datetime import datetime
 
 from pydantic import BaseModel
-
-
-# 
-# Document Schemas
-# 
-class DocumentBase(BaseModel):
-    action: Optional[str] = None
-    category: Optional[str] = ""
-    priority: Optional[int] = ""
-    job_id: Optional[str] = None
-    status: Optional[str] = ""
-    reason: Optional[str] = None
-
-
-class Document(DocumentBase):
-    uid: Optional[str] = None
-
-    class Config:
-        orm_mode = True
-
-
-class DocumentCreate(DocumentBase):
-    pass
-
-
-class DocumentUpdate(DocumentBase):
-    pass
+from felicity.apps.setup.schemas import Department
+from felicity.apps.user.schemas import User
 
 
 #
@@ -71,4 +47,50 @@ class DocumentCategoryCreate(DocumentCategoryBase):
 
 
 class DocumentCategoryUpdate(DocumentCategoryBase):
+    pass
+
+
+#
+# Document Schemas
+#
+class DocumentBase(BaseModel):
+    name: Optional[str] = None
+    subtitle: Optional[str] = None
+    document_id: Optional[str] = None
+    content: Optional[str] = None
+    version: Optional[str] = None
+    tags: Optional[List[DocumentTag]] = []
+    authors: Optional[List[User]] = []
+    readers: Optional[List[User]] = []
+    department_uid: Optional[str] = None
+    department: Optional[Department] = []
+    category_uid: Optional[str] = None
+    category: Optional[DocumentCategory] = []
+    created_by_uid: Optional[str] = None
+    modified_by_uid: Optional[str] = None
+    date_archived: Optional[datetime] = None
+    archived_by_uid: Optional[str] = None
+    date_recalled: Optional[datetime] = None
+    recalled_by_uid: Optional[str] = None
+    date_effected: Optional[datetime] = None
+    effected_by_uid: Optional[str] = None
+    date_approved: Optional[datetime] = None
+    approved_by_uid: Optional[str] = None
+    last_accessed: Optional[datetime] = None
+    last_accessed_by_uid: Optional[str] = None
+    status: Optional[str] = None
+
+
+class Document(DocumentBase):
+    uid: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
+class DocumentCreate(DocumentBase):
+    pass
+
+
+class DocumentUpdate(DocumentBase):
     pass

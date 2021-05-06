@@ -88,6 +88,7 @@ export default defineComponent({
     store.dispatch(ActionTypes.RESET_STATE);
     localStorage.removeItem("fwt");
     localStorage.removeItem("fuser");
+    localStorage.removeItem("fuid");
     //
     let userAuth = reactive({ data: null, error: null });
     let form = reactive({ username: null, password: null });

@@ -8,6 +8,7 @@ import {
   GET_ALL_SAMPLE_TYPES, 
   GET_ALL_SAMPLES,
   GET_ANALYSIS_REQUESTS_BY_PATIENT_UID,
+  GET_ANALYSIS_REQUESTS_BY_CLIENT_UID,
   GET_ANALYSIS_RESULTS_BY_SAMPLE_UID
 } from '../../graphql/analyses.queries';
 import { IAnalysisProfile, IAnalysisRequest, IAnalysisService, ISample } from './analyses';
@@ -110,6 +111,7 @@ export enum MutationTypes {
   ADD_SAMPLE_TYPE = 'ADD_SAMPLE_TYPE',
   UPDATE_SAMPLE_TYPE = 'UPDATE_SAMPLE_TYPE',
 
+  RESET_SAMPLES = "RESET_SAMPLES",
   SET_SAMPLES = 'SET_SAMPLES',
   SET_SAMPLE = 'SET_SAMPLE',
 
@@ -126,10 +128,12 @@ export enum ActionTypes {
   ADD_SAMPLE_TYPE = 'ADD_SAMPLE_TYPE',
   UPDATE_SAMPLE_TYPE = 'UPDATE_SAMPLE_TYPE',
 
+  RESET_SAMPLES = "RESET_SAMPLES",
   FETCH_SAMPLES = 'FETCH_SAMPLES',
   ADD_SAMPLES = 'ADD_SAMPLES',
 
   FETCH_ANALYSIS_REQUESTS_FOR_PATIENT = 'FETCH_ANALYSIS_REQUESTS_FOR_PATIENT',
+  FETCH_ANALYSIS_REQUESTS_FOR_CLIENT = 'FETCH_ANALYSIS_REQUESTS_FOR_CLIENT',
 
   FETCH_ANALYSIS_RESULTS_FOR_SAMPLE = 'FETCH_ANALYSIS_RESULTS_FOR_SAMPLE',
   UPDATE_ANALYSIS_RESULTS = 'UPDATE_ANALYSIS_RESULTS',
@@ -170,6 +174,9 @@ export const mutations = <MutationTree<IState>>{
   },
 
   // SAMPLES
+  [MutationTypes.RESET_SAMPLES](state: IState): void {
+    state.samples = [];
+  },
   [MutationTypes.SET_SAMPLES](state: IState, payload: any): void {
     let samples = parseEdgeNodeToList(payload?.samples);
     samples?.forEach((sample: ISampleRequest) => {
@@ -249,12 +256,14 @@ export const actions = <ActionTree<IState, RootState>>{
   },
 
   // SAMPLES
+  async [ActionTypes.RESET_SAMPLES]({ commit }) {
+    commit(MutationTypes.RESET_SAMPLES);
+  },
   async [ActionTypes.FETCH_SAMPLES]({ commit }, params){
     await urqlClient
-    .query( GET_ALL_SAMPLES, { first: params.first, after: params.after, status: params.status, text: params.text })
+    .query( GET_ALL_SAMPLES, { first: params.first, after: params.after, status: params.status, text: params.text, clientUid: params.clientUid})
     .toPromise()
     .then(result => {
-      console.log(result)
       commit(MutationTypes.SET_SAMPLES, {
         samples: result.data.sampleAll,
         count: result.data.sampleCount,
@@ -273,6 +282,13 @@ export const actions = <ActionTree<IState, RootState>>{
     .query( GET_ANALYSIS_REQUESTS_BY_PATIENT_UID, { uid })
     .toPromise()
     .then(result => commit(MutationTypes.SET_ANALYSES_REQUESTS, result.data.analysisRequestsByPatientUid))
+  },
+
+  async [ActionTypes.FETCH_ANALYSIS_REQUESTS_FOR_CLIENT]({ commit }, uid){
+    await urqlClient
+    .query( GET_ANALYSIS_REQUESTS_BY_CLIENT_UID, { uid })
+    .toPromise()
+    .then(result => commit(MutationTypes.SET_ANALYSES_REQUESTS, result.data.analysisRequestsByClientUid))
   },
 
   async [ActionTypes.FETCH_ANALYSIS_RESULTS_FOR_SAMPLE]({ commit }, uid){

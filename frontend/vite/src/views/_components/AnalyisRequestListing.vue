@@ -38,7 +38,7 @@
                             <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
                             <div class="flex items-center">
                                 <div>
-                                <router-link :to="{ name: 'patient-sample-detail', query: { patientUid: request.patient?.uid, sampleUid: sample?.uid  }}">{{ sample.sampleId }}</router-link>
+                                <router-link :to="{ name: 'sample-detail', query: { patientUid: request.patient?.uid, sampleUid: sample?.uid  }}">{{ sample.sampleId }}</router-link>
                                 </div>
                             </div>
                             </td>
@@ -79,23 +79,27 @@
 import {reactive, computed, ref, toRefs, watch} from 'vue'
 import { useStore } from 'vuex';
 
-import { ActionTypes } from '../../../store/modules/samples'
+import { ActionTypes } from '../../store/modules/samples'
 export default {
     name: "tab-samples",
     props: {
-        patientUid: String
+        target: String,
+        targetUid: String
     },
     setup(props){
         const store = useStore();
 
-        const { patientUid } = toRefs(props);
+        const { targetUid, target } = toRefs(props);
 
-        store.dispatch(ActionTypes.FETCH_ANALYSIS_REQUESTS_FOR_PATIENT, patientUid?.value);
+        if(target?.value==='patient-samples') store.dispatch(ActionTypes.FETCH_ANALYSIS_REQUESTS_FOR_PATIENT, targetUid?.value);
+        if(target?.value==='client-samples') store.dispatch(ActionTypes.FETCH_ANALYSIS_REQUESTS_FOR_CLIENT, targetUid?.value);
 
         const analysisRequests = computed(() => store.getters.getAnalysisRequests);
 
-        watch(patientUid, (uid, prev) => {
-            store.dispatch(ActionTypes.FETCH_ANALYSIS_REQUESTS_FOR_PATIENT, uid)
+        watch(() => props.targetUid, (uid, prev) => {
+            console.log(uid)
+            if(target?.value==='patient-samples') store.dispatch(ActionTypes.FETCH_ANALYSIS_REQUESTS_FOR_PATIENT, uid);
+            if(target?.value==='client-samples') store.dispatch(ActionTypes.FETCH_ANALYSIS_REQUESTS_FOR_CLIENT, uid);
         })
 
         function profileAnalysesText(profiles: any[], analyses: any[]): string {

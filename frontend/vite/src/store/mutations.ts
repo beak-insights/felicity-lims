@@ -10,6 +10,9 @@ export enum MutationTypes {
 
   SET_GROUPS_AND_PERMISSIONS = 'SET_GROUPS_AND_PERMISSIONS',
   UPDATE_GROUPS_PERMISSIONS = 'UPDATE_GROUPS_PERMISSIONS',
+
+  RESET_AUDIT_LOGS = 'RESET_AUDIT_LOGS',
+  SET_AUDIT_LOGS = 'SET_AUDIT_LOGS'
 }
 
 export const mutations = <MutationTree<IState>>{
@@ -50,5 +53,22 @@ export const mutations = <MutationTree<IState>>{
     group.permissions = parseEdgeNodeToList(group?.permissions) || [];
     state!.groups[index] = group;
   },
+
+  // AUDIT LOGS
+  [MutationTypes.RESET_AUDIT_LOGS](state: IState): void {
+    state.auditLogs = [];
+  },
+
+  [MutationTypes.SET_AUDIT_LOGS](state: IState, payload): void {
+    let logs = parseEdgeNodeToList(payload) || [];
+    logs?.forEach((log: any) => {
+      if(typeof(log.stateAfter) === "string"){
+        log.stateAfter = JSON.parse(log.stateAfter);
+        log.stateBefore = JSON.parse(log.stateBefore);
+      }
+    })
+    state.auditLogs = logs;
+  },
+
 
 };

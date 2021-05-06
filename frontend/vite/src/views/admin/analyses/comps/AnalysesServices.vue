@@ -237,8 +237,8 @@
 </template>
 
 <script lang="ts">
-import modal from '../../../_components/modals/simpleModal.vue';
-import accordion from '../../../_components/accordion/Accordion.vue';
+import modal from '../../../_components/SimpleModal.vue';
+import accordion from '../../../_components/Accordion.vue';
 
 import { useMutation } from '@urql/vue';
 import { defineComponent, ref, reactive, computed, watch } from 'vue';

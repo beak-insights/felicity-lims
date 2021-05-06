@@ -117,7 +117,7 @@
 </style>
 
 <script lang="ts" scope="ts">
-import modal from '../../../_components/modals/simpleModal.vue';
+import modal from '../../../_components/SimpleModal.vue';
 
 import { useMutation } from '@urql/vue';
 import { defineComponent, ref, reactive, computed } from 'vue';

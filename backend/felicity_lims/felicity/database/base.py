@@ -27,3 +27,6 @@ from felicity.apps.analysis.models.analysis import AnalysisCategory
 from felicity.apps.worksheet.models import WorkSheetTemplate
 from felicity.apps.worksheet.models import WorkSheet
 from felicity.apps.job.models import Job
+from felicity.apps.markdown.models import DocumentTag
+from felicity.apps.markdown.models import DocumentCategory
+from felicity.apps.markdown.models import Document

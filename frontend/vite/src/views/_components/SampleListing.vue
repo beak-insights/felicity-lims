@@ -72,10 +72,8 @@
                 </td>
                 <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
                 <div class="flex items-center">
-                    <div>
                     <div class="text-sm leading-5 text-gray-800">
-                      <router-link :to="{ name: 'patient-sample-detail', query: { patientUid: sample?.analysisrequest?.patient?.uid, sampleUid:sample?.uid  }}">{{ sample.sampleId }}</router-link>
-                    </div>
+                      <router-link :to="{ name: 'sample-detail', query: { patientUid: sample?.analysisrequest?.patient?.uid, sampleUid:sample?.uid  }}">{{ sample.sampleId }}</router-link>
                     </div>
                 </div>
                 </td>
@@ -272,12 +270,12 @@
 </template>
 
 <script lang="ts">
-import modal from '../_components/modals/simpleModal.vue';
-import AutoComplete from './comps/AddSample.vue';
+import modal from './SimpleModal.vue';
+import AutoComplete from '../sample/comps/AddSample.vue';
 
 import { useMutation } from '@urql/vue';
 import { defineComponent, ref, reactive, computed, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { useStore } from 'vuex';
 import { ActionTypes as SampleActionTypes } from '../../store/modules/samples';
 import { ActionTypes, AnalysisRequest, IAnalysisRequest, ISample, Sample } from '../../store/modules/analyses';
@@ -289,7 +287,9 @@ export default defineComponent({
       modal,
       AutoComplete
   },
-  setup() {    const store = useStore();
+  setup() {    
+    const store = useStore();
+    let route = useRoute();
     
     let showModal = ref(false);
     let formTitle = ref('');
@@ -304,9 +304,11 @@ export default defineComponent({
       after: "",
       status: "", 
       text: "", 
+      clientUid: ifZeroEmpty(route?.query?.clientUid),
       filterAction: false
     });
 
+    store.dispatch(SampleActionTypes.RESET_SAMPLES);
     store.dispatch(SampleActionTypes.FETCH_SAMPLE_TYPES);
     store.dispatch(ActionTypes.FETCH_ANALYSES_SERVICES);
     store.dispatch(ActionTypes.FETCH_ANALYSES_PROFILES);
@@ -328,6 +330,11 @@ export default defineComponent({
     //     store.dispatch(ActionTypes.UPDATE_ANALYSES_CATEGORY, result);
     //   });
     // }
+
+    function ifZeroEmpty(val: any): any {
+      if(val === undefined) return "";
+      return val === 0 ? '' : val;
+    }
 
     function profileAnalysesText(profiles: IProfile[], analyses: IAnalysis[]): string {
         let names = [];

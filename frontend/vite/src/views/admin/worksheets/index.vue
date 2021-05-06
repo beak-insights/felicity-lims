@@ -364,7 +364,7 @@
 
 <script lang="ts">
 import tabContacts from './comps/ContactTable.vue';
-import modal from '../../_components/modals/simpleModal.vue';
+import modal from '../../_components/SimpleModal.vue';
 
 import { useMutation, useQuery } from '@urql/vue';
 import { mapGetters, useStore } from 'vuex';

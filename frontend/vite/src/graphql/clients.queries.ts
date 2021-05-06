@@ -57,3 +57,25 @@ export const GET_CLIENT_CONTACTS_BY_CLIENT_UID = gql`
       consentSms
     }
   }`;
+
+
+export const GET_CLIENT_BY_UID = gql`
+  query getClientByUid($uid: String!) {
+    clientByUid(uid: $uid){
+        uid
+        name
+        code
+        district {
+          uid
+          name
+          province {
+            uid
+            name
+            country{
+              uid
+              name
+            }
+          }
+        }
+    }
+  }`;

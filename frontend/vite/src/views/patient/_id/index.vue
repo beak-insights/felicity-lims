@@ -182,7 +182,7 @@
 </template>
 
 <script lang="ts">
-import modal from '../../_components/modals/simpleModal.vue';
+import modal from '../../_components/SimpleModal.vue';
 
 import { useMutation, useQuery } from '@urql/vue';
 import { defineComponent, ref, toRefs, reactive, computed, onMounted, PropType } from 'vue';

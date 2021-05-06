@@ -207,7 +207,7 @@
 </template>
 
 <script lang="ts">
-import modal from '../../../_components/modals/simpleModal.vue';
+import modal from '../../../_components/SimpleModal.vue';
 
 import { defineComponent, ref, computed, reactive } from 'vue';
 import { useRouter } from 'vue-router';

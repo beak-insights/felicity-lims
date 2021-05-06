@@ -4,19 +4,25 @@ import adminRoutes from './admin';
 import LoginView from '../views/auth/Login.vue';
 import DashBoardView from '../views/dashboard/index.vue';
 import PatientsView from '../views/patient/index.vue';
-import PatientsCompact from '../views/patient/Patients.vue';
-import PatientSearch from '../views/patient/PatientSearch.vue';
+import PatientsListing from '../views/patient/Patients.vue';
+import PatientsCompact from '../views/patient/PatientsCompact.vue';
 import PatientSingleView from '../views/patient/_id/index.vue';
 import PatientDetail from '../views/patient/_id/PatientDetail.vue';
-import PatientSample from '../views/patient/_id/PatientSample.vue';
 import ClientsView from '../views/client/index.vue';
+import ClientsListing from '../views/client/Clients.vue';
+import ClientSingleView from '../views/client/_id/index.vue';
+import ClientDetail from '../views/client/_id/ClientDetail.vue';
 import SamplesView from '../views/sample/index.vue';
-import SamplesListing from '../views/sample/SamplesListing.vue';
+import SamplesListing from '../views/_components/SampleListing.vue';
 import SamplesAdd from '../views/sample/SamplesAdd.vue';
+import SampleSingleView from '../views/sample/_id/index.vue';
+import SampleDetail from '../views/sample/_id/SampleDetail.vue';
 import WorkSheetsView from '../views/worksheet/index.vue';
 import WorkSheetListing from '../views/worksheet/WorkSheetListing.vue';
 import WorkSheetSingleView from '../views/worksheet/_id/index.vue';
 import WorkSheetDetail from '../views/worksheet/_id/WorkSheetDetail.vue';
+import KanBanView from '../views/kanban/index.vue';
+import MarkDownView from '../views/markdown/index.vue';
 import AboutView from '../views/About.vue';
 import AdminView from '../views/admin/index.vue';
 import PageNotFound from '../views/404.vue';
@@ -44,6 +50,14 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: '',
+        name: 'patients-listing',
+        component: PatientsListing,
+        meta: {
+          requiresAuth: true,
+        },
+      },
+      {
+        path: 'compact',
         name: 'patients-compact',
         component: PatientsCompact,
         meta: {
@@ -53,7 +67,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'search',
         name: 'patients-search',
-        component: PatientSearch,
+        component: PatientsListing,
         meta: {
           requiresAuth: true,
         },
@@ -72,9 +86,27 @@ const routes: RouteRecordRaw[] = [
             },
           },
           {
-            path: 'sample-detail',
-            name: 'patient-sample-detail',
-            component: PatientSample,
+            path: 'sample',
+            name: 'patient-sample',
+            component: SampleSingleView,
+            children: [
+              {
+                path: '',
+                name: 'patient-samples',
+                component: SampleSingleView,
+                meta: {
+                  requiresAuth: true,
+                },
+              },
+              {
+                path: 'detail',
+                name: 'sample-detail',
+                component: SampleDetail,
+                meta: {
+                  requiresAuth: true,
+                },
+              },
+            ],
             meta: {
               requiresAuth: true,
             },
@@ -91,8 +123,36 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/clients',
-    name: 'Clients',
+    name: 'clients',
     component: ClientsView,
+    children: [
+      {
+        path: '',
+        name: 'clients-listing',
+        component: ClientsListing,
+        meta: {
+          requiresAuth: true,
+        },
+      },
+      {
+        path: 'single',
+        name: 'client-single-view',
+        component: ClientSingleView,
+        children: [
+          {
+            path: '',
+            name: 'client-detail',
+            component: ClientDetail,
+            meta: {
+              requiresAuth: true,
+            },
+          },
+        ],
+        meta: {
+          requiresAuth: true,
+        },
+      },
+    ],
     meta: {
       requiresAuth: true,
     },
@@ -160,9 +220,25 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/boards',
+    name: 'KanBan',
+    component: KanBanView,
+    meta: {
+      requiresAuth: true,
+    },
+  },
+  {
+    path: '/documents',
+    name: 'MarkDown',
+    component: MarkDownView,
+    meta: {
+      requiresAuth: true,
+    },
+  },
+  {
     path: '/about',
     name: 'About',
-    component: () => AboutView,
+    component: AboutView,
     meta: {
       requiresAuth: true,
     },

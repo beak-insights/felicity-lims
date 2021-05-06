@@ -66,3 +66,20 @@ export const GET_GROUPS_AND_PERMISSIONS = gql`
     }
   }`;
 
+
+export const GET_AUDIT_LOG_FOR_TARGET = gql`
+  query getAuditLogs($targetType: String!, $targetId: String!) {
+    auditLogsFilter(targetType:$targetType, targetId:$targetId){
+      edges {
+        node {
+          uid
+          userId
+          targetType
+          targetId
+          action
+          stateBefore
+          stateAfter
+        }
+      }
+    }
+  }`;

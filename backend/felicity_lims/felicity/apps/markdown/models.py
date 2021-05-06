@@ -1,6 +1,9 @@
-from sqlalchemy import Column, String, Integer
+from sqlalchemy import Column, String, DateTime, Integer, ForeignKey
+from sqlalchemy.orm import relationship, backref
 
 from felicity.database.base_class import DBModel
+from felicity.apps.setup.models.setup import Department
+from felicity.apps.user.models import User
 from . import schemas
 
 
@@ -30,35 +33,46 @@ class DocumentTag(DBModel):
         return super().update(**data)
 
 
-class DocTags:
-    pass
+class DocTags(DBModel):
+    document_uid = Column(Integer, ForeignKey('document.uid'), primary_key=True)
+    tag_uid = Column(Integer, ForeignKey('documenttag.uid'), primary_key=True)
 
 
-class DocAuthors:
-    pass
+class DocAuthors(DBModel):
+    document_uid = Column(Integer, ForeignKey('document.uid'), primary_key=True)
+    user_uid = Column(Integer, ForeignKey('user.uid'), primary_key=True)
 
 
-class DocReads:
-    pass
+class DocReaders(DBModel):
+    document_uid = Column(Integer, ForeignKey('document.uid'), primary_key=True)
+    user_uid = Column(Integer, ForeignKey('user.uid'), primary_key=True)
 
 
 class Document(DBModel):
     name = Column(String)
+    subtitle = Column(String)
+    document_id = Column(String)
     content = Column(String)
     version = Column(String)
-    tags = Column(String)
-    authors = Column(String)
-    readers = Column(String)
-    date_archived = Column(String)
-    archived_by = Column(String)
-    date_recalled = Column(String)
-    recalled_by = Column(String)
-    date_effected = Column(String)
-    effected_by = Column(String)
-    date_approved = Column(String)
-    approved_by = Column(String)
-    last_accessed = Column(String)
-    last_accessed_by = Column(String)
+    tags = relationship(DocumentTag, secondary="doctags", backref="tagged_documents")
+    authors = relationship(User, secondary="docauthors", backref="authored_markdowns")
+    readers = relationship(User, secondary="docreaders", backref="read_markdowns")
+    department_uid = Column(Integer, ForeignKey('department.uid'), nullable=True)
+    department = relationship(Department)
+    category_uid = Column(Integer, ForeignKey('documentcategory.uid'), nullable=True)
+    category = relationship(DocumentCategory)
+    created_by_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
+    modified_by_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
+    date_archived = Column(DateTime, nullable=True)
+    archived_by_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
+    date_recalled = Column(DateTime, nullable=True)
+    recalled_by_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
+    date_effected = Column(DateTime, nullable=True)
+    effected_by_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
+    date_approved = Column(DateTime, nullable=True)
+    approved_by_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
+    last_accessed = Column(DateTime, nullable=True)
+    last_accessed_by_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
     status = Column(String)
 
     @classmethod

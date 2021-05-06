@@ -16,6 +16,7 @@ export interface IState {
   groups: any[];
   permissions: any[];
   users: any[];
+  auditLogs: any[];
 }
 
 export const initialState = () => {
@@ -27,6 +28,7 @@ export const initialState = () => {
     groups: [],
     permissions: [],
     users: [],
+    auditLogs: [],
   };
 };
 

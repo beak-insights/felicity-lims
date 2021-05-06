@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen bg-gray-200 font-roboto">
+  <div class="h-screen bg-gray-200 font-roboto antialiased">
     <div class="grid grid-cols-12">
       <div class="col-span-2 min-h-screen bg-gray-700">
         <side-bar />

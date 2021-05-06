@@ -1,264 +1,89 @@
 <template>
-  <div class="">
-    <div class="flex justify-between">
-      <div class="flex items-center content-between">
-        <!-- <h1 class="h1 my-4 font-bold text-dark-700">Listing</h1> -->
-        <router-link  to="/patients/search"
-          class="px-4 my-2 p-1 text-sm border-blue-500 border text-dark-700 transition-colors duration-150 rounded-lg focus:outline-none hover:bg-blue-500 hover:text-gray-100">
-          Add Patient</router-link>
-        <input
-          class="w-64 ml-6 pl-4 pr-2 py-1 text-sm text-gray-700 placeholder-gray-600 border-1 border-gray-400 rounded-md  focus:placeholder-gray-500 focus:border-green-100 focus:outline-none focus:shadow-outline-purple form-input"
-          type="text" placeholder="Search ..." aria-label="Search"
-          @keyup="searchPatients($event)"
-          @focus="setPatientToNull()"
-        />
-      </div>
-      <button
-        @click.prevent="patientFormManager(true)"
-          class="px-4 my-2 p-1 text-sm border-blue-500 border text-dark-700 transition-colors duration-150 rounded-lg focus:outline-none hover:bg-blue-500 hover:text-gray-100">
-          Quick Registration</button>
-    </div>
 
+    <div>
+      <input
+        class="w-1/4 pl-4 h-10 pr-2 py-1 my-4 text-sm text-gray-700 placeholder-gray-600 border-1 border-gray-400 rounded-md  focus:placeholder-gray-500 focus:border-green-100 focus:outline-none focus:shadow-outline-purple form-input"
+        type="text" placeholder="Patient Search ..." aria-label="Search"
+        @keyup="searchPatients($event)"
+        @focus="setPatientToNull()"
+      />
+    </div>
     <hr />
 
-    <div class="grid grid-cols-12 gap-4 mt-2">
-      <section class="col-span-4 overflow-y-scroll overscroll-contain patient-scroll">
-        <a
-          v-for="pt in patients"
-          :key="pt.patientId"
-          href="#"
-          @click.prevent.stop="selectPatient(pt)"
-          :class="[
-            'bg-white w-full flex items-center p-1 mb-1 rounded-xl shadow border',
-            { 'border-green-500 bg-green-100': pt.uid === patientForm.uid },
-          ]"
-        >
-          <div class="flex-grow p-1">
-            <div class="font-semibold text-gray-700 flex justify-between">
-              <span>{{ getPatientFullName(pt) }}</span>
-              <span class="text-sm text-gray-500">{{ pt.age }} yrs, {{ getGender(pt.gender) }}</span>
-            </div>
-            <div class="text-sm text-gray-500 flex justify-between">
-              <span>{{ pt.patientId }}</span>
-              <span>{{ pt.clientPatientId }}</span>
-            </div>
-            <div class="text-sm text-gray-500 flex justify-between">
-              <span>{{ pt?.client?.district?.province?.name }}</span>
-              <span>{{ pt?.client?.name }}</span>
-            </div>
-          </div>
-          <div class="p-2">
-            <span class="block h-4 w-4 bg-green-400 rounded-full bottom-0 right-0"></span>
-          </div>
-        </a>
-      </section>
-
-      <section class="col-span-8" v-if="isPatientSelected()">
-        <!-- Question Listing Item Card -->
-        <div
-          class="bg-white rounded-lg shadow-sm hover:shadow-lg duration-500 px-4 sm:px-6 md:px-2 py-4"
-        >
-          <div class="grid grid-cols-12 gap-3">
-            <!-- Meta Column -->
-            <div class="sm:col-span-2 text-center hidden sm:block">
-              <div class="inline-block font-md text-medium mb-2">{{ patientForm.patientId }}</div>
-              <!-- Age -->
-              <div
-                class="grid grid-rows-2 mx-auto mb-1 py-1 w-4/5 2lg:w-3/5 rounded-md bg-green-400"
-              >
-                <div class="inline-block font-medium text-2xl text-white">{{ patientForm.age }}</div>
-                <div class="inline-block font-medium text-white text-sm lg:text-md">Yrs Old</div>
-              </div>
-            </div>
-            <!-- Summary Column -->
-            <div class="col-span-12 sm:col-start-3 sm:col-end-13 px-3 sm:px-0">
-              <div
-                class="flex justify-between sm:text-sm md:text-md lg:text-lg text-gray-700 font-bold"
-              >
-                <span>{{ getPatientFullName(patientForm) }}</span>
-                <div>
-                  <span class="font-medium text-md">{{ patientForm.dateOfBirth }}</span>
-                  <button
-                    @click="patientFormManager(false)"
-                    class="ml-4 inline-flex items-center justify-center w-8 h-8 mr-2 border-blue-500 border text-gray-900 transition-colors duration-150 bg-white rounded-full focus:outline-none hover:bg-gray-200"
-                  >
-                    <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                      <path
-                        d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
-                      ></path>
-                    </svg>
-                  </button>
-                  <router-link :to="{ name: 'patient-detail', query: { patientUid: patientForm.uid } }" 
-                  class="p-1 ml-2 border-white border text-gray-500 rounded transition duration-300 hover:border-blue-500 hover:text-blue-500 focus:outline-none">... more</router-link>
+    <!-- Patients Table View -->
+    <div class="overflow-x-auto my-4">
+        <div class="align-middle inline-block min-w-full shadow overflow-hidden bg-white shadow-dashboard px-2 pt-1 rounded-bl-lg rounded-br-lg">
+        <table class="min-w-full">
+            <thead>
+            <tr>
+                <th class="px-1 py-1 border-b-2 border-gray-300 text-left leading-4 text-black-500 tracking-wider">PatientID</th>
+                <th class="px-1 py-1 border-b-2 border-gray-300 text-left text-sm leading-4 text-black-500 tracking-wider">Full Name</th>
+                <th class="px-1 py-1 border-b-2 border-gray-300 text-left text-sm leading-4 text-black-500 tracking-wider">Age</th>
+                <th class="px-1 py-1 border-b-2 border-gray-300 text-left text-sm leading-4 text-black-500 tracking-wider">Gender</th>
+                <th class="px-1 py-1 border-b-2 border-gray-300 text-left text-sm leading-4 text-black-500 tracking-wider">Client Patient Id</th>
+                <th class="px-1 py-1 border-b-2 border-gray-300 text-left text-sm leading-4 text-black-500 tracking-wider">Province</th>
+                <th class="px-1 py-1 border-b-2 border-gray-300 text-left text-sm leading-4 text-black-500 tracking-wider">District</th>
+                <th class="px-1 py-1 border-b-2 border-gray-300 text-left text-sm leading-4 text-black-500 tracking-wider">Client</th>
+                <th class="px-1 py-1 border-b-2 border-gray-300"></th>
+            </tr>
+            </thead>
+            <tbody class="bg-white">
+              <tr 
+              v-for="pt in patients"
+              :key="pt.patientId">
+                  <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
+                  <div class="flex items-center">
+                      <div class="text-sm leading-5 text-gray-800">{{ pt.patientId }}</div>
                   </div>
-              </div>
-              <hr />
-              <div class="grid grid-cols-2 mt-2">
-                <div class="col-span-1">
-                  <!-- Client Details -->
-                  <div class="flex">
-                    <span class="text-gray-800 text-sm font-medium w-16">Client</span>
-                    <span class="text-gray-600 text-sm md:text-md">{{
-                      patientForm?.client?.name
-                    }}</span>
-                  </div>
-                  <div class="flex">
-                    <span class="text-gray-800 text-sm font-medium w-16">District:</span>
-                    <span class="text-gray-600 text-sm md:text-md">{{
-                      patientForm?.client?.district?.name
-                    }}</span>
-                  </div>
-                  <div class="flex">
-                    <span class="text-gray-800 text-sm font-medium w-16">Province:</span>
-                    <span class="text-gray-600 text-sm md:text-md">{{
-                      patientForm?.client?.district?.province?.name
-                    }}</span>
-                  </div>
-                </div>
-                <div class="col-span-1">
-                  <!-- Identifiers -->
-                  <div class="col-span-2 flex mt-2">
-                    <span class="text-gray-800 text-sm font-medium w-16">Client Patient ID</span>
-                    <span class="text-gray-600 text-sm md:text-md">{{
-                      patientForm.clientPatientId
-                    }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                  </td>
+                  <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
+                    <router-link :to="{ name: 'patient-detail', query: { patientUid: pt?.uid } }" 
+                      class="p-1 ml-2 border-white border text-gray-500 rounded transition duration-300 hover:border-blue-500 hover:text-blue-500 focus:outline-none">{{ getPatientFullName(pt) }}</router-link>
+                  </td>
+                  <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
+                  <div class="text-sm leading-5 text-blue-900">{{ pt.age }} yrs</div>
+                  </td>
+                  <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
+                  <div class="text-sm leading-5 text-blue-900">{{ getGender(pt.gender) }}</div>
+                  </td>
+                  <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
+                  <div class="text-sm leading-5 text-blue-900">{{ pt.clientPatientId }}</div>
+                  </td>
+                  <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
+                  <div class="text-sm leading-5 text-blue-900">{{ pt?.client?.district?.province?.name }}</div>
+                  </td>
+                  <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
+                  <div class="text-sm leading-5 text-blue-900">{{ pt?.client?.district?.name }}</div>
+                  </td>
+                  <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
+                  <div class="text-sm leading-5 text-blue-900">{{ pt?.client?.name }}</div>
+                  </td>
+    
+                  <td class="px-1 py-1 whitespace-no-wrap text-right border-b border-gray-500 text-sm leading-5">
+                      <button class="px-2 py-1 mr-2 border-orange-500 border text-orange-500 rounded transition duration-300 hover:bg-orange-700 hover:text-white focus:outline-none">View</button>
+                      <a 
+                      @click.prevent="addSample(pt)"
+                      class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Add Analysis Request</a >
+                  </td>
+              </tr>
+            </tbody>
+        </table>
         </div>
-
-        <!-- Sample and Case Data -->
-        <nav class="bg-white px-6 pt-2 shadow-md mt-2">
-          <div class="-mb-px flex justify-start">
-            <a
-              v-for="tab in tabs"
-              :key="tab"
-              :class="[
-                'no-underline text-gray-500 uppercase tracking-wide font-bold text-xs py-1 mr-8 tab',
-                { 'tab-active': currentTab === tab },
-              ]"
-              @click="currentTab = tab"
-              href="#"
-            >
-              {{ tab }}
-            </a>
-          </div>
-        </nav>
-   
-        <tab-samples v-if="currentTab === 'samples'" :patientUid="patientForm.uid" />
-        <tab-cases v-if="currentTab === 'cases'" />
-        <tab-logs v-if="currentTab === 'logs'"/>
-
-      </section>
     </div>
-  </div>
 
-  <!-- Patient Edit Form Modal -->
-  <modal v-if="showModal" @close="showModal = false">
-    <template v-slot:header>
-      <h3>Patient Form</h3>
-    </template>
+    <hr class="my-2">
+    <div class="flex content-start items-center">
+      <span class="text-blue-500"><i class="fas fa-info-circle"></i></span>
+      <p class="ml-2 italic text-red-500">Click register when you dont find your patient during search*</p>
+    </div>
+    <hr class="my-2">
 
-    <template v-slot:body>
-      <form action="post" class="p-1">
-        <label class="block mb-2">
-          <span class="text-gray-700">Patient Unique Identifier</span>
-          <input class="form-input mt-1 block w-full" v-model="patientForm.clientPatientId" placeholder="Patient Unique Identifier" />
-        </label>
-        <div class="flex justify-between">
-          <label class="block mb-2 w-full">
-            <span class="text-gray-700">First Name</span>
-            <input class="form-input mt-1 block w-full" v-model="patientForm.firstName" placeholder="First Name" />
-          </label>
-          <label class="block mb-2 w-full mx-2">
-            <span class="text-gray-700">Middle Name</span>
-            <input class="form-input mt-1 block w-full" v-model="patientForm.middleName" placeholder="Middle Name" />
-          </label>
-          <label class="block mb-2 w-full">
-            <span class="text-gray-700">Last Name</span>
-            <input class="form-input mt-1 block w-full" v-model="patientForm.lastName" placeholder="Last Name" />
-          </label>
-        </div>
+    <router-link
+      to="/patients/register"
+      class="px-4 p-1 text-sm border-blue-500 border text-dark-700 transition-colors duration-150 rounded focus:outline-none hover:bg-blue-500 hover:text-gray-100">
+      Register New Patiet
+    </router-link>
 
-        <div class="flex justify-between">
-          <label class="block mb-2 w-full">
-            <span class="text-gray-700">Age</span>
-            <input class="form-input mt-1 block w-full" type="number" v-model="patientForm.age" placeholder="Age" />
-          </label>
-          <label class="block mb-2 mx-2 w-full">
-            <span class="text-gray-700">Date of Birth</span>
-            <input class="form-input mt-1 block w-full" type="date" v-model="patientForm.dateOfBirth" placeholder="Date of Birth" />
-          </label>
-          <label class="inline-flex items-center -mb-6 w-full">
-            <input type="checkbox" class="form-checkbox text-green-500 mx-4" v-model="patientForm.ageDobEstimated" />
-            <span class="ml-2">Age/DOB Estimated?</span>
-          </label>
-        </div>
-
-        <div class="flex justify-between">
-          <label class="block mb-2 w-full" >
-            <span class="text-gray-700">Gender</span>
-            <select class="form-select block w-full mt-1" v-model="patientForm.gender">
-               <option></option>
-              <option v-for="(sex, indx) in genders" :key="sex.index" :value="indx"> {{ sex }}</option>
-            </select>
-          </label>
-          <label class="block mb-2 w-full" >
-            <span class="text-gray-700">Mobile Number</span>
-            <input class="form-input mt-1 block w-full" type="number" v-model="patientForm.phoneMobile" placeholder="Mobile Number" />
-          </label>
-          <label class="inline-flex items-center -mb-6 w-full">
-            <input type="checkbox" class="form-checkbox text-green-500 mx-4" v-model="patientForm.consentSms" />
-            <span class="ml-2">Consent to SMS</span>
-          </label>
-        </div>
-
-        <!-- other identifiers: passport, client pid, national id -->
-        <label class="block mb-2 w-full">
-          <span class="text-gray-700">Primary Referrer</span>
-          <select class="form-select block w-full mt-1" v-model="patientForm.clientUid">
-              <option></option>
-              <option v-for="client in clients?.clientAll?.edges" :key="client.node.uid" :value="client.node.uid"> {{ client.node.name }} {{ client.node.uid }}</option>
-            </select>
-        </label>
-
-        <div class="grid grid-cols-3 gap-x-4 mb-4">
-          <label class="block col-span-1 mb-2 w-full">
-            <span class="text-gray-700">Country</span>
-            <select class="form-select block w-full mt-1" v-model="countryUid" @change="getProvinces($event)">
-              <option></option>
-              <option v-for="country in countries" :key="country.uid" :value="country.uid"> {{ country.name }} {{ country.uid }}</option>
-            </select>
-          </label>
-          <label class="block col-span-1 mb-2 w-full">
-            <span class="text-gray-700">Province</span>
-            <select class="form-select block w-full mt-1" v-model="provinceUid" @change="getDistricts($event)">
-               <option></option>
-              <option v-for="province in provinces" :key="province.uid" :value="province.uid"> {{ province.name }} {{ province.uid }}</option>
-            </select>
-          </label>
-          <label class="block col-span-1 mb-2 w-full">
-            <span class="text-gray-700">District</span>
-            <select class="form-select block w-full mt-1" v-model="patientForm.districtUid">
-               <option></option>
-              <option v-for="district in districts" :key="district.uid" :value="district.uid"> {{ district.name }} {{ district.uid }}</option>
-            </select>
-          </label>
-        </div>
-
-        <hr />
-        <button
-          type="button"
-          @click.prevent="savePatientForm()"
-          class="-mb-4 w-full border border-green-500 bg-green-500 text-white rounded-md px-4 py-2 m-2 transition-colors duration-500 ease select-none hover:bg-green-600 focus:outline-none focus:shadow-outline"
-        >
-          Save Patient
-        </button>
-      </form>
-    </template>
-  </modal>
 </template>
 
 <style lang="postcss" scoped>
@@ -277,13 +102,9 @@
 import { useMutation } from '@urql/vue';
 import { defineComponent, ref, reactive, computed } from 'vue';
 import { mapGetters, useStore } from 'vuex';
-import { useRouter } from 'vue-router';
+import { useRouter  } from 'vue-router';
 import { useQuery } from '@urql/vue';
-import tabSamples from './comps/SampleTable.vue';
-import tabCases from './comps/CaseTable.vue';
-import tabLogs from '../_components/timeline/AuditLog.vue';
-import modal from '../_components/modals/simpleModal.vue';
-import { Patient } from '../../store/modules/patients';
+import { IPatient, Patient } from '../../store/modules/patients';
 import { GET_ALL_PATIENTS, SEARCH_PATIENTS } from '../../graphql/patient.queries';
 import {  GET_ALL_CLIENTS } from '../../graphql/clients.queries';
 import {
@@ -296,20 +117,15 @@ import { ADD_PATIENT } from '../../graphql/patient.mutations';
 export const IPatient = typeof Patient;
 
 import { ActionTypes } from '../../store/modules/patients';
-import { ActionTypes as ClientActionTypes } from '../../store/modules/clients';
 import { ActionTypes as AdminActionTypes } from '../../store/modules/admin';
 
 export default defineComponent({
-  name: 'patient-search',
-  components: {
-    tabSamples,
-    tabCases,
-    tabLogs,
-    modal,
-  },
+  name: 'patients',
+
   setup(context) {
     let store = useStore();
     let router = useRouter();
+
 
     const nullPatient = new Patient();
     let createAction = ref(true);
@@ -331,7 +147,10 @@ export default defineComponent({
 
     store.dispatch(AdminActionTypes.FETCH_COUNTRIES);    
     store.dispatch(ActionTypes.FETCH_PATIENTS);
-    store.dispatch(ClientActionTypes.FETCH_CLIENTS);
+
+    const { data: clients, fetching: CFetching, error: CError } = useQuery({
+      query: GET_ALL_CLIENTS,
+    });
 
     const { executeMutation: createPatient } = useMutation(ADD_PATIENT);
 
@@ -402,11 +221,17 @@ export default defineComponent({
        showModal.value = false;
     }
 
+    function addSample(patient: IPatient): void {
+      router?.push({
+          name: 'samples-add',
+          query: {
+              patientUid: patient.uid
+          }
+      })
+    }
+
     return {
-      showModal,
-      tabs,
-      currentTab,
-      currentTabComponent,
+      addSample,
       patientForm,
       getPatientFullName,
       patients: computed(() => store.getters.getPatients),
@@ -416,7 +241,7 @@ export default defineComponent({
       patientFormManager,
       savePatientForm,
       countries: computed(() => store.getters.getCountries),
-      clients: computed(() => store.getters.getClients),
+      clients,
       countryUid,
       provinces,
       provinceUid,
@@ -425,7 +250,7 @@ export default defineComponent({
       getDistricts,
       genders,
       getGender,
-      searchPatients,
+      searchPatients
     };
   },
 });

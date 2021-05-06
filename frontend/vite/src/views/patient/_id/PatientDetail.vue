@@ -45,38 +45,33 @@
 </style>
 
 <script lang="ts">
-import tabSamples from '../comps/SampleTable.vue';
+import tabSamples from '../../_components/AnalyisRequestListing.vue';
 import tabCases from '../comps/CaseTable.vue';
-import tabLogs from '../../_components/timeline/AuditLog.vue';
+import tabLogs from '../../_components/AuditLog.vue';
 
 import { defineComponent, ref, toRefs, computed, PropType } from 'vue';
+import { useStore } from 'vuex';
 
 export default defineComponent({
-  name: 'patient-search',
+  name: 'patient-detail',
   components: {
     tabSamples,
     tabCases,
     tabLogs,
   },
-  props: {
-    patient: { 
-      type: Object as PropType<IPatient>,
-      required: true
-    }
-  },
-  setup(props) {
+  setup() {
+    let store = useStore();
 
     let currentTab = ref('samples');
     const tabs = ['samples', 'cases', 'logs'];
     let currentTabComponent = computed(() => 'tab-' + currentTab.value);
 
-    const  { patient } = toRefs(props);
 
     return {
       tabs,
       currentTab,
       currentTabComponent,
-      patient,
+      patient: computed(() => store.getters.getPatient),
     };
   },
 });

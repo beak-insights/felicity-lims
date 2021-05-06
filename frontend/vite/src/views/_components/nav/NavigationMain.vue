@@ -61,7 +61,7 @@
           @click="dropdownOpen = !dropdownOpen"
           class="hidden md:block md:flex md:items-center ml-2 mt-2"
         >
-          <span class="text-white text-sm mr-1">Aurthur Musendame</span>
+          <span class="text-white text-sm mr-1">{{ userFullName }}</span>
           <div>
             <font-awesome-icon icon="chevron-down" class="text-gray-400" />
           </div>
@@ -106,9 +106,13 @@ export default defineComponent({
   setup(_, { emit }) {
     const dropdownOpen = ref(false);
     const isOpen = ref(false);
+
+    const userFullName: string = localStorage.getItem('fuser');
+
     return {
       isOpen,
       dropdownOpen,
+      userFullName
     };
   },
 });
