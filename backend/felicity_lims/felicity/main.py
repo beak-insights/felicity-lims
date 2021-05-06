@@ -103,7 +103,6 @@ if initialize_felicity():
 
     manager = ConnectionManager()
 
-
     @flims.websocket("/ws")
     async def websocket_endpoint(websocket: WebSocket):
         await manager.connect(websocket)

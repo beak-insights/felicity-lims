@@ -9,6 +9,7 @@ from sqlalchemy.orm import relationship
 from felicity.database.base_class import DBModel
 from felicity.apps.user.models import User
 from felicity.apps.user.schemas import User as UserSchema
+from felicity.apps.audit.mixin import AuditableMixin
 
 
 class TrailMixin(object):
@@ -23,9 +24,16 @@ class TrailMixin(object):
 
 
 class BaseAuditDBModel(DBModel, TrailMixin):
+    """With creator and updater"""
     __abstract__ = True
 
 
+class Auditable(BaseAuditDBModel, AuditableMixin):
+    """With Audit Log"""
+    __abstract__ = True
+
+
+# Pydantic
 class BaseAuditModel(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
@@ -33,3 +41,5 @@ class BaseAuditModel(BaseModel):
     created_by: Optional[UserSchema] = None
     updated_by_uid: Optional[str] = None
     updated_by: Optional[UserSchema] = None
+
+

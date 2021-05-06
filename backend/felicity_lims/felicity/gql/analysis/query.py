@@ -23,6 +23,7 @@ class SampleFilterableConnectionField(SQLAlchemyConnectionField):
 
         _text = None
         _status = None
+        _client_uid = None
 
         for field, value in args.items():
             if field not in cls.RELAY_ARGS:
@@ -32,6 +33,9 @@ class SampleFilterableConnectionField(SQLAlchemyConnectionField):
 
                     if field == 'status':
                         _status = value
+
+                    if field == 'client_uid':
+                        _client_uid = value
 
         combined = set()
 
@@ -47,6 +51,8 @@ class SampleFilterableConnectionField(SQLAlchemyConnectionField):
                 arg = dict()
                 if _status:
                     arg["status__exact"] = _status
+                if _client_uid:
+                    arg["analysisrequest___client_uid__exact"] = _client_uid
                 arg[_filter] = f"%{_text}%"
                 logger.warning(f" args built: {arg}")
                 queryset = model.where(**arg)
@@ -54,9 +60,15 @@ class SampleFilterableConnectionField(SQLAlchemyConnectionField):
                     combined.add(item)
         else:
             if _status:
-                queryset = model.where(status__exact=_status)
+                if _client_uid:
+                    queryset = model.where(status__exact=_status, analysisrequest___client_uid__exact=_client_uid)
+                else:
+                    queryset = model.where(status__exact=_status)
             else:
-                queryset = queryset
+                if _client_uid:
+                    queryset = model.where(analysisrequest___client_uid__exact=_client_uid)
+                else:
+                    queryset = queryset
 
             for item in queryset:
                 combined.add(item)
@@ -72,19 +84,16 @@ class AnalysisQuery(graphene.ObjectType):
     sample_type_by_uid = graphene.Field(lambda: a_types.SampleTypeTyp, uid=graphene.String(default_value=""))
 
     # Sample Queries
-    samples_filter = SampleFilterableConnectionField(
-        a_types.SampleType.connection,
-        status=graphene.String(default_value=""),
-        text=graphene.String(default_value="")
-    )
     sample_all = SampleFilterableConnectionField(
         a_types.SampleType.connection,
         status=graphene.String(default_value=""),
+        client_uid=graphene.String(default_value=""),
         text=graphene.String(default_value="")
     )
     sample_by_uid = graphene.Field(lambda: a_types.SampleType, uid=graphene.String(default_value=""))
     sample_count = graphene.Field(lambda: graphene.Int, status=graphene.String(default_value=""),
-                                  text=graphene.String(default_value=""))
+                                  text=graphene.String(default_value=""),
+                                  client_uid=graphene.String(default_value=""))
 
     # Profile Queries
     profile_all = SQLAlchemyConnectionField(a_types.ProfileType.connection)
@@ -103,6 +112,7 @@ class AnalysisQuery(graphene.ObjectType):
     analysis_request_all = SQLAlchemyConnectionField(a_types.AnalysisRequestType.connection)
     analysis_request_by_uid = graphene.Field(lambda: a_types.AnalysisRequestType, uid=graphene.String(default_value=""))
     analysis_requests_by_patient_uid = graphene.List(lambda: a_types.AnalysisRequestType, uid=graphene.String(default_value=""))
+    analysis_requests_by_client_uid = graphene.List(lambda: a_types.AnalysisRequestType, uid=graphene.String(default_value=""))
 
     # AnalysisResult Queries
     analysis_result_all = SQLAlchemyConnectionField(a_types.AnalysisResultType.connection)
@@ -120,7 +130,7 @@ class AnalysisQuery(graphene.ObjectType):
         return sample
 
     @staticmethod
-    def resolve_sample_count(self, info, status, text):
+    def resolve_sample_count(self, info, status, text, client_uid):
         combined = set()
 
         if text:
@@ -135,15 +145,23 @@ class AnalysisQuery(graphene.ObjectType):
                 arg = dict()
                 if status:
                     arg["status__exact"] = status
+                if client_uid:
+                    arg["analysisrequest___client_uid__exact"] = client_uid
                 arg[_filter] = f"%{text}%"
                 queryset = a_models.Sample.where(**arg)
                 for item in queryset:
                     combined.add(item)
         else:
             if status:
-                queryset = a_models.Sample.where(status__exact=status)
+                if client_uid:
+                    queryset = a_models.Sample.where(status__exact=status, analysisrequest___client_uid__exact=client_uid)
+                else:
+                    queryset = a_models.Sample.where(status__exact=status)
             else:
-                queryset = a_models.Sample.where(**{})
+                if client_uid:
+                    queryset = a_models.Sample.where(analysisrequest___client_uid__exact=client_uid)
+                else:
+                    queryset = a_models.Sample.where(**{})
 
             for item in queryset:
                 combined.add(item)
@@ -173,6 +191,11 @@ class AnalysisQuery(graphene.ObjectType):
     @staticmethod
     def resolve_analysis_requests_by_patient_uid(self, info, uid):
         analysis_requests = a_models.AnalysisRequest.where(patient_uid__exact=uid).all()
+        return analysis_requests
+
+    @staticmethod
+    def resolve_analysis_requests_by_client_uid(self, info, uid):
+        analysis_requests = a_models.AnalysisRequest.where(client_uid__exact=uid).all()
         return analysis_requests
 
     @staticmethod

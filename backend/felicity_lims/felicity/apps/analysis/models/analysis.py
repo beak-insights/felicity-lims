@@ -10,7 +10,7 @@ from felicity.apps.client import models as ct_models
 from felicity.apps.core import BaseMPTT
 from felicity.apps.core.utils import sequencer
 from felicity.apps.patient import models as pt_models
-from felicity.apps import BaseAuditDBModel, DBModel
+from felicity.apps import BaseAuditDBModel, DBModel, Auditable
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -188,7 +188,7 @@ class RejectionReason(BaseAuditDBModel):
         return super().update(**data)
 
 
-class Sample(BaseAuditDBModel, BaseMPTT):
+class Sample(Auditable, BaseMPTT):
     """Sample"""
     analysisrequest_uid = Column(Integer, ForeignKey('analysisrequest.uid'), nullable=False)
     analysisrequest = relationship('AnalysisRequest', backref="samples")

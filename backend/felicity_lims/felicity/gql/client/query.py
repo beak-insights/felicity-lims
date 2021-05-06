@@ -33,7 +33,6 @@ class ClientQuery(graphene.ObjectType):
         clients = models.Client.where(name__contains=name).all()
         # clients = models.Client.where(name__like=f"%{name}%").all()
         return clients
-        return query
 
     def resolve_client_search(self, info, query_string):
         filters = ['name__ilike', 'code__ilike']

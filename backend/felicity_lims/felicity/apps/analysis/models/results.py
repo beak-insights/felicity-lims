@@ -8,13 +8,13 @@ from felicity.apps.analysis.models import analysis as analysis_models
 from felicity.apps.core import BaseMPTT
 from felicity.apps.setup.models.setup import Instrument, Method
 from felicity.apps.worksheet import models as ws_models
-from felicity.apps import BaseAuditDBModel
+from felicity.apps import BaseAuditDBModel, Auditable
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class AnalysisResult(BaseAuditDBModel, BaseMPTT):
+class AnalysisResult(Auditable, BaseMPTT):
     """Test/Analysis Result
     Number of analysis results per sample will be directly proportional to
     the number of linked sample_analyses at minimum :)

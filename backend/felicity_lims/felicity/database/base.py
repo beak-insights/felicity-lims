@@ -1,4 +1,5 @@
 from felicity.database.base_class import DBModel
+from felicity.apps.audit.models import AuditLog
 from felicity.apps.setup.models import Country
 from felicity.apps.setup.models import Province
 from felicity.apps.setup.models import District

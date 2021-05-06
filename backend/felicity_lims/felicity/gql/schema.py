@@ -4,6 +4,7 @@ from graphene import String
 from graphql import GraphQLError
 
 from felicity.gql.setup.query import SetupQuery
+from felicity.gql.audit.query import AuditLogQuery
 from felicity.gql.setup.mutations import SetupMutations
 from felicity.gql.user.query import UserQuery
 from felicity.gql.user.mutations import UserMutations
@@ -20,6 +21,7 @@ from felicity.gql.worksheet.mutations import WorkSheetMutations
 class Query(
     SetupQuery, UserQuery, ClientQuery,
     PatientQuery, AnalysisQuery, WorkSheetQuery,
+    AuditLogQuery,
     graphene.ObjectType
 ):
     pass
