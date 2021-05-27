@@ -6,6 +6,7 @@ import DashBoardView from '../views/dashboard/index.vue';
 import PatientsView from '../views/patient/index.vue';
 import PatientsListing from '../views/patient/Patients.vue';
 import PatientsCompact from '../views/patient/PatientsCompact.vue';
+import PatientsRegistration from '../views/patient/AddPatient.vue';
 import PatientSingleView from '../views/patient/_id/index.vue';
 import PatientDetail from '../views/patient/_id/PatientDetail.vue';
 import ClientsView from '../views/client/index.vue';
@@ -35,8 +36,9 @@ import PageNotFound from '../views/404.vue';
 import { isTokenValid } from './checks';
 
 const routes: RouteRecordRaw[] = [
+  // { path: '/', redirect: '/dashboard' },
   {
-    path: '/',
+    path: '/dashboard',
     name: 'DashBoard',
     component: DashBoardView,
     meta: {
@@ -63,9 +65,9 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'compact',
-        name: 'patients-compact',
-        component: PatientsCompact,
+        path: 'register',
+        name: 'patients-register',
+        component: PatientsRegistration,
         meta: {
           requiresAuth: true,
         },
@@ -123,6 +125,14 @@ const routes: RouteRecordRaw[] = [
         },
       },
     ],
+    meta: {
+      requiresAuth: true,
+    },
+  },
+  {
+    path: '/patients-compact',
+    name: 'patients-compact',
+    component: PatientsCompact,
     meta: {
       requiresAuth: true,
     },
@@ -339,6 +349,11 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
+
+  if(to.path === '/') {
+    next({ path: '/dashboard' });
+  }
+
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     let token = localStorage.getItem('fwt');
     if (!isTokenValid(token)) {

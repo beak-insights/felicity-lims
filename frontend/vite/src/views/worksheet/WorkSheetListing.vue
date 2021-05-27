@@ -1,5 +1,5 @@
 <template>
-  <div class="px-6">
+  <div class="">
     <div class="flex justify-between items-center">
         <div class="my-4 flex sm:flex-row flex-col">
           <div class="flex flex-row mb-1 sm:mb-0">

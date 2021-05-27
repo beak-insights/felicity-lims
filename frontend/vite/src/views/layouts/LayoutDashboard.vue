@@ -1,12 +1,12 @@
 <template>
   <div class="h-screen bg-gray-200 font-roboto antialiased">
-    <div class="grid grid-cols-12">
-      <div class="col-span-2 min-h-screen bg-gray-700">
+    <div class="flex flex-row">
+      <div class="min-h-screen bg-gray-700">
         <side-bar />
       </div>
-      <div class="col-span-10">
+      <div class="flex-1">
         <header-main />
-        <main class="bg-gray-100 p-4 overflow-y-scroll overscroll-contain">
+        <main class="bg-gray-100 p-8 overflow-y-scroll overscroll-contain">
           <slot />
         </main>
       </div>

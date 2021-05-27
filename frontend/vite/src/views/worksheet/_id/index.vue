@@ -1,6 +1,6 @@
 <template>
 
-  <div class="px-2">
+  <div class="">
     <div class="bg-white rounded-lg shadow-sm hover:shadow-lg duration-500 px-4 py-4" >
       <div class="grid grid-cols-12 gap-1">
         <!-- Meta Column -->

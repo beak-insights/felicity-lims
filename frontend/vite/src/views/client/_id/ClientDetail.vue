@@ -1,6 +1,6 @@
 <template>
 
-  <nav class="bg-white px-6 pt-2 shadow-md mt-2">
+  <nav class="bg-white pt-2 shadow-md mt-2">
     <div class="-mb-px flex justify-start">
       <a
         v-for="tab in tabs"

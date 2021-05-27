@@ -1,6 +1,6 @@
 <template>
-  <div class="px-6">
-    <h4>Samples</h4>
+  <div class="">
+    <h4>About Felicity LIMS</h4>
   </div>
 </template>
 

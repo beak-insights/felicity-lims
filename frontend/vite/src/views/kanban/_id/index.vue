@@ -1,6 +1,6 @@
 <template>
 
-  <div class="px-2 flex justify-start">
+  <div class="flex justify-start">
     <div class="flex-1">
       <h2 class="h2 font-bold">BOARD: {{ board?.title || 'No title'}}</h2>
       <hr class="my-2">

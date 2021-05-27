@@ -1,5 +1,4 @@
 <template>
-  <div class="px-6">
     <h4>Felicity Flash DashBoard</h4>
     <span v-if="fetching">Fetching users data ...</span>
     <span v-else-if="error">Error: {{ error }}</span>
@@ -30,8 +29,6 @@
         </ul>
   </section>
 
-
-  </div>
 </template>
 
 <script>
