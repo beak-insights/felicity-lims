@@ -165,9 +165,9 @@ class CreateDocument(graphene.Mutation):
         for k, v in kwargs.items():
             incoming[k] = v
 
-        incoming['department_uid'] = kwargs.get('departmentUid', None)
-        incoming['category_uid'] = kwargs.get('categoryUid', None)
-        tags_uids = kwargs.get('tagsUids', [])
+        logger.info(kwargs)
+        logger.info(incoming)
+        tags_uids = kwargs.get('tags_uids', [])
         tags = []
         for _tag_uid in tags_uids:
             tag = models.DocumentTag.get(uid=_tag_uid)
@@ -186,6 +186,7 @@ class UpdateDocument(graphene.Mutation):
         uid = graphene.String(required=True)
         name = graphene.String(required=False)
         subtitle = graphene.String(required=False)
+        content = graphene.String(required=False)
         document_id = graphene.String(required=False)
         version = graphene.String(required=False)
         department_uid = graphene.String(required=False)
@@ -212,11 +213,8 @@ class UpdateDocument(graphene.Mutation):
                 except Exception as e:
                     logger.warning(f"failed to set attribute {field}: {e}")
 
-        setattr(document, 'department_uid', kwargs.get('departmentUid', None))
-        setattr(document, 'category_uid', kwargs.get('category_uid', None))
-
         document.tags.clear()
-        tags_uids = kwargs.get('tagsUids', [])
+        tags_uids = kwargs.get('tags_uids', [])
         tags = []
         for _tag_uid in tags_uids:
             tag = models.DocumentTag.get(uid=_tag_uid)

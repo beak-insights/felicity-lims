@@ -22,23 +22,20 @@ class MarkDownQuery(graphene.ObjectType):
     documents_by_category = graphene.List(lambda: DocumentType, category=graphene.String(default_value=""))
     documents_search = graphene.List(lambda: DocumentType, query_string=graphene.String(default_value=""))
 
-    @staticmethod
-    def resolve_document_by_uid(info, uid):
+
+    def resolve_document_by_uid(self, info, uid):
         document = models.Document.get(uid=uid)
         return document
 
-    @staticmethod
-    def resolve_documents_by_tag(info, tag):
+    def resolve_documents_by_tag(self, info, tag):
         documents = models.Document.where(tags___name__ilike=f"%{tag}%").all()
         return documents
 
-    @staticmethod
-    def resolve_documents_by_category(info, category):
+    def resolve_documents_by_category(self, info, category):
         documents = models.Document.where(category___name__ilike=f"%{category}%").all()
         return documents
 
-    @staticmethod
-    def resolve_documents_search(info, query_string):
+    def resolve_documents_search(self, info, query_string):
         filters = [
             'name__ilike',
             'subtitle__ilike',

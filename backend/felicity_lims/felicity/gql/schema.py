@@ -18,12 +18,14 @@ from felicity.gql.worksheet.query import WorkSheetQuery
 from felicity.gql.worksheet.mutations import WorkSheetMutations
 from felicity.gql.markdown.query import MarkDownQuery
 from felicity.gql.markdown.mutations import MarkdownMutations
+from felicity.gql.kanban.query import KanBanQuery
+from felicity.gql.kanban.mutations import KanBanMutations
 
 
 class Query(
     SetupQuery, UserQuery, ClientQuery,
     PatientQuery, AnalysisQuery, WorkSheetQuery,
-    AuditLogQuery, MarkDownQuery,
+    AuditLogQuery, MarkDownQuery, KanBanQuery,
     graphene.ObjectType
 ):
     pass
@@ -32,7 +34,7 @@ class Query(
 class Mutation(
     SetupMutations, UserMutations, ClientMutations,
     PatientMutations, AnalysisMutations, WorkSheetMutations,
-    MarkdownMutations,
+    MarkdownMutations, KanBanMutations,
     graphene.ObjectType
 ):
     pass

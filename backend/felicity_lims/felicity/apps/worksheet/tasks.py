@@ -1,6 +1,7 @@
 import time
 import logging
 from felicity.apps.analysis.models.results import AnalysisResult
+from felicity.apps.analysis.schemas import AnalysisResultUpdate
 from felicity.apps.job import models as job_models
 from felicity.apps.job.conf import states as job_states
 from felicity.apps.worksheet import models, conf
@@ -77,6 +78,12 @@ def populate_worksheet_plate(job_uid: int):
     ws.set_plate(template)
     for s in samples:
         s.assign(ws.uid)
+        # update = {
+        #     'worksheet_uid': ws.uid,
+        #     'assigned': True,
+        # }
+        # update_schema = AnalysisResultUpdate(**update)
+        # s.update(update_schema)
 
     time.sleep(1)
 

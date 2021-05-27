@@ -69,6 +69,8 @@ class AuditableMixin:
         for attr in attrs:
             hist = getattr(inspector.attrs, attr.key).history
             if hist.has_changes():
+                if isinstance(get_history(target, attr.key)[2], tuple):
+                    continue
                 state_before[attr.key] = get_history(target, attr.key)[2].pop()
                 state_after[attr.key] = getattr(target, attr.key)
             else:

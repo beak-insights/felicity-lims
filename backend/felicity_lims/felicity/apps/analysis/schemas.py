@@ -337,9 +337,11 @@ class AnalysisResultBase(BaseAuditModel):
     date_submitted: Optional[datetime] = None
     verified_by_uid: Optional[int] = None
     date_verified: Optional[datetime] = None
-    invalidated_by_uid : Optional[int] = None
+    invalidated_by_uid: Optional[int] = None
     date_invalidated: Optional[datetime] = None
     status: Optional[str] = None
+    worksheet_uid: Optional[int] = None
+    assigned: Optional[bool] = False
 
 
 class AnalysisResultBaseInDB(AnalysisResultBase):

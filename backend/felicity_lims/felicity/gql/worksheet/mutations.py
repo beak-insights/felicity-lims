@@ -14,7 +14,7 @@ from felicity.apps.user import models as user_models
 from felicity.apps.worksheet import models, schemas, tasks, conf
 from felicity.gql.worksheet.types import WorkSheetType, WorkSheetTemplateType
 from felicity.apps.job.conf import actions, categories, priorities, states
-from felicity.apps.analysis import models as analysis_models
+from felicity.apps.analysis.models import analysis as analysis_models
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -66,7 +66,7 @@ class CreateWorkSheetTemplate(graphene.Mutation):
 
         incoming = {
             "name": name,
-            "sample_type_uid": sample_type_uid, \
+            "sample_type_uid": sample_type_uid,
             }
         for k, v in kwargs.items():
             incoming[k] = v

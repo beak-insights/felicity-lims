@@ -3,50 +3,36 @@ from graphene import (
     relay,
 )
 from graphene_sqlalchemy import SQLAlchemyConnectionField
-from felicity.apps.markdown import models
+from felicity.apps.kanban import models
 from felicity.gql import FilterableConnectionField
-from felicity.gql.markdown.types import DocumentTagType, DocumentCategoryType, DocumentType
+from felicity.gql.kanban.types import (
+    BoardType,
+    BoardListingType,
+    ListingTaskType,
+    TaskMilestoneType,
+    TaskCommentType,
+)
 
 
 class FilterableAuditField(FilterableConnectionField):
     pass
 
 
-class MarkDownQuery(graphene.ObjectType):
+class KanBanQuery(graphene.ObjectType):
     node = relay.Node.Field()
-    document_all = SQLAlchemyConnectionField(DocumentType.connection)
-    document_tag_all = SQLAlchemyConnectionField(DocumentTagType.connection)
-    document_category_all = SQLAlchemyConnectionField(DocumentCategoryType.connection)
-    document_by_uid = graphene.Field(lambda: DocumentType, uid=graphene.String(default_value=""))
-    documents_by_tag = graphene.List(lambda: DocumentType, tag=graphene.String(default_value=""))
-    documents_by_category = graphene.List(lambda: DocumentType, category=graphene.String(default_value=""))
-    documents_search = graphene.List(lambda: DocumentType, query_string=graphene.String(default_value=""))
+    board_all = SQLAlchemyConnectionField(BoardType.connection)
+    board_listing_all = SQLAlchemyConnectionField(BoardListingType.connection)
+    listing_task_all = SQLAlchemyConnectionField(ListingTaskType.connection)
+    task_milestone_all = SQLAlchemyConnectionField(TaskMilestoneType.connection)
+    task_comment_all = SQLAlchemyConnectionField(TaskCommentType.connection)
+    board_by_uid = graphene.Field(lambda: BoardType, uid=graphene.String(default_value=""))
+    board_listing_by_board_uid = graphene.Field(lambda: BoardListingType, uid=graphene.String(default_value=""))
 
+    def resolve_board_by_uid(self, info, uid):
+        board = models.Board.get(uid=uid)
+        return board
 
-    def resolve_document_by_uid(self, info, uid):
-        document = models.Document.get(uid=uid)
+    def resolve_board_listing_by_board_uid(self, info, uid):
+        document = models.BoardListing.get(uid=uid)
         return document
 
-    def resolve_documents_by_tag(self, info, tag):
-        documents = models.Document.where(tags___name__ilike=f"%{tag}%").all()
-        return documents
-
-    def resolve_documents_by_category(self, info, category):
-        documents = models.Document.where(category___name__ilike=f"%{category}%").all()
-        return documents
-
-    def resolve_documents_search(self, info, query_string):
-        filters = [
-            'name__ilike',
-            'subtitle__ilike',
-            'document_id__ilike',
-            'tags___name__ilike'
-        ]
-        combined = set()
-        for _filter in filters:
-            arg = dict()
-            arg[_filter] = f"%{query_string}%"
-            query = models.Document.where(**arg).all()
-            for item in query:
-                combined.add(item)
-        return list(combined)
