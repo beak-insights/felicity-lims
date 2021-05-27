@@ -2,7 +2,11 @@
   <transition name="modal">
     <div class="modal-mask">
       <div class="modal-wrapper ">
-        <div class="modal-container max-h-screen overflow-y-scroll">
+        <div 
+         :class="[
+                'modal-container max-h-screen overflow-y-scroll',
+                contentWidth ? contentWidth : 'w-3/4',
+              ]">
 
           <div class="modal-header">
             <div class="flex justify-between">
@@ -40,6 +44,20 @@
   </transition>
 </template>
 
+
+<script lang="ts">
+import { defineComponent } from 'vue';
+export default defineComponent({
+  name: 'simple-modal',
+  props: {
+    contentWidth: String,
+  },
+  setup(props) {
+    return {}
+  },
+});
+</script>
+
 <style lang="postcss">
 
 .modal-mask {
@@ -60,7 +78,7 @@
 }
 
 .modal-container {
-  max-width: 70%;
+  /* max-width: 70%; */
   margin: 0px auto;
   padding: 20px 30px;
   background-color: #fff;

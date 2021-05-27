@@ -18,6 +18,7 @@ import './assets/css/style.css'
 import App from './App.vue'
 import router from './router'
 import store from './store'
+import { graphql_url } from './conf'
 
 library.add(fas, fab)
 dom.watch()
@@ -26,7 +27,7 @@ const app = createApp(App)
 app.component('font-awesome-icon', FontAwesomeIcon)
 app.component('default-layout', LayoutDashboard)
 app.component('empty-layout', LayoutEmpty)
-app.use(urql, { url: 'http://localhost:8000/felicity-gql'})
+app.use(urql, { url: graphql_url })
 app.use(VueSweetalert2)
 app.use(VueMarkdownIt)
 app.use(router)

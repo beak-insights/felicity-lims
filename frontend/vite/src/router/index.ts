@@ -22,7 +22,13 @@ import WorkSheetListing from '../views/worksheet/WorkSheetListing.vue';
 import WorkSheetSingleView from '../views/worksheet/_id/index.vue';
 import WorkSheetDetail from '../views/worksheet/_id/WorkSheetDetail.vue';
 import KanBanView from '../views/kanban/index.vue';
+import KanBanBoards from '../views/kanban/Boards.vue'
+import KanBanBoardSingle from '../views/kanban/_id/index.vue'
+import KanBanBoardDetail from '../views/kanban/_id/Listings.vue'
 import MarkDownView from '../views/markdown/index.vue';
+import MarkDownListing from '../views/markdown/DocumentListing.vue';
+import MarkDownDocumentSingle from '../views/markdown/_id/index.vue';
+import MarkDownDocumentView from '../views/markdown/_id/Document.vue';
 import AboutView from '../views/About.vue';
 import AdminView from '../views/admin/index.vue';
 import PageNotFound from '../views/404.vue';
@@ -73,7 +79,7 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'detail',
+        path: ':patientUid',
         name: 'patient',
         component: PatientSingleView,
         children: [
@@ -86,7 +92,7 @@ const routes: RouteRecordRaw[] = [
             },
           },
           {
-            path: 'sample',
+            path: 'samples',
             name: 'patient-sample',
             component: SampleSingleView,
             children: [
@@ -99,7 +105,7 @@ const routes: RouteRecordRaw[] = [
                 },
               },
               {
-                path: 'detail',
+                path: ':sampleUid',
                 name: 'sample-detail',
                 component: SampleDetail,
                 meta: {
@@ -197,7 +203,7 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'single',
+        path: ':workSheetUid',
         name: 'worksheet-single',
         component: WorkSheetSingleView,
         children: [
@@ -220,9 +226,37 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: '/boards',
+    path: '/kanban-boards',
     name: 'KanBan',
     component: KanBanView,
+    children: [
+      {
+        path: '',
+        name: 'kanban-boards',
+        component: KanBanBoards,
+        meta: {
+          requiresAuth: true,
+        },
+      },
+      {
+        path: ':boardUid',
+        name: 'board-single',
+        component: KanBanBoardSingle,
+        children: [
+          {
+            path: '',
+            name: 'board-detail',
+            component: KanBanBoardDetail,
+            meta: {
+              requiresAuth: true,
+            },
+          },
+        ],
+        meta: {
+          requiresAuth: true,
+        },
+      }
+    ],
     meta: {
       requiresAuth: true,
     },
@@ -231,6 +265,42 @@ const routes: RouteRecordRaw[] = [
     path: '/documents',
     name: 'MarkDown',
     component: MarkDownView,
+    children: [
+      {
+        path: '',
+        name: 'document-listing',
+        component: MarkDownListing,
+        meta: {
+          requiresAuth: true,
+        },
+      },
+      {
+        path: ':documentUid',
+        name: 'document-single-view',
+        component: MarkDownDocumentSingle,
+        children: [
+          {
+            path: '',
+            name: 'document-detail',
+            component: MarkDownListing,
+            meta: {
+              requiresAuth: true,
+            },
+          },
+          {
+            path: 'view',
+            name: 'document-viewer',
+            component: MarkDownDocumentView,
+            meta: {
+              requiresAuth: true,
+            },
+          }
+        ],
+        meta: {
+          requiresAuth: true,
+        },
+      }
+    ],
     meta: {
       requiresAuth: true,
     },

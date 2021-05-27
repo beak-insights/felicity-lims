@@ -50,7 +50,7 @@
                 }}</span>
               </div>
               <div class="flex">
-                <span class="text-gray-800 text-sm font-medium w-16">Province:</span>
+                <span class="text-gray-800 text-sm font-medium w-16">Province: </span>
                 <span class="text-gray-600 text-sm md:text-md">{{
                   patient?.client?.district?.province?.name
                 }}</span>
@@ -59,8 +59,8 @@
             <div class="col-span-1">
               <!-- Identifiers -->
               <div class="col-span-2 flex mt-2">
-                <span class="text-gray-800 text-sm font-medium w-16">Client Patient ID</span>
-                <span class="text-gray-600 text-sm md:text-md">{{
+                <span class="text-gray-800 text-sm font-medium">Client Patient ID: </span>
+                <span class="text-gray-600 text-sm md:text-md"> {{
                   patient?.clientPatientId
                 }}</span>
               </div>
@@ -70,7 +70,11 @@
       </div>
     </div>
     
-    <router-view  />
+    <router-view  />                    
+
+
+
+    
 
   </div>
 
@@ -221,7 +225,7 @@ export default defineComponent({
     const genders = ["Male", "Female", "Missing", "Trans Gender"]
     let getGender = pos => genders[pos];
 
-    store.dispatch(ActionTypes.FETCH_PATIENT_BY_UID, route.query.patientUid)
+    store.dispatch(ActionTypes.FETCH_PATIENT_BY_UID, route.params.patientUid)
     let patient = computed(() => store.getters.getPatient);
 
     store.dispatch(AdminActionTypes.FETCH_COUNTRIES);

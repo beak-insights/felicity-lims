@@ -32,8 +32,6 @@ export const GET_ALL_USERS = gql`
   }`;
 
 
-
-
 export const GET_GROUPS_AND_PERMISSIONS = gql`
   query groupsAndPermissions {
     groupAll {
@@ -79,6 +77,21 @@ export const GET_AUDIT_LOG_FOR_TARGET = gql`
           action
           stateBefore
           stateAfter
+        }
+      }
+    }
+  }`;
+
+
+export const GET_DEPARTMENTS = gql`
+  query getAllDepartments {
+    departmentAll {
+      edges {
+        node {
+          uid
+          name
+          code
+          description
         }
       }
     }

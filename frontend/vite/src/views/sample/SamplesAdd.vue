@@ -121,7 +121,7 @@
                 <option  
                 v-for="contact in clientContacts"
                 :key="contact.uid"
-                :value="contact.uid" >{{ contact.name }}</option>
+                :value="contact.uid" >{{ contact.firstName }} {{ contact.lastName }}</option>
             </select>
           </label>
           <label class="block col-span-2 mb-2">
@@ -258,6 +258,7 @@ export default defineComponent({
     store.dispatch(SampleActionTypes.FETCH_SAMPLE_TYPES);
     store.dispatch(ActionTypes.FETCH_ANALYSES_SERVICES);
     store.dispatch(ActionTypes.FETCH_ANALYSES_PROFILES);
+    store.dispatch(ClientActionTypes.FETCH_CLIENTS);
 
     const patient = computed(() => store.getters.getPatientByUid(route?.query?.patientUid))
     const clients = computed(() => store.getters.getClients)
@@ -265,6 +266,7 @@ export default defineComponent({
     const { executeMutation: createAnalysisRequest } = useMutation(ADD_ANALYSIS_REQUEST);
 
     function addAnalysesRequest(): void {
+      console.log(form)
       createAnalysisRequest({ clientRequestId: form.clientRequestId, clientUid: form.client.uid, patientUid: form.patient.uid, samples: form.samples}).then((result) => {
        store.dispatch(SampleActionTypes.ADD_SAMPLES, result);
       });
@@ -304,7 +306,7 @@ export default defineComponent({
 
     function saveForm(): void {
       form.patient = patient.value;
-      const clt = store.getters.getClientByName(form.client.name);
+      const clt = store.getters.getClientByName(form.client?.name);
       form.client = clt;
       if (formAction.value === true) addAnalysesRequest();
     }

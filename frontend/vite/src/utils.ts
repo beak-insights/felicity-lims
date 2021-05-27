@@ -1,3 +1,4 @@
+
 export const parseEdgeNodeToList = (payload: any) => {
     const list: any[] = [];
     if(!payload || !payload?.edges ) return payload;

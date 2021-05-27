@@ -37,7 +37,7 @@
                   </div>
                   </td>
                   <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
-                    <router-link :to="{ name: 'patient-detail', query: { patientUid: pt?.uid } }" 
+                    <router-link :to="{ name: 'patient-detail', params: { patientUid: pt?.uid } }" 
                       class="p-1 ml-2 border-white border text-gray-500 rounded transition duration-300 hover:border-blue-500 hover:text-blue-500 focus:outline-none">{{ getPatientFullName(pt) }}</router-link>
                   </td>
                   <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">

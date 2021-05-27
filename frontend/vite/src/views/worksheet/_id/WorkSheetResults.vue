@@ -50,7 +50,7 @@
                 </td>
                 <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
                   <div class="text-sm leading-5 text-gray-800">
-                    <router-link :to="{ name: 'sample-detail', query: { patientUid: result?.sample?.analysisrequest?.patient?.uid, sampleUid: result?.sample?.uid  }}">{{ result?.sample?.sampleId }} </router-link>
+                    <router-link :to="{ name: 'sample-detail', params: { patientUid: result?.sample?.analysisrequest?.patient?.uid, sampleUid: result?.sample?.uid  }}">{{ result?.sample?.sampleId }} </router-link>
                   </div>
                   <span v-if="viewDetail">
                     <div class="text-sm leading-5 text-blue-900">
@@ -137,22 +137,20 @@ export default defineComponent({
     let viewDetail = ref(false);
     let worksheet = computed(()=> store.getters.getWorkSheet); 
 
-    console.log(worksheet);
-
     const { executeMutation: submitAnalysisResults } = useMutation(SUBMIT_ANALYSIS_RESULTS);  
     const { executeMutation: verifyAnalysisResults } = useMutation(VERIFY_ANALYSIS_RESULTS);   
 
     function submitAnalysesResults(results): void {
       submitAnalysisResults({ analysisResults: results, }).then((result) => {
       //  store.dispatch(ResultActionTypes.UPDATE_ANALYSIS_RESULTS, result);
-      console.log(result);
+
       });
     }
 
     function verifyAnalysesResults(analyses): void {
       verifyAnalysisResults({ analyses }).then((result) => {
       //  store.dispatch(ResultActionTypes.UPDATE_ANALYSIS_RESULTS, result);
-      console.log(result);
+
       });
     }
 

@@ -2,9 +2,10 @@ import { createClient } from '@urql/core';
 import { authExchange } from '@urql/exchange-auth';
 import { makeOperation } from '@urql/core';
 
+import { graphql_url } from './conf'
 
 export const urqlClient = createClient({
-  url: 'http://localhost:8000/felicity-gql',
+  url: graphql_url,
   // exchanges: [
   //   authExchange({}),
   // ],

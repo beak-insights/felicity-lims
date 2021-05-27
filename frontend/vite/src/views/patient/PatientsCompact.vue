@@ -88,7 +88,7 @@
                       ></path>
                     </svg>
                   </button>
-                  <router-link :to="{ name: 'patient-detail', query: { patientUid: patientForm.uid } }" 
+                  <router-link :to="{ name: 'patient-detail', params: { patientUid: patientForm.uid } }" 
                   class="p-1 ml-2 border-white border text-gray-500 rounded transition duration-300 hover:border-blue-500 hover:text-blue-500 focus:outline-none">... more</router-link>
                   </div>
               </div>
@@ -220,7 +220,7 @@
           <span class="text-gray-700">Primary Referrer</span>
           <select class="form-select block w-full mt-1" v-model="patientForm.clientUid">
               <option></option>
-              <option v-for="client in clients?.clientAll?.edges" :key="client.node.uid" :value="client.node.uid"> {{ client.node.name }} {{ client.node.uid }}</option>
+              <option v-for="client in clients" :key="client.uid" :value="client.uid"> {{ client.name }} {{ client.uid }}</option>
             </select>
         </label>
 

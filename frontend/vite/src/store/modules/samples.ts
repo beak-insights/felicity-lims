@@ -278,6 +278,7 @@ export const actions = <ActionTree<IState, RootState>>{
   },
 
   async [ActionTypes.FETCH_ANALYSIS_REQUESTS_FOR_PATIENT]({ commit }, uid){
+    if(!uid) return;
     await urqlClient
     .query( GET_ANALYSIS_REQUESTS_BY_PATIENT_UID, { uid })
     .toPromise()
@@ -285,6 +286,7 @@ export const actions = <ActionTree<IState, RootState>>{
   },
 
   async [ActionTypes.FETCH_ANALYSIS_REQUESTS_FOR_CLIENT]({ commit }, uid){
+    if(!uid) return;
     await urqlClient
     .query( GET_ANALYSIS_REQUESTS_BY_CLIENT_UID, { uid })
     .toPromise()
@@ -292,6 +294,7 @@ export const actions = <ActionTree<IState, RootState>>{
   },
 
   async [ActionTypes.FETCH_ANALYSIS_RESULTS_FOR_SAMPLE]({ commit }, uid){
+    if(!uid) return;
     await urqlClient
     .query( GET_ANALYSIS_RESULTS_BY_SAMPLE_UID, { uid })
     .toPromise()

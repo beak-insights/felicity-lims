@@ -38,7 +38,7 @@
                             <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
                             <div class="flex items-center">
                                 <div>
-                                <router-link :to="{ name: 'sample-detail', query: { patientUid: request.patient?.uid, sampleUid: sample?.uid  }}">{{ sample.sampleId }}</router-link>
+                                <router-link :to="{ name: 'sample-detail', params: { patientUid: request.patient?.uid, sampleUid: sample?.uid  }}">{{ sample.sampleId }}</router-link>
                                 </div>
                             </div>
                             </td>
@@ -97,7 +97,6 @@ export default {
         const analysisRequests = computed(() => store.getters.getAnalysisRequests);
 
         watch(() => props.targetUid, (uid, prev) => {
-            console.log(uid)
             if(target?.value==='patient-samples') store.dispatch(ActionTypes.FETCH_ANALYSIS_REQUESTS_FOR_PATIENT, uid);
             if(target?.value==='client-samples') store.dispatch(ActionTypes.FETCH_ANALYSIS_REQUESTS_FOR_CLIENT, uid);
         })

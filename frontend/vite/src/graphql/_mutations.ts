@@ -165,3 +165,27 @@ export const UPDATE_GROUP_PERMS = gql`
       }
     }
   }`;
+
+
+export const ADD_DEPARTMENT = gql`
+  mutation addDepartment($name: String!) {
+    createDepartment(name: $name) {
+      ok
+      department {
+        uid
+        name
+      }
+    }
+  }`;
+
+
+export const UPDATE_DEPARTMENT = gql`
+  mutation editDepartment($uid: String!, $name: String!) {
+    updateDepartment(uid: $uid, name: $name) {
+      ok
+      department {
+        uid
+        name
+      }
+    }
+  }`;

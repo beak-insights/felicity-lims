@@ -17,6 +17,7 @@ export interface IState {
   permissions: any[];
   users: any[];
   auditLogs: any[];
+  departments: any[];
 }
 
 export const initialState = () => {
@@ -29,6 +30,7 @@ export const initialState = () => {
     permissions: [],
     users: [],
     auditLogs: [],
+    departments: [],
   };
 };
 

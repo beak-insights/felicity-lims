@@ -6,5 +6,6 @@ export const getters = <GetterTree<IState, RootState>>{
   getUsers: (state) => state.users,
   getPermissions: (state) => state.permissions,
   getGroups: (state) => state.groups,
-  getAuditLogs: (state) => state.auditLogs
+  getAuditLogs: (state) => state.auditLogs,
+  getDepartments: (state) => state.departments
 };

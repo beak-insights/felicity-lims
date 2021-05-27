@@ -12,7 +12,11 @@ export enum MutationTypes {
   UPDATE_GROUPS_PERMISSIONS = 'UPDATE_GROUPS_PERMISSIONS',
 
   RESET_AUDIT_LOGS = 'RESET_AUDIT_LOGS',
-  SET_AUDIT_LOGS = 'SET_AUDIT_LOGS'
+  SET_AUDIT_LOGS = 'SET_AUDIT_LOGS',
+
+  SET_DEPARTMENTS = 'SET_DEPARTMENTS',
+  ADD_DEPARTMENT = 'ADD_DEPARTMENT',
+  UPDATE_DEPARTMENT = 'UPDATE_DEPARTMENT',
 }
 
 export const mutations = <MutationTree<IState>>{
@@ -70,5 +74,22 @@ export const mutations = <MutationTree<IState>>{
     state.auditLogs = logs;
   },
 
+  // Departments
+  [MutationTypes.SET_DEPARTMENTS](state: IState, payload): void {
+    state.departments = [];
+    let departments = parseEdgeNodeToList(payload) || [];
+    state.departments = departments;
+  },
+
+  [MutationTypes. ADD_DEPARTMENT](state: IState, payload): void {
+    let department = payload?.department;
+    state?.departments?.push(department);
+  },
+
+  [MutationTypes.UPDATE_DEPARTMENT](state: IState, payload): void {
+    let department = payload?.department;
+    const index = state.departments?.findIndex(g => g.uid === department.uid);
+    state!.departments[index] = department;
+  },
 
 };

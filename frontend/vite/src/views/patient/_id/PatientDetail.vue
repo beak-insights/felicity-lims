@@ -21,7 +21,7 @@
         </nav>
 
         <div>
-          <tab-samples v-if="currentTab === 'samples'" :patientUid="patient?.uid"/>
+          <tab-samples v-if="currentTab === 'samples'" target="patient-samples" :targetUid="patient?.uid"/>
           <tab-cases v-if="currentTab === 'cases'" />
           <tab-logs v-if="currentTab === 'logs'"/>
         </div>
@@ -65,7 +65,6 @@ export default defineComponent({
     let currentTab = ref('samples');
     const tabs = ['samples', 'cases', 'logs'];
     let currentTabComponent = computed(() => 'tab-' + currentTab.value);
-
 
     return {
       tabs,

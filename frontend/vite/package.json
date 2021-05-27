@@ -28,6 +28,7 @@
     "mitt": "^2.1.0",
     "notyf": "^3.9.0",
     "react": "^17.0.1",
+    "split.js": "^1.6.4",
     "sweetalert2": "^10.15.7",
     "tailwindcss": "^2.0.2",
     "urql": "^1.11.6",

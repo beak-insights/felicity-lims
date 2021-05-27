@@ -73,7 +73,7 @@
                 <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
                 <div class="flex items-center">
                     <div class="text-sm leading-5 text-gray-800">
-                      <router-link :to="{ name: 'sample-detail', query: { patientUid: sample?.analysisrequest?.patient?.uid, sampleUid:sample?.uid  }}">{{ sample.sampleId }}</router-link>
+                      <router-link :to="{ name: 'sample-detail', params: { patientUid: sample?.analysisrequest?.patient?.uid, sampleUid:sample?.uid  }}">{{ sample.sampleId }}</router-link>
                     </div>
                 </div>
                 </td>
@@ -357,7 +357,6 @@ export default defineComponent({
       sampleParams.text = filterText.value;
       sampleParams.status = filterStatus.value;
       sampleParams.filterAction = false;
-      console.log(sampleParams, pageInfo)
       store.dispatch(SampleActionTypes.FETCH_SAMPLES, sampleParams);
     }
 
@@ -368,7 +367,6 @@ export default defineComponent({
       sampleParams.text = filterText.value;
       sampleParams.status = filterStatus.value;
       sampleParams.filterAction = true;
-      console.log(sampleParams)
       store.dispatch(SampleActionTypes.FETCH_SAMPLES, sampleParams);
     }
 
@@ -381,7 +379,6 @@ export default defineComponent({
         request.samples = [];
         request.samples.push(new Sample())
         Object.assign(form, { ...request });
-        console.log(form.samples?.length)
       } else {
         Object.assign(form, { ...obj });
       }

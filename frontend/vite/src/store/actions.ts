@@ -6,7 +6,7 @@ import { IState, RootState, IAuth } from './state';
 import { MutationTypes } from './mutations';
 
 import {
-  GET_GROUPS_AND_PERMISSIONS, GET_ALL_USERS, GET_AUDIT_LOG_FOR_TARGET
+  GET_GROUPS_AND_PERMISSIONS, GET_ALL_USERS, GET_AUDIT_LOG_FOR_TARGET, GET_DEPARTMENTS
 } from '../graphql/_queries';
 
 export enum ActionTypes {
@@ -18,7 +18,11 @@ export enum ActionTypes {
   UPDATE_GROUPS_PERMISSIONS = 'UPDATE_GROUPS_PERMISSIONS',
 
   FETCH_AUDIT_LOGS = 'FETCH_AUDIT_LOGS',
-  RESET_AUDIT_LOGS = 'RESET_AUDIT_LOGS'
+  RESET_AUDIT_LOGS = 'RESET_AUDIT_LOGS',
+
+  FETCH_DEPARTMENTS = 'FETCH_DEPARTMENTS',
+  ADD_DEPARTMENT = 'ADD_DEPARTMENT',
+  UPDATE_DEPARTMENT = 'UPDATE_DEPARTMENT',
 }
 
 export const actions = <ActionTree<IState, RootState>>{
@@ -41,7 +45,7 @@ export const actions = <ActionTree<IState, RootState>>{
   },
 
   // Groups and permissions
-  async [ActionTypes.FETCH_GROUPS_AND_PERMISSIONS]({ commit }, payload) {
+  async [ActionTypes.FETCH_GROUPS_AND_PERMISSIONS]({ commit }) {
     await useQuery({ query: GET_GROUPS_AND_PERMISSIONS })
           .then(payload => commit(MutationTypes.SET_GROUPS_AND_PERMISSIONS, payload.data.value));
   },
@@ -60,6 +64,20 @@ export const actions = <ActionTree<IState, RootState>>{
     .query( GET_AUDIT_LOG_FOR_TARGET, params)
     .toPromise()
     .then(result => commit(MutationTypes.SET_AUDIT_LOGS, result.data.auditLogsFilter))
+  },
+
+  // Departments
+  async [ActionTypes.FETCH_DEPARTMENTS]({ commit }) {
+    await useQuery({ query: GET_DEPARTMENTS })
+          .then(payload => commit(MutationTypes.SET_DEPARTMENTS, payload.data.value.departmentAll));
+  },
+
+  async [ActionTypes.ADD_DEPARTMENT]({ commit }, payload) {
+    commit(MutationTypes.ADD_DEPARTMENT, payload.data.createDepartment);
+  },
+
+  async [ActionTypes.UPDATE_DEPARTMENT]({ commit }, payload) {
+    commit(MutationTypes.UPDATE_DEPARTMENT, payload.data.updateDepartment);
   },
 
 };

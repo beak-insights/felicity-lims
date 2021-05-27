@@ -2,7 +2,7 @@
 
   <div class="flex justify-between">
     <h3 class="my-4">Sample Detail</h3>
-    <router-link :to="{ name: 'patient-detail', query: { patientUid: sample?.analysisrequest?.patient?.uid } }" 
+    <router-link :to="{ name: 'patient-detail', params: { patientUid: sample?.analysisrequest?.patient?.uid } }" 
       class="p-2 my-2 text-sm border-blue-500 border text-dark-700 transition-colors duration-150 rounded-lg focus:outline-none hover:bg-blue-500 hover:text-gray-100">
       ... other samples
     </router-link>
@@ -94,8 +94,6 @@ export default defineComponent({
     function FormManager(create): void {
 
     }
-
-    console.log(sample)
 
     return { 
         sample,
