@@ -1,5 +1,6 @@
 <template>
-  <form action="post" class="p-1">
+  <h1 class="h1 my-4 font-bold text-dark-700">Add New Patient:</h1>
+  <form action="post" class="border-2 border-gray-900 border-dotted rounded p-4" autocomplete="yebo">
         <label class="block mb-2">
           <span class="text-gray-700">Patient Unique Identifier</span>
           <input class="form-input mt-1 block w-full" v-model="patientForm.clientPatientId" placeholder="Patient Unique Identifier" />
@@ -42,7 +43,7 @@
               <option v-for="(sex, indx) in genders" :key="sex.index" :value="indx"> {{ sex }}</option>
             </select>
           </label>
-          <label class="block mb-2 w-full" >
+          <label class="block  mx-2 mb-2 w-full" >
             <span class="text-gray-700">Mobile Number</span>
             <input class="form-input mt-1 block w-full" type="number" v-model="patientForm.phoneMobile" placeholder="Mobile Number" />
           </label>
@@ -112,7 +113,7 @@
 import { useMutation } from '@urql/vue';
 import { defineComponent, ref, reactive, computed } from 'vue';
 import { mapGetters, useStore } from 'vuex';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useQuery } from '@urql/vue';
 import tabSamples from '../_components/AnalyisRequestListing.vue';
 import tabCases from './comps/CaseTable.vue';
@@ -145,6 +146,7 @@ export default defineComponent({
   setup(context) {
     let store = useStore();
     let router = useRouter();
+    let route = useRoute();
 
     const nullPatient = new Patient();
     let createAction = ref(true);
@@ -155,6 +157,7 @@ export default defineComponent({
     let currentTabComponent = computed(() => 'tab-' + currentTab.value);
 
     let patientForm = reactive({ ...nullPatient });
+    patientForm.clientPatientId = route.query.cpid;
 
     let provinces = ref([]);
     let districts = ref([]);

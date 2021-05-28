@@ -4,6 +4,7 @@
       <input
         class="w-1/4 pl-4 h-10 pr-2 py-1 my-4 text-sm text-gray-700 placeholder-gray-600 border-1 border-gray-400 rounded-md  focus:placeholder-gray-500 focus:border-green-100 focus:outline-none focus:shadow-outline-purple form-input"
         type="text" placeholder="Patient Search ..." aria-label="Search"
+        v-model="patientSearch"
         @keyup="searchPatients($event)"
         @focus="setPatientToNull()"
       />
@@ -79,7 +80,7 @@
     <hr class="my-2">
 
     <router-link
-      to="/patients/register"
+      :to="{ name: 'patients-register', query: { cpid: patientSearch } }"
       class="px-4 p-1 text-sm border-blue-500 border text-dark-700 transition-colors duration-150 rounded focus:outline-none hover:bg-blue-500 hover:text-gray-100">
       Register New Patiet
     </router-link>
@@ -136,6 +137,7 @@ export default defineComponent({
     let currentTabComponent = computed(() => 'tab-' + currentTab.value);
 
     let patientForm = reactive({ ...nullPatient });
+    let patientSearch = ref('');
 
     let provinces = ref([]);
     let districts = ref([]);
@@ -235,6 +237,7 @@ export default defineComponent({
       patientForm,
       getPatientFullName,
       patients: computed(() => store.getters.getPatients),
+      patientSearch,
       isPatientSelected,
       selectPatient,
       setPatientToNull,

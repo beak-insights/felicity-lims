@@ -1,5 +1,5 @@
 <template>
-  <div class="px-6">
+  <div class="">
     <div class="flex justify-start">
       <span @click="resetSelected" class="mr-4">
         <router-link to="/admin" class="no-underline">

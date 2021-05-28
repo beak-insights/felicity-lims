@@ -442,6 +442,7 @@ export default defineComponent({
     }
 
     function generatePreview(wst: IWorkSheetTemplate): void {
+      console.log(wst);
       let items = [];
       const indexes = Array.from({length: wst?.numberOfSamples + wst?.reserved?.length}, (x, i) => i + 1);
       
@@ -451,6 +452,9 @@ export default defineComponent({
           item.row = 1;
           item.col = 1;
           item.name ="sample"
+          if(wst?.reserved?.some(x => x.position === i)){
+            item.name ="control"
+          }
           item.sampleUid = "";
           wst?.reserved?.forEach(r => {
             if(r[1]?.position === i) {
@@ -467,6 +471,7 @@ export default defineComponent({
       Object.assign(workSheetTemplate, ws);
       const items = generatePreview(ws);
       workSheetTemplate!.preview = items;
+      console.log(items);
     }
 
     function addReserved(): void {
