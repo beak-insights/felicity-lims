@@ -42,6 +42,29 @@ export const GET_ALL_ANALYSES_SERVICES = gql`
     }
 }`;
 
+export const GET_ANALYSES_SERVICES_FOR_QC = gql`
+    query getAnalysisForQc {
+      analysisForQc{
+        uid
+        name
+        keyword
+        active
+        categoryUid
+        category {
+            uid
+            name
+        }
+        profiles {
+            edges {
+                node {
+                    uid
+                    name
+                }
+            }
+        }
+    }
+}`;
+
 export const GET_ALL_ANALYSES_PROFILES = gql`
     query getAllAnalysesProfiles {
         profileAll {
@@ -200,6 +223,7 @@ query getAnalysesRequestsByPatientUid($uid: String!) {
   analysisRequestsByPatientUid(uid: $uid) {
     uid
     clientRequestId
+    createdAt
     patient {
       uid
       firstName
@@ -257,6 +281,7 @@ query getAnalysesRequestsByClientUid($uid: String!) {
   analysisRequestsByClientUid(uid: $uid) {
     uid
     clientRequestId
+    createdAt
     patient {
       uid
       firstName
@@ -404,5 +429,41 @@ export const GET_ANALYSIS_RESULTS_BY_SAMPLE_UID = gql`
         }
 
     }`;
+
+
+
+export const GET_ALL_QC_TEMPLATES = gql`
+    query getAllQCTemplates {
+    qcTemplateAll {
+      edges {
+        node {
+          uid
+          name
+          description
+          analyses {
+            edges {
+              node {
+                uid
+                name
+                keyword
+                unit
+                categoryUid
+              }
+            }
+          }
+          departments {
+            edges {
+              node {
+                uid
+                name
+              }
+            }
+          }
+        }
+      }
+    }
+  }`;
+
+
 
 

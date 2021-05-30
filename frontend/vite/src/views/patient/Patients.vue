@@ -226,7 +226,7 @@ export default defineComponent({
     function addSample(patient: IPatient): void {
       router?.push({
           name: 'samples-add',
-          query: {
+          params: {
               patientUid: patient.uid
           }
       })

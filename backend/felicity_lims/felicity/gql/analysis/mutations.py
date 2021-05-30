@@ -6,7 +6,9 @@ from fastapi.encoders import jsonable_encoder
 
 from felicity.apps.patient import models as pt_models
 from felicity.apps.client import models as ct_models
+from felicity.apps.setup.models import setup as setup_models
 from felicity.apps.analysis.models import analysis as analysis_models
+from felicity.apps.analysis.models import qc as qc_models
 from felicity.apps.analysis.models import results as result_models
 from felicity.apps.analysis import schemas
 from felicity.gql.analysis import types
@@ -25,6 +27,7 @@ class CreateSampleType(graphene.Mutation):
         name = graphene.String(required=True)
         abbr = graphene.String(required=True)
         description = graphene.String(required=True)
+        internal_use = graphene.Boolean(required=False)
         active = graphene.Boolean(required=False)
 
     ok = graphene.Boolean()
@@ -59,6 +62,7 @@ class UpdateSampleType(graphene.Mutation):
         name = graphene.String(required=False)
         abbr = graphene.String(required=False)
         description = graphene.String(required=False)
+        internal_use = graphene.Boolean(required=False)
         active = graphene.Boolean(required=False)
 
     ok = graphene.Boolean()
@@ -238,8 +242,10 @@ class CreateAnalysis(graphene.Mutation):
         name = graphene.String(required=True)
         description = graphene.String(required=True)
         keyword = graphene.String(required=True)
+        sort_key = graphene.Int(required=True)
         sample_types = graphene.List(graphene.String)
         category_uid = graphene.String(required=False)
+        internal_use = graphene.Boolean(required=False)
         active = graphene.Boolean(required=True)
 
     ok = graphene.Boolean()
@@ -289,7 +295,9 @@ class UpdateAnalysis(graphene.Mutation):
         keyword = graphene.String(required=True)
         category_uid = graphene.String(required=False)
         sample_types = graphene.List(graphene.String)
-        active = graphene.Boolean(required=True)
+        internal_use = graphene.Boolean(required=False)
+        sort_key = graphene.Int(required=False)
+        active = graphene.Boolean(required=False)
 
     ok = graphene.Boolean()
     analysis = graphene.Field(lambda: types.AnalysisType)
@@ -339,6 +347,7 @@ class CreateAnalysisRequest(graphene.Mutation):
         client_uid = graphene.String(required=True)
         samples = graphene.List(ARSampleInputType, required=True)
         client_request_id = graphene.String(required=False)
+        internal_use = graphene.Boolean(required=False)
         priority = graphene.Int(required=False)
 
     ok = graphene.Boolean()
@@ -436,6 +445,7 @@ class UpdateAnalysisRequest(graphene.Mutation):
         uid = graphene.Int(required=True)
         patient_uid = graphene.Int(required=False)
         client_uid = graphene.Int(required=False)
+        internal_use = graphene.Boolean(required=False)
         client_request_id = graphene.String(required=False)
 
     ok = graphene.Boolean()
@@ -474,6 +484,7 @@ class UpdateSample(graphene.Mutation):
         sampletype_uid = graphene.Int(required=False)
         profiles = graphene.List(graphene.String)
         analyses = graphene.List(graphene.String)
+        internal_use = graphene.Boolean(required=False)
         cancel = graphene.Boolean(required=False)
 
     ok = graphene.Boolean()
@@ -497,6 +508,7 @@ class UpdateSample(graphene.Mutation):
 class ARResultInputType(graphene.InputObjectType):
     uid = graphene.String(required=True)
     result = graphene.String(required=False)
+    reportable = graphene.Boolean(required=False)
 
 
 class SubmitAnalysisResults(graphene.Mutation):
@@ -602,6 +614,112 @@ class VerifyAnalysisResults(graphene.Mutation):
         return SubmitAnalysisResults(ok, analysis_results=return_results)
 
 
+#
+# QCTemplate Mutations
+#
+class CreateQCTemplate(graphene.Mutation):
+    class Arguments:
+        name = graphene.String(required=True)
+        description = graphene.String(required=True)
+        departments = graphene.List(graphene.String)
+        analyses = graphene.List(graphene.String)
+
+    ok = graphene.Boolean()
+    qc_template = graphene.Field(lambda: types.QCTemplateType)
+
+    @staticmethod
+    def mutate(root, info, name, description, **kwargs):
+        if not name:
+            raise GraphQLError("Name is mandatory")
+
+        exists = qc_models.QCTemplate.get(name=name)
+        if exists:
+            raise GraphQLError(f"A QCTemplate named {name} already exists")
+
+        incoming = {
+            "name": name,
+            "description": description,
+        }
+        for k, v in kwargs.items():
+            if k not in ['analyses', 'departments']:
+                incoming[k] = v
+
+        obj_in = schemas.QCTemplateCreate(**incoming)
+        qc_template = qc_models.QCTemplate.create(obj_in)
+
+        analyses = kwargs.get('analyses', None)
+        qc_template.analyses.clear()
+        if analyses:
+            for _uid in analyses:
+                anal = analysis_models.Analysis.get(uid=_uid)
+                if anal not in qc_template.analyses:
+                    qc_template.analyses.append(anal)
+        qc_template.save()
+
+        departments = kwargs.get('departments', None)
+        qc_template.departments.clear()
+        if departments:
+            for _uid in departments:
+                dept = setup_models.Department.get(uid=_uid)
+                if dept not in qc_template.departments:
+                    qc_template.departments.append(dept)
+        qc_template.save()
+
+        ok = True
+        return CreateQCTemplate(ok=ok, qc_template=qc_template)
+
+
+class UpdateQCTemplate(graphene.Mutation):
+    class Arguments:
+        uid = graphene.Int(required=True)
+        name = graphene.String(required=False)
+        description = graphene.String(required=False)
+        departments = graphene.List(graphene.String)
+        analyses = graphene.List(graphene.String)
+
+    ok = graphene.Boolean()
+    qc_template = graphene.Field(lambda: types.QCTemplateType)
+
+    @staticmethod
+    def mutate(root, info, uid, **kwargs):
+        qc_template = qc_models.QCTemplate.get(uid=uid)
+        if not qc_template:
+            raise GraphQLError(f"QCTemplate with uid {uid} does not exist")
+
+        qc_data = jsonable_encoder(qc_template)
+        for field in qc_data:
+            if field in kwargs:
+                try:
+                    setattr(qc_template, field, kwargs[field])
+                except AttributeError as e:
+                    # raise GraphQLError(f"{e}")
+                    pass
+
+        qc_in = schemas.QCTemplateUpdate(**qc_template.to_dict())
+        qc_template.update(qc_in)
+
+        analyses = kwargs.get('analyses', None)
+        qc_template.analyses.clear()
+        if analyses:
+            for _uid in analyses:
+                anal = analysis_models.Analysis.get(uid=_uid)
+                if anal not in qc_template.analyses:
+                    qc_template.analyses.append(anal)
+        qc_template.save()
+
+        departments = kwargs.get('departments', None)
+        qc_template.departments.clear()
+        if departments:
+            for _uid in departments:
+                dept = setup_models.Department.get(uid=_uid)
+                if dept not in qc_template.departments:
+                    qc_template.departments.append(dept)
+        qc_template.save()
+
+        ok = True
+        return UpdateQCTemplate(ok=ok, qc_template=qc_template)
+
+
 class AnalysisMutations(graphene.ObjectType):
     # SampleTye
     create_sample_type = CreateSampleType.Field()
@@ -615,6 +733,9 @@ class AnalysisMutations(graphene.ObjectType):
     # Analysis
     create_analysis = CreateAnalysis.Field()
     update_analysis = UpdateAnalysis.Field()
+    # QCTemplate
+    create_qc_template = CreateQCTemplate.Field()
+    update_qc_template = UpdateQCTemplate.Field()
     # AnalysisRequest
     create_analysis_request = CreateAnalysisRequest.Field()
     update_analysis_request = UpdateAnalysisRequest.Field()

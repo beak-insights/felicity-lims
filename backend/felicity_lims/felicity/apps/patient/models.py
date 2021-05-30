@@ -33,6 +33,7 @@ class Patient(DBModel):
     consent_sms = Column(Boolean(), default=False)
     email = Column(String, nullable=True)
     # status
+    internal_use = Column(Boolean(), default=False)  # e.g Test Patient
     active = Column(Boolean(), default=True)
     
     @property

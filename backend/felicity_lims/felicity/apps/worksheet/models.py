@@ -13,7 +13,6 @@ from felicity.apps.analysis import conf as analysis_conf
 from felicity.apps.worksheet import schemas, conf
 
 
-
 class WSBase(DBModel):
     __abstract__ = True
     worksheet_type = Column(String)
@@ -51,6 +50,13 @@ class WSTALink(DBModel):
     analysis_uid = Column(Integer, ForeignKey('analysis.uid'), primary_key=True)
 
 
+class WSTAQCLink(DBModel):
+    """Many to Many Link between WorkSheetTemplate and Analysis for QC
+    """
+    ws_template_uid = Column(Integer, ForeignKey('worksheettemplate.uid'), primary_key=True)
+    analysis_uid = Column(Integer, ForeignKey('analysis.uid'), primary_key=True)
+
+
 class WorkSheetTemplate(WSBase):
     """WorkSheetTemplate
 
@@ -61,6 +67,7 @@ class WorkSheetTemplate(WSBase):
     description = Column(String)
     profiles = relationship(analysis_models.Profile, secondary="wstplink", backref="worksheet_templates")
     analyses = relationship(analysis_models.Analysis, secondary="wstalink", backref="worksheet_templates")
+    qc_analyses = relationship(analysis_models.Analysis, secondary="wstaqclink")
     instrument_uid = Column(Integer, ForeignKey('instrument.uid'), nullable=True)
     instrument = relationship(Instrument, backref='worksheet_templates')
     sample_type_uid = Column(Integer, ForeignKey('sampletype.uid'), nullable=False)
@@ -90,6 +97,13 @@ class WSALink(DBModel):
     analysis_uid = Column(Integer, ForeignKey('analysis.uid'), primary_key=True)
 
 
+class WSAQCLink(DBModel):
+    """Many to Many Link between WorkSheetTemplate and Analysis for QC
+    """
+    worksheet_uid = Column(Integer, ForeignKey('worksheet.uid'), primary_key=True)
+    analysis_uid = Column(Integer, ForeignKey('analysis.uid'), primary_key=True)
+
+
 class WorkSheet(WSBase):
     template_uid = Column(Integer, ForeignKey('worksheettemplate.uid'), nullable=False)
     template = relationship('WorkSheetTemplate', backref='worksheets')
@@ -98,6 +112,7 @@ class WorkSheet(WSBase):
     worksheet_id = Column(String, index=True, unique=True, nullable=False)
     profiles = relationship(analysis_models.Profile, secondary="wsplink", backref="worksheets")
     analyses = relationship(analysis_models.Analysis, secondary="wsalink", backref="worksheets")
+    qc_analyses = relationship(analysis_models.Analysis, secondary="wsaqclink")
     instrument_uid = Column(Integer, ForeignKey('instrument.uid'), nullable=True)
     instrument = relationship(Instrument, backref='worksheets')
     sample_type_uid = Column(Integer, ForeignKey('sampletype.uid'), nullable=False)

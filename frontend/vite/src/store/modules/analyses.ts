@@ -6,7 +6,7 @@ import { ActionTree, GetterTree, MutationTree } from 'vuex';
 
 import {
   GET_ALL_ANALYSES_SERVICES, GET_ALL_ANALYSES_PROFILES, GET_ALL_ANALYSES_CATEGORIES,
-  GET_ALL_ANALYSES_PROFILES_AND_SERVICES
+  GET_ALL_ANALYSES_PROFILES_AND_SERVICES, GET_ALL_QC_TEMPLATES
 } from '../../graphql/analyses.queries';
 import { ISampleType } from './samples';
 import { IPatient } from './patients';
@@ -40,7 +40,9 @@ export interface IAnalysisService {
   profiles?: IAnalysisProfile[];
   category?: IAnalysisCategory;
   categoryUid?: string,
+  sortKey?: number;
   active?: boolean;
+  internalUse?: boolean;
   checked?: boolean;
 }
 
@@ -53,7 +55,9 @@ export class AnalysisService implements IAnalysisService {
     public profiles?: IAnalysisProfile[],
     public category?: IAnalysisCategory,
     public categoryUid?: string,
+    public sortKey?: number,
     public active?: boolean,
+    public internalUse?: boolean,
     public checked?: boolean,
   ) {
     this.active = true;
@@ -105,6 +109,7 @@ export interface IAnalysisRequest {
   samples?: ISample[];
   clientRequestId?: string;
   priority?: number;
+  createdAt?: Date;
 }
 
 export class AnalysisRequest implements IAnalysisRequest {
@@ -114,17 +119,40 @@ export class AnalysisRequest implements IAnalysisRequest {
  public samples?: ISample[],
  public clientRequestId?: string,
  public priority?: number,
+ public createdAt?: Date,
   ){
     this.samples = [new Sample()];
     this.client = new Client;
   }
 }
 
+export interface IQCTemplate {
+  uid?: string;
+  name?: string; 
+  description?: string;  
+  analyses?: IAnalysisService[];
+  departments?: any[];
+}
+
+export class QCTemplate implements IQCTemplate {
+  constructor(
+    public uid?: string,
+    public name?: string, 
+    public description?: string, 
+    public analyses?: IAnalysisService[],
+    public departments?: any[],
+  ){
+    this.analyses = [];
+  }
+}
+
+
 // state contract
 export interface IState {
   analysesCategories: IAnalysisCategory[];
   analysesServices: IAnalysisService[];
   analysesProfiles: IAnalysisProfile[];
+  qcTemplates: IQCTemplate[];
 }
 
 export const initialState = () => {
@@ -132,6 +160,7 @@ export const initialState = () => {
     analysesCategories: [],
     analysesServices: [],
     analysesProfiles: [],
+    qcTemplates: [],
   };
 };
 
@@ -150,7 +179,11 @@ export enum MutationTypes {
 
   SET_ANALYSES_PROFILES = 'SET_ANALYSES_PROFILES',
   ADD_ANALYSES_PROFILE = 'ADD_ANALYSES_PROFILE',
-  UPDATE_ANALYSES_PROFILE = 'UPDATE_ANALYSES_PROFILE'
+  UPDATE_ANALYSES_PROFILE = 'UPDATE_ANALYSES_PROFILE',
+  
+  SET_ANALYSES_QC_TEMPLATES = 'SET_ANALYSES_QC_TEMPLATES',
+  ADD_QC_TEMPLATE = 'ADD_QC_TEMPLATE',
+  UPDATE_QC_TEMPLATE = 'UPDATE_QC_TEMPLATE',
 }
 
 export enum ActionTypes {
@@ -168,6 +201,10 @@ export enum ActionTypes {
   FETCH_ANALYSES_PROFILES_AND_SERVICES = 'FETCH_ANALYSES_PROFILES_AND_SERVICES',
   ADD_ANALYSES_PROFILE = 'ADD_ANALYSES_PROFILE',
   UPDATE_ANALYSES_PROFILE = 'UPDATE_ANALYSES_PROFILE',
+
+  FETCH_ANALYSES_QC_TEMPLATES = 'FETCH_ANALYSES_QC_TEMPLATES',
+  ADD_QC_TEMPLATE = 'ADD_QC_TEMPLATE',
+  UPDATE_QC_TEMPLATE = 'UPDATE_QC_TEMPLATE',
 
   FETCH_SAMPLES = 'FETCH_SAMPLES',
 }
@@ -188,6 +225,7 @@ export const getters = <GetterTree<IState, RootState>>{
   getAnalysesServices: (state) => groupByCategory(state.analysesServices),
   getAnalysesServicesSimple: (state) => state.analysesServices,
   getAnalysesProfiles: (state) => state.analysesProfiles,
+  getQCTemplates: (state) => state.qcTemplates,
 };
 
 // Mutations
@@ -249,6 +287,32 @@ export const mutations = <MutationTree<IState>>{
     state.analysesProfiles.push(payload);
   },
 
+  // analysis QC TEMPLATES
+  [MutationTypes.SET_ANALYSES_QC_TEMPLATES](state: IState, payload: any[]): void {
+    state.qcTemplates = [];
+    let templates =  parseEdgeNodeToList(payload);
+    templates.forEach((qcTemplate: IQCTemplate) => {
+      qcTemplate.analyses = parseEdgeNodeToList(qcTemplate?.analyses) || [];
+      qcTemplate.departments = parseEdgeNodeToList(qcTemplate?.departments) || [];
+    })
+    state.qcTemplates = templates;
+  },
+
+  [MutationTypes.UPDATE_QC_TEMPLATE](state: IState, payload: IQCTemplate): void {
+    const index = state.qcTemplates.findIndex(x => x.uid === payload.uid);
+    let template = payload;
+    template.analyses = parseEdgeNodeToList(template?.analyses) || [];
+    template.departments = parseEdgeNodeToList(template?.departments) || [];
+    state!.qcTemplates[index] = template;
+  },
+
+  [MutationTypes.ADD_QC_TEMPLATE](state: IState, payload: IQCTemplate): void {
+    let template = payload;
+    template.analyses = parseEdgeNodeToList(template?.analyses) || [];
+    template.departments = parseEdgeNodeToList(template?.departments) || [];
+    state.qcTemplates.push(template);
+  },
+
 };
 
 // Actions
@@ -306,6 +370,20 @@ export const actions = <ActionTree<IState, RootState>>{
 
   async [ActionTypes.ADD_ANALYSES_PROFILE]({ commit }, payload ){
     commit(MutationTypes.ADD_ANALYSES_PROFILE, payload.data.createProfile.profile);
+  },
+
+  // analysis QC TEMPLATES
+  async [ActionTypes.FETCH_ANALYSES_QC_TEMPLATES]({ commit }){
+    await useQuery({ query: GET_ALL_QC_TEMPLATES })
+          .then(payload => commit(MutationTypes.SET_ANALYSES_QC_TEMPLATES, payload.data.value.qcTemplateAll));
+  },
+
+  async [ActionTypes.UPDATE_QC_TEMPLATE]({ commit }, payload ){
+    commit(MutationTypes.UPDATE_QC_TEMPLATE, payload.data.updateQcTemplate.qcTemplate);
+  },
+
+  async [ActionTypes.ADD_QC_TEMPLATE]({ commit }, payload ){
+    commit(MutationTypes.ADD_QC_TEMPLATE, payload.data.createQcTemplate.qcTemplate);
   },
 
 };

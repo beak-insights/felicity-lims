@@ -1,80 +1,5 @@
 <template>
 
-    <section class="col-span-4">
-        <div
-          class="bg-white rounded-lg shadow-sm hover:shadow-lg duration-500 px-4 sm:px-6 md:px-2 py-4"
-        >
-          <div class="grid grid-cols-12 gap-3">
-            <!-- Meta Column -->
-            <div class="sm:col-span-2 text-center hidden sm:block">
-              <div class="inline-block font-md text-medium mb-2">{{ patient?.patientId }}</div>
-              <!-- Age -->
-              <div
-                class="grid grid-rows-2 mx-auto mb-1 py-1 w-4/5 2lg:w-3/5 rounded-md bg-green-400"
-              >
-                <div class="inline-block font-medium text-2xl text-white">{{ patient?.age }}</div>
-                <div class="inline-block font-medium text-white text-sm lg:text-md">Yrs Old</div>
-              </div>
-            </div>
-            <!-- Summary Column -->
-            <div class="col-span-12 sm:col-start-3 sm:col-end-13 px-3 sm:px-0">
-              <div
-                class="flex justify-between sm:text-sm md:text-md lg:text-lg text-gray-700 font-bold"
-              >
-                <span>{{ patient?.firstName }} {{ patient?.lastName }}</span>
-                <div>
-                  <span class="font-medium text-md">{{ patient?.dateOfBirth }}</span>
-                  <button
-                    class="ml-4 inline-flex items-center justify-center w-8 h-8 mr-2 border-blue-500 border text-gray-900 transition-colors duration-150 bg-white rounded-full focus:outline-none hover:bg-gray-200"
-                  >
-                    <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                      <path
-                        d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
-                      ></path>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              <hr />
-              <div class="grid grid-cols-2 mt-2">
-                <div class="col-span-1">
-                  <!-- Client Details -->
-                  <div class="flex">
-                    <span class="text-gray-800 text-sm font-medium w-16">Client</span>
-                    <span class="text-gray-600 text-sm md:text-md">{{
-                      patient?.client?.name
-                    }}</span>
-                  </div>
-                  <div class="flex">
-                    <span class="text-gray-800 text-sm font-medium w-16">District:</span>
-                    <span class="text-gray-600 text-sm md:text-md">{{
-                      patient?.client?.district?.name
-                    }}</span>
-                  </div>
-                  <div class="flex">
-                    <span class="text-gray-800 text-sm font-medium w-16">Province:</span>
-                    <span class="text-gray-600 text-sm md:text-md">{{
-                      patient?.client?.district?.province?.name
-                    }}</span>
-                  </div>
-                </div>
-                <div class="col-span-1">
-                  <!-- Identifiers -->
-                  <div class="col-span-2 flex mt-2">
-                    <span class="text-gray-800 text-sm font-medium w-16">Client Patient ID</span>
-                    <span class="text-gray-600 text-sm md:text-md">{{
-                      patient?.clientPatientId
-                    }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </section>
-
-
   <div class="w-3/4 mx-auto mt-4 py-4">
     <h5 class="mb-4">Add Analysis Request</h5>
       <form action="post" class="p-4 mb-8 bg-white">
@@ -217,7 +142,7 @@
 
 import { useMutation } from '@urql/vue';
 import { defineComponent, ref, toRefs, reactive, computed, toRefs, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { ActionTypes as SampleActionTypes } from '../../store/modules/samples';
 import { ActionTypes, AnalysisRequest, IAnalysisRequest, ISample, Sample } from '../../store/modules/analyses';
@@ -237,6 +162,7 @@ export default defineComponent({
   setup(props) {    
     const store = useStore();
     const route = useRoute();
+    const router = useRouter();
 
     let formTitle = ref('');
     let formAction = ref(true);
@@ -260,16 +186,16 @@ export default defineComponent({
     store.dispatch(ActionTypes.FETCH_ANALYSES_PROFILES);
     store.dispatch(ClientActionTypes.FETCH_CLIENTS);
 
-    const patient = computed(() => store.getters.getPatientByUid(route?.query?.patientUid))
+    const patient = computed(() => store.getters.getPatient)
     const clients = computed(() => store.getters.getClients)
 
     const { executeMutation: createAnalysisRequest } = useMutation(ADD_ANALYSIS_REQUEST);
 
     function addAnalysesRequest(): void {
-      console.log(form)
       createAnalysisRequest({ clientRequestId: form.clientRequestId, clientUid: form.client.uid, patientUid: form.patient.uid, samples: form.samples}).then((result) => {
        store.dispatch(SampleActionTypes.ADD_SAMPLES, result);
       });
+      router.push({ name: "patient-detail", params: { patientUid: form.patient.uid }});
     }
 
     function addSample(): void {
@@ -289,7 +215,9 @@ export default defineComponent({
       showModal.value = true;
       formTitle.value = (create ? 'CREATE' : 'EDIT') + ' ' + "ANALYSES ANALYSIS REQUEST";
       if (create) {
-        Object.assign(form, { ...(new AnalysisRequest()) });
+        let ar = new AnalysisRequest();
+        ar.patient = patient.value;
+        Object.assign(form, { ...ar });
       } else {
         Object.assign(form, { ...obj });
       }
@@ -300,7 +228,6 @@ export default defineComponent({
         const clt = store.getters.getClientByName(form.client.name);
         store.dispatch(ClientActionTypes.FETCH_CLIENT_CONTACTS, clt?.uid);
         form.client = clt;
-        console.log(form.client);
       }
     }
 

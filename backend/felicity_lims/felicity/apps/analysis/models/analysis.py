@@ -21,6 +21,7 @@ class SampleType(BaseAuditDBModel):
     name = Column(String, nullable=False)
     description = Column(String, nullable=False)
     active = Column(Boolean(), default=False)
+    internal_use = Column(Boolean(), default=False)  # e.g QC Sample
     abbr = Column(String, nullable=False)
 
     @classmethod
@@ -94,6 +95,8 @@ class Analysis(BaseAuditDBModel):
     category_uid = Column(Integer, ForeignKey('analysiscategory.uid'))
     category = relationship(AnalysisCategory, backref="analyses")
     tat_length_minutes = Column(Integer, nullable=True)  # to calculate TAT
+    sort_key = Column(Integer, nullable=True)
+    internal_use = Column(Boolean(), default=False)  # e.g QC Services
     active = Column(Boolean(), default=False)
 
     @classmethod
@@ -131,6 +134,7 @@ class AnalysisRequest(BaseAuditDBModel):
     client = relationship(ct_models.Client, backref="analysis_requests")
     request_id = Column(String, index=True, unique=True, nullable=True)
     client_request_id = Column(String, unique=True, nullable=False)
+    internal_use = Column(Boolean(), default=False)  # e.g Test Requests
 
     @classmethod
     def create_request_id(cls):
@@ -190,7 +194,7 @@ class RejectionReason(BaseAuditDBModel):
 
 class Sample(Auditable, BaseMPTT):
     """Sample"""
-    analysisrequest_uid = Column(Integer, ForeignKey('analysisrequest.uid'), nullable=False)
+    analysisrequest_uid = Column(Integer, ForeignKey('analysisrequest.uid'), nullable=True)
     analysisrequest = relationship('AnalysisRequest', backref="samples")
     sampletype_uid = Column(Integer, ForeignKey('sampletype.uid'), nullable=False)
     sampletype = relationship('SampleType', backref="samples")
@@ -203,6 +207,7 @@ class Sample(Auditable, BaseMPTT):
     invalidated_by_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
     date_invalidated = Column(DateTime, nullable=True)
     rejection_reasons = relationship(RejectionReason, secondary="rrslink", backref="samples")
+    internal_use = Column(Boolean(), default=False)  # e.g QC Samples
 
     @classmethod
     def create_sample_id(cls, sampletype):

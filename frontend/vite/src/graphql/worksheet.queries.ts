@@ -126,6 +126,7 @@ export const GET_WORKSHEET_BY_UID = gql`
           uid
           result
           status
+          worksheetPosition
           method {
             uid
             name

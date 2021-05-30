@@ -19,6 +19,7 @@ from felicity.gql.setup.types import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 # 
 # Laboratory Mutations
 # 
@@ -299,9 +300,8 @@ class UpdateInstrument(graphene.Mutation):
         ok = True
         return UpdateInstrument(ok=ok, instrument=instrument)
     
-    
 
-# 
+#
 # Method Mutations
 # 
 class CreateMethod(graphene.Mutation):
@@ -377,8 +377,7 @@ class UpdateMethod(graphene.Mutation):
         ok = True
         return UpdateMethod(ok=ok, method=method)
     
-    
-  
+
 # 
 # Country Mutations
 #  

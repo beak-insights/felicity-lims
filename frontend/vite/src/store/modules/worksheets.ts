@@ -8,26 +8,27 @@ import {
 } from '../../graphql/worksheet.queries';
 import { IInstrument } from './setup';
 import { IAnalysisService } from './analyses';
-import { parseEdgeNodeToList, snakeToCamel } from '../../utils';
+import { parseEdgeNodeToList, parseData } from '../../utils';
+import { IAnalysisResult } from './samples';
 
 
 export interface IReserved {
   position: number;
-  row?: number;
-  col?: number;
-  name?: string;
+  analysisUid?: string;
 }
 
 export class Reserved implements IReserved {
   constructor(
     public position: number,
-    public name?: string,
-  ){}
+    public analysisUid?: string,
+  ){
+  }
 }
 
 export interface IWorkSheetTemplate {
   uid?: string;
   name?: string;
+  qcTemplateUid?: string;
   reserved?: IReserved[];
   preview?: IReserved[];
   numberOfSamples?: number;
@@ -51,6 +52,7 @@ export class WorkSheetTemplate implements IWorkSheetTemplate {
     public rows?: number,
     public cols?: number,
     public rowWise?: Boolean,
+    public qcTemplateUid?: string,
     public worksheetType?: string,
     public instrument?: IInstrument,
     public description?: string,
@@ -71,6 +73,7 @@ export interface IWorkSheet {
   reserved?: string[];
   plate?: Map<string, string>;
   numberOfSamples?: number;
+  analysisResults?: IAnalysisResult[],
   rows?: number;
   cols?: number;
   rowWise?: Boolean;
@@ -88,6 +91,7 @@ export class WorkSheet implements IWorkSheet {
     public reserved?: string[],
     public plate?: Map<string, string>,
     public numberOfSamples?: number,
+    public analysisResults?: IAnalysisResult[],
     public rows?: number,
     public cols?: number,
     public rowWise?: Boolean,
@@ -141,7 +145,7 @@ export enum ActionTypes {
 }
 
 function sortAnalysisResults(ws: any): IWorkSheet {
-  ws.analysisResults = ws?.analysisResults?.sort((a: any, b: any) => (a.uid > b.uid) ? 1 : -1);
+  ws.analysisResults = ws?.analysisResults?.sort((a: IAnalysisResult, b: IAnalysisResult) => (a?.worksheetPosition || 0) > (b?.worksheetPosition || 1) ? 1 : -1);
   return ws;
 }
 
@@ -166,7 +170,7 @@ export const mutations = <MutationTree<IState>>{
     wst?.forEach((template: IWorkSheetTemplate) => {
       template.analyses = parseEdgeNodeToList(template?.analyses) || [];
       const data: any = template.reserved;
-      const reserved = Object.entries(JSON.parse(data)) as any[];
+      const reserved = Object.entries(parseData(data)) as any[];
       let new_res: IReserved[] = [];
       reserved?.forEach(item => new_res.push(item[1] as IReserved || {}));
       template.reserved = new_res;
@@ -179,7 +183,7 @@ export const mutations = <MutationTree<IState>>{
     let wst = payload;
     wst.analyses = parseEdgeNodeToList(wst?.analyses) || [];
     const data: any = wst.reserved;
-    const reserved = Object.entries(JSON.parse(data)) as any[];
+    const reserved = Object.entries(parseData(data)) as any[];
     let new_res: IReserved[] = [];
     reserved?.forEach(item => new_res.push(item[1] as IReserved || {}));
     wst.reserved = new_res;
@@ -190,7 +194,7 @@ export const mutations = <MutationTree<IState>>{
     let wst = payload;
     wst.analyses = parseEdgeNodeToList(wst?.analyses) || [];
     const data: any = wst.reserved;
-    const reserved = Object.entries(JSON.parse(data)) as any[];
+    const reserved = Object.entries(parseData(data)) as any[];
     let new_res: IReserved[] = [];
     reserved?.forEach(item => new_res.push(item[1] as IReserved || {}));
     wst.reserved = new_res;

@@ -25,6 +25,7 @@ class CreateClient(graphene.Mutation):
         mobile_phone = graphene.String(required=False)
         business_phone = graphene.String(required=False)
         consent_sms = graphene.Boolean(required=False)
+        internal_use = graphene.Boolean(required=False)
         active = graphene.Boolean(required=False)
 
     ok = graphene.Boolean()
@@ -64,6 +65,7 @@ class UpdateClient(graphene.Mutation):
         mobile_phone = graphene.String(required=False)
         business_phone = graphene.String(required=False)
         consent_sms = graphene.Boolean(required=False)
+        internal_use = graphene.Boolean(required=False)
         active = graphene.Boolean(required=False)
 
     ok = graphene.Boolean()

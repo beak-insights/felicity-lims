@@ -9,6 +9,7 @@ from graphene_sqlalchemy import SQLAlchemyConnectionField
 from felicity.gql.analysis import types as a_types
 from felicity.apps.analysis.models import analysis as a_models
 from felicity.apps.analysis.models import results as r_models
+from felicity.apps.analysis.models import qc as qc_models
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -54,6 +55,7 @@ class SampleFilterableConnectionField(SQLAlchemyConnectionField):
                 if _client_uid:
                     arg["analysisrequest___client_uid__exact"] = _client_uid
                 arg[_filter] = f"%{_text}%"
+                arg["internal_use__ne"] = True
                 logger.warning(f" args built: {arg}")
                 queryset = model.where(**arg)
                 for item in queryset:
@@ -61,14 +63,18 @@ class SampleFilterableConnectionField(SQLAlchemyConnectionField):
         else:
             if _status:
                 if _client_uid:
-                    queryset = model.where(status__exact=_status, analysisrequest___client_uid__exact=_client_uid)
+                    queryset = model.where(
+                        status__exact=_status,
+                        analysisrequest___client_uid__exact=_client_uid,
+                        internal_use__ne=True
+                    )
                 else:
-                    queryset = model.where(status__exact=_status)
+                    queryset = model.where(status__exact=_status, internal_use__ne=True)
             else:
                 if _client_uid:
-                    queryset = model.where(analysisrequest___client_uid__exact=_client_uid)
+                    queryset = model.where(analysisrequest___client_uid__exact=_client_uid, internal_use__ne=True)
                 else:
-                    queryset = queryset
+                    queryset = model.where(internal_use__ne=True)
 
             for item in queryset:
                 combined.add(item)
@@ -107,6 +113,7 @@ class AnalysisQuery(graphene.ObjectType):
     # Analysis Queries
     analysis_all = SQLAlchemyConnectionField(a_types.AnalysisType.connection)
     analysis_by_uid = graphene.Field(lambda: a_types.AnalysisType, uid=graphene.String(default_value=""))
+    analysis_for_qc = graphene.List(lambda: a_types.AnalysisType)
 
     # AnalysisRequest Queries
     analysis_request_all = SQLAlchemyConnectionField(a_types.AnalysisRequestType.connection)
@@ -118,6 +125,10 @@ class AnalysisQuery(graphene.ObjectType):
     analysis_result_all = SQLAlchemyConnectionField(a_types.AnalysisResultType.connection)
     analysis_result_by_uid = graphene.Field(lambda: a_types.AnalysisResultType, uid=graphene.String(default_value=""))
     analysis_result_by_sample_uid = graphene.List(lambda: a_types.AnalysisResultType, uid=graphene.String(default_value=""))
+
+    # AnalysisQCTemplate Queries
+    qc_template_all = SQLAlchemyConnectionField(a_types.QCTemplateType.connection)
+    qc_template_by_uid = graphene.Field(lambda: a_types.QCTemplateType, uid=graphene.String(default_value=""))
 
     @staticmethod
     def resolve_sample_type_by_uid(self, info, uid):
@@ -148,20 +159,25 @@ class AnalysisQuery(graphene.ObjectType):
                 if client_uid:
                     arg["analysisrequest___client_uid__exact"] = client_uid
                 arg[_filter] = f"%{text}%"
+                arg["internal_use__ne"] = True
                 queryset = a_models.Sample.where(**arg)
                 for item in queryset:
                     combined.add(item)
         else:
             if status:
                 if client_uid:
-                    queryset = a_models.Sample.where(status__exact=status, analysisrequest___client_uid__exact=client_uid)
+                    queryset = a_models.Sample.where(
+                        status__exact=status,
+                        analysisrequest___client_uid__exact=client_uid,
+                        internal_use__ne=True
+                    )
                 else:
-                    queryset = a_models.Sample.where(status__exact=status)
+                    queryset = a_models.Sample.where(status__exact=status, internal_use__ne=True)
             else:
                 if client_uid:
-                    queryset = a_models.Sample.where(analysisrequest___client_uid__exact=client_uid)
+                    queryset = a_models.Sample.where(analysisrequest___client_uid__exact=client_uid, internal_use__ne=True)
                 else:
-                    queryset = a_models.Sample.where(**{})
+                    queryset = a_models.Sample.where(internal_use__ne=True)
 
             for item in queryset:
                 combined.add(item)
@@ -182,6 +198,11 @@ class AnalysisQuery(graphene.ObjectType):
     def resolve_analysis_by_uid(self, info, uid):
         analysis = a_models.Analysis.get(uid=uid)
         return analysis
+
+    @staticmethod
+    def resolve_analysis_for_qc(self, info):
+        analyses = a_models.Analysis.where(category___name__exact='Quality Control').all()
+        return analyses
 
     @staticmethod
     def resolve_analysis_request_by_uid(self, info, uid):
@@ -207,3 +228,8 @@ class AnalysisQuery(graphene.ObjectType):
     def resolve_analysis_result_by_sample_uid(self, info, uid):
         analysis_results = r_models.AnalysisResult.where(sample_uid__exact=uid)
         return analysis_results
+
+    @staticmethod
+    def resolve_qc_template_by_uid(self, info, uid):
+        qc_template = qc_models.QCTemplate.get(uid=uid)
+        return qc_template

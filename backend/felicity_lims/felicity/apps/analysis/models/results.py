@@ -23,6 +23,7 @@ class AnalysisResult(Auditable, BaseMPTT):
     sample = relationship(analysis_models.Sample, backref="analysis_results")
     worksheet_uid = Column(Integer, ForeignKey('worksheet.uid'), nullable=True)
     worksheet = relationship(ws_models.WorkSheet, backref="analysis_results")
+    worksheet_position = Column(Integer, nullable=True)
     assigned = Column(Boolean(), default=False)
     analysis_uid = Column(Integer, ForeignKey('analysis.uid'), nullable=False)
     analysis = relationship(analysis_models.Analysis, backref="analysis_results")
@@ -38,16 +39,19 @@ class AnalysisResult(Auditable, BaseMPTT):
     date_verified = Column(DateTime, nullable=True)
     invalidated_by_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
     date_invalidated = Column(DateTime, nullable=True)
+    reportable = Column(Boolean(), default=True)  # for retests or reflex
     status = Column(String, nullable=False)
 
-    def assign(self, ws_uid):
+    def assign(self, ws_uid, position):
         self.worksheet_uid = ws_uid
         self.assigned = True
+        self.worksheet_position = position
         self.save()
 
-    def un_assign(self, ws_number):
+    def un_assign(self):
         self.worksheet_uid = None
         self.assigned = False
+        self.worksheet_position = None
         self.save()
 
     def verify(self):

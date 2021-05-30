@@ -30,6 +30,7 @@ class CreatePatient(graphene.Mutation):
         phone_mobile = graphene.String(required=False)
         phone_home = graphene.String(required=False)
         consent_sms = graphene.Boolean(required=False)
+        internal_use = graphene.Boolean(required=False)
 
     ok = graphene.Boolean()
     patient = graphene.Field(lambda: PatientType)
@@ -101,6 +102,7 @@ class UpdatePatient(graphene.Mutation):
         phone_mobile = graphene.String(required=False)
         phone_home = graphene.String(required=False)
         consent_sms = graphene.Boolean(required=False)
+        internal_use = graphene.Boolean(required=False)
         active = graphene.Boolean(required=False)
 
     ok = graphene.Boolean()

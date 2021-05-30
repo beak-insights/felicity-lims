@@ -1,6 +1,6 @@
 <template>
   <div class="">
-    <div class="container mx-auto w-full my-4">
+    <div class="container w-full my-4">
       <hr>
       <button
         class="px-2 py-1 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none"
@@ -204,23 +204,43 @@
               placeholder="Description ..."
             />
           </label>
-          <label class="block col-span-2 mb-2">
+          <label class="block col-span-1 mb-2">
             <span class="text-gray-700">Analysis Category</span>
             <select class="form-select block w-full mt-1" v-model="analysisService.categoryUid">
                <option></option>
               <option v-for="category in analysesCategories" :key="category.uid" :value="category?.uid">{{ category.name }}</option>
             </select>
           </label>
-          <label for="toggle" class="text-xs text-gray-700 mr-4">Active
-            <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                <input 
-                type="checkbox" 
-                name="toggle" id="toggle" 
-                v-model="analysisService.active"
-                class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer outline-none"/>
-                <label for="toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
-            </div>
+          <label class="block col-span-1 mb-2">
+            <span class="text-gray-700">Sort Key</span>
+            <input
+              type="number" default="1"
+              class="form-input mt-1 block w-full"
+              v-model="analysisService.sortKey"
+            />
           </label>
+          <div class="col-span-2 flex justify-between">
+            <label for="toggle" class="text-xs text-gray-700 mr-4">Active
+              <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                  <input 
+                  type="checkbox" 
+                  name="toggle" id="toggleActive" 
+                  v-model="analysisService.active"
+                  class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer outline-none"/>
+                  <label for="toggleActive" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+              </div>
+            </label>
+            <label for="toggle" class="text-xs text-gray-700 mr-4">Internal Use
+              <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                  <input 
+                  type="checkbox" 
+                  name="toggle" id="toggleIUse" 
+                  v-model="analysisService.internalUse"
+                  class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer outline-none"/>
+                  <label for="toggleIUse" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+              </div>
+            </label>
+          </div>
         </div>
         <hr />
         <button
@@ -274,13 +294,30 @@ export default defineComponent({
 
     function addAnalysisService(): void {
       console.log((analysisService))
-      createAnalysisService({ name: analysisService.name, keyword: analysisService.keyword, description: analysisService.description, active: analysisService.active, categoryUid: analysisService.categoryUid }).then((result) => {
+      createAnalysisService({ 
+        name: analysisService.name, 
+        keyword: analysisService.keyword, 
+        description: analysisService.description, 
+        categoryUid: analysisService.categoryUid, 
+        sortKey: analysisService.sortKey,
+        active: analysisService.active, 
+        internalUse: analysisService.internalUse, 
+        }).then((result) => {
        store.dispatch(ActionTypes.ADD_ANALYSES_SERVICE, result);
       });
     }
 
     function editAnalysisService(): void {
-      updateAnalysisService({ uid: analysisService.uid, name: analysisService.name, keyword: analysisService.keyword, description: analysisService.description, active: analysisService.active, categoryUid: analysisService.categoryUid  }).then((result) => {
+      updateAnalysisService({ 
+        uid: analysisService.uid, 
+        name: analysisService.name, 
+        keyword: analysisService.keyword, 
+        description: analysisService.description, 
+        categoryUid: analysisService.categoryUid,
+        sortKey: analysisService.sortKey,
+        active: analysisService.active, 
+        internalUse: analysisService.internalUse, 
+        }).then((result) => {
         store.dispatch(ActionTypes.UPDATE_ANALYSES_SERVICE, result);
       });
     }

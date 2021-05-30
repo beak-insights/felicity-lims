@@ -2,6 +2,7 @@ from typing import Optional, List
 from datetime import datetime
 
 from felicity.apps import BaseAuditModel
+from felicity.apps.setup.schemas import Department
 
 
 # 
@@ -13,6 +14,7 @@ class SampleTypeBase(BaseAuditModel):
     name: Optional[str] = None
     description: Optional[str] = None
     abbr: Optional[str] = None
+    internal_use: Optional[bool] = False
     active: Optional[bool] = True
 
 
@@ -129,12 +131,14 @@ class AnalysisBase(BaseAuditModel):
     name: Optional[str] = None
     description: Optional[str] = None
     keyword: Optional[str] = None
-    active: Optional[bool] = True
     profiles: Optional[List[Profile]] = []
     sampletypes: Optional[List[SampleType]] = []
     tat_length_minutes: Optional[int] = None
     unit: Optional[str] = None
     category_uid: Optional[str] = None
+    sort_key: Optional[int] = 0
+    internal_use: Optional[bool] = False
+    active: Optional[bool] = True
 
 
 class AnalysisBaseInDB(AnalysisBase):
@@ -212,6 +216,7 @@ class AnalysisRequestBase(BaseAuditModel):
     client_uid: Optional[int] = None
     request_id: Optional[str] = None
     client_request_id: Optional[str] = None
+    internal_use: Optional[bool] = False
 
 
 class AnalysisRequestBaseInDB(AnalysisRequestBase):
@@ -253,8 +258,9 @@ class SampleBase(BaseAuditModel):
     analyses: Optional[List[Analysis]] = []
     sample_id: Optional[str] = None
     priority: Optional[int] = 0
-    invalidated_by_uid : Optional[int] = None
+    invalidated_by_uid: Optional[int] = None
     date_invalidated: Optional[datetime] = None
+    internal_use: Optional[bool] = False
     status: Optional[str] = None
 
 
@@ -341,7 +347,9 @@ class AnalysisResultBase(BaseAuditModel):
     date_invalidated: Optional[datetime] = None
     status: Optional[str] = None
     worksheet_uid: Optional[int] = None
+    worksheet_position: Optional[int] = None
     assigned: Optional[bool] = False
+    reportable: Optional[bool] = False
 
 
 class AnalysisResultBaseInDB(AnalysisResultBase):
@@ -368,4 +376,43 @@ class AnalysisResult(AnalysisResultBaseInDB):
 
 # Properties stored in DB
 class AnalysisResultInDB(AnalysisResultBaseInDB):
+    pass
+
+
+#
+# QCTemplate Schemas
+#
+
+# Shared properties
+class QCTemplateBase(BaseAuditModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    departments: Optional[List[Department]] = []
+    analyses: Optional[List[Analysis]] = []
+
+
+class QCTemplateBaseInDB(QCTemplateBase):
+    uid: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
+# Properties to receive via API on creation
+class QCTemplateCreate(QCTemplateBase):
+    pass
+
+
+# Properties to receive via API on update
+class QCTemplateUpdate(QCTemplateBase):
+    pass
+
+
+# Properties to return via API
+class QCTemplate(QCTemplateBaseInDB):
+    pass
+
+
+# Properties stored in DB
+class QCTemplateInDB(QCTemplateBaseInDB):
     pass

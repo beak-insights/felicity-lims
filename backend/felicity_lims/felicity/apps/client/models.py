@@ -25,6 +25,7 @@ class Client(DBModel):
     phone_mobile = Column(String, nullable=True)
     phone_business = Column(String, nullable=True)
     consent_sms = Column(Boolean(), default=False)
+    internal_use = Column(Boolean(), default=False)  # e.g Test Client
     active = Column(Boolean(), default=False)
 
     @classmethod

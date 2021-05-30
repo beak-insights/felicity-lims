@@ -278,14 +278,14 @@
             <span class="text-gray-700">SampleType</span>
             <select class="form-select block w-full mt-1" v-model="workSheetTemplate.sampleType.uid">
                <option></option>
-              <option v-for="stype in sampleTypes" :key="stype.uid" :value="stype.uid"> {{ stype.name }} {{ stype.uid }}</option>
+              <option v-for="stype in sampleTypes" :key="stype.uid" :value="stype.uid"> {{ stype.name }}</option>
             </select>
           </label>
           <label class="block col-span-1 mb-2">
             <span class="text-gray-700">Anslysis Service</span>
             <select class="form-select block w-full mt-1" v-model="workSheetTemplate.analyses[0].uid">
                <option></option>
-              <option v-for="service in services" :key="service.uid" :value="service.uid"> {{ service.name }} {{ service.uid }}</option>
+              <option v-for="service in services" :key="service.uid" :value="service.uid"> {{ service.name }}</option>
             </select>
           </label>
         </div>
@@ -295,6 +295,18 @@
             <hr>
             <div class="flex justify-between items-center py-2">
                 <h5>Reserved Positions</h5>
+                <label class="block col-span-1 mb-2">
+                  <span class="text-gray-700">QC Template</span>
+                  <div class="flex items-center">
+                  <select class="form-select block w-full mt-1" v-model="workSheetTemplate.qcTemplateUid">
+                    <option></option>
+                    <option v-for="templ in qcTemplates" :key="templ.uid" :value="templ.uid"> {{ templ.name }}</option>
+                  </select>
+                  <button
+                    @click.prevent="appyQCTemplate()"
+                    class="px-2 py-1 ml-2 h-auto border-green-500 border text-green-500 rounded transition duration-300 hover:bg-green-700 hover:text-white focus:outline-none">Apply</button>
+                  </div>
+                </label>
                 <button
                 @click.prevent="addReserved()"
                 class="px-2 py-1 mr-2 border-green-500 border text-green-500 rounded transition duration-300 hover:bg-green-700 hover:text-white focus:outline-none">Add Reserve Slot</button>
@@ -315,10 +327,9 @@
                             <label class="block col-span-2 mb-2">
                                 <span class="text-gray-700">Blank/Control</span>
                                 <select 
-                                v-model="reserved.name"
+                                v-model="reserved.analysisUid"
                                 class="form-input mt-1 block w-full">
-                                  <option value="Blank">Blank</option>
-                                  <option value="Control">Control</option>
+                                <option v-for="service in qcAnalyses" :key="service.uid" :value="service.uid"> {{ service.name }}</option>
                               </select>
                             </label>
                         </div>
@@ -397,11 +408,13 @@ export default defineComponent({
     store.dispatch(AnalysisActionTypes.FETCH_ANALYSES_SERVICES);
     store.dispatch(SampleActionTypes.FETCH_SAMPLE_TYPES);
     store.dispatch(SetupActionTypes.FETCH_INSTRUMENTS);
+    store.dispatch(AnalysisActionTypes.FETCH_ANALYSES_QC_TEMPLATES);
     store.dispatch(ActionTypes.FETCH_WORKSHEET_TEMPLATES);
 
     const { executeMutation: createWorksheetTemplate } = useMutation(ADD_WORKSHEET_TEMPLATE);
     const { executeMutation: updateWorksheetTemplate } = useMutation(EDIT_WORKSHEET_TEMPLATE);
 
+    const qcTemplates =  computed(() => store.getters.getQCTemplates);
     const workSheetTemplates = computed(() => store.getters.getWorkSheetTemplates);
 
     function addWorksheetTemplate() {
@@ -482,6 +495,18 @@ export default defineComponent({
         workSheetTemplate.reserved?.splice(index, 1);
     }
 
+    function appyQCTemplate(): void {
+      workSheetTemplate.reserved = [];
+      if(!(workSheetTemplate.qcTemplateUid)) return;
+      const template = qcTemplates.value?.find(item => item.uid === workSheetTemplate.qcTemplateUid);
+      template?.analyses.forEach((control, index) => {
+        let reserved = new Reserved();
+        reserved.position = index + 1;
+        reserved.analysisUid = control.uid;
+        workSheetTemplate.reserved?.push(reserved)
+      });
+    } 
+
     function changeWorkSheetType(event: IEvent): void {
       if(event.target.value == 'flat') {
         workSheetTemplate.cols = null;
@@ -521,8 +546,19 @@ export default defineComponent({
       saveForm,
       formTitle,
       workSheetTemplates,
+      appyQCTemplate,
+      qcTemplates,
       instruments: computed(() => store.getters.getInstruments),
-      services: computed(() => store.getters.getAnalysesServicesSimple),
+      services: computed(() => {
+        const services = store.getters.getAnalysesServicesSimple;
+        const forQC = services?.filter(service => service?.category?.name !== 'Quality Control');
+        return forQC;
+      }),
+      qcAnalyses: computed(() => {
+        const services = store.getters.getAnalysesServicesSimple;
+        const forQC = services?.filter(service => service?.category?.name === 'Quality Control');
+        return forQC;
+      }),
       sampleTypes: computed(() => store.getters.getSampleTypes),
       workSheetTemplate,
       selectWorkSheetTemplate,

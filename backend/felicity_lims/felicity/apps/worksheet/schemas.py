@@ -2,6 +2,7 @@ from typing import Optional, Dict, List
 
 from pydantic import BaseModel
 
+
 # 
 # WorkSheet Schemas
 # 
@@ -61,6 +62,7 @@ class WSTemplateBase(BaseModel):
     instrument_uid: Optional[str] = None
     sample_type_uid: Optional[str] = None
     analyses: List[Optional[int]] = []
+    qc_analyses: List[Optional[int]] = []
     reserved: Optional[Dict] = {}
     number_of_samples: Optional[str] = None
     worksheet_type: Optional[str] = 'flat'

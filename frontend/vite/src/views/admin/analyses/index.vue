@@ -20,7 +20,8 @@
 
         <tab-analyses-profiles v-if="currentTab === 'analyses-profiles'"/>
         <tab-analyses-services v-else-if="currentTab === 'analyses-services'" />
-        <tab-analyses-categories v-else="currentTab === 'analyses-categories'" />
+        <tab-analyses-categories v-else-if="currentTab === 'analyses-categories'" />
+        <tab-analyses-quality-control v-else="currentTab === 'analyses-quality-control'" />
 
   </div>
 

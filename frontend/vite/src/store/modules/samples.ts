@@ -58,6 +58,7 @@ export interface IAnalysisResult {
   uid?: string;
   analysisUid?: string;
   analysis?: IAnalysisService;
+  worksheetPosition?: number;
   sampleUid?: string;
   sample?: ISampleRequest;
   status?: string;
@@ -70,6 +71,7 @@ export class AnalysisResult implements IAnalysisResult {
     public uid?: string,
     public analysisUid?: string,
     public analysis?: IAnalysisService,
+    public worksheetPosition?: number,
     public sampleUId?: string,
     public sample?: ISampleRequest,
     public status?: string,
@@ -140,6 +142,13 @@ export enum ActionTypes {
   
 }
 
+function sortAnalysisRequests(ars: IAnalysisRequest[]): IAnalysisRequest[] {
+  console.log(ars)
+  ars = ars?.sort((a: IAnalysisRequest, b: IAnalysisRequest) => (a?.createdAt || 0) < (b?.createdAt || 1) ? 1 : -1);
+  return ars;
+}
+
+
 // Getters
 export const getters = <GetterTree<IState, RootState>>{
   getSampleTypes: (state) => state.sampleTypes,
@@ -151,6 +160,7 @@ export const getters = <GetterTree<IState, RootState>>{
   getAnalysisRequests: (state) => state.analysisRequests,
   getAnalysisResults: (state) => state.analysisResults,
 };
+
 
 // Mutations
 export const mutations = <MutationTree<IState>>{
@@ -214,7 +224,7 @@ export const mutations = <MutationTree<IState>>{
         sample.profiles = parseEdgeNodeToList(sample?.profiles) || [];
       })
     });
-    state.analysisRequests = requests;
+    state.analysisRequests = sortAnalysisRequests(requests);
   },
 
   [MutationTypes.SET_ANALYSES_RESULTS](state: IState, payload: IAnalysisResult[]): void {

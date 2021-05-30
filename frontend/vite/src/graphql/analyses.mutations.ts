@@ -31,8 +31,8 @@ export const EDIT_SAMPLE_TYPE= gql`
 
 // ANALYSIS_SERVICE
 export const ADD_ANALYSIS_SERVICE= gql`
-  mutation AddAnalysisService ($name: String!, $keyword: String!, $active: Boolean!, $description: String!, $categoryUid: String!, $sampleTypes: [String]) {
-    createAnalysis(name: $name, keyword: $keyword, active: $active, description: $description, categoryUid: $categoryUid, sampleTypes:$sampleTypes){
+  mutation AddAnalysisService ($name: String!, $keyword: String!, $active: Boolean!, $internalUse: Boolean!, $description: String!, $categoryUid: String!, $sortKey: Int!, $sampleTypes: [String]) {
+    createAnalysis(name: $name, keyword: $keyword, active: $active, internalUse: $internalUse, description: $description, sortKey: $sortKey, categoryUid: $categoryUid, sampleTypes:$sampleTypes){
     analysis {
       uid
       name
@@ -57,8 +57,8 @@ export const ADD_ANALYSIS_SERVICE= gql`
 `;
 
 export const EDIT_ANALYSIS_SERVICE= gql`
-  mutation EditAnalysisService ($uid: Int!, $name: String!, $keyword: String!, $active: Boolean!, $categoryUid: String!, $description: String!, $sampleTypes: [String]) {
-    updateAnalysis(uid: $uid, name: $name, keyword: $keyword, active: $active, categoryUid: $categoryUid, description: $description, sampleTypes:$sampleTypes){
+  mutation EditAnalysisService ($uid: Int!, $name: String!, $keyword: String!, $active: Boolean!, $sortKey: Int! $internalUse: Boolean!, $categoryUid: String!, $description: String!, $sampleTypes: [String]) {
+    updateAnalysis(uid: $uid, name: $name, keyword: $keyword, active: $active, internalUse: $internalUse, sortKey: $sortKey, categoryUid: $categoryUid, description: $description, sampleTypes:$sampleTypes){
     analysis {
       uid
       name
@@ -311,3 +311,66 @@ export const VERIFY_ANALYSIS_RESULTS = gql`
       }
   }
 `; 
+
+// ANALYSIS_CATEGORIES
+export const ADD_QC_TEMPLATE = gql`
+  mutation AddQCTemplate ($name: String!, $description: String!, $analyses: [String], $departments: [String]) {
+    createQcTemplate(name: $name, description: $description, analyses: $analyses, departments: $departments ){
+      qcTemplate {
+        uid
+          name
+          description
+          analyses {
+            edges {
+              node {
+                uid
+                name
+                keyword
+                unit
+                categoryUid
+              }
+            }
+          }
+          departments {
+            edges {
+              node {
+                uid
+                name
+              }
+            }
+          }
+    }
+  }
+  }
+`;
+
+export const EDIT_QC_TEMPLATE = gql`
+  mutation EditQCTemplate ($uid: Int!, $name: String!, $description: String!, $analyses: [String], $departments: [String]) {
+    updateQcTemplate(uid: $uid, name: $name, description: $description, analyses: $analyses, departments: $departments){
+      qcTemplate {
+        uid
+        name
+        description
+        analyses {
+          edges {
+            node {
+              uid
+              name
+              keyword
+              unit
+              categoryUid
+            }
+          }
+        }
+        departments {
+          edges {
+            node {
+              uid
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+`;

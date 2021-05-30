@@ -23,6 +23,7 @@ class PatientBase(BaseModel):
     phone_home: Optional[str] = None
     consent_sms: Optional[bool] = None
     email: Optional[EmailStr] = None
+    internal_use: Optional[bool] = False
     active: Optional[bool] = None  
 
 

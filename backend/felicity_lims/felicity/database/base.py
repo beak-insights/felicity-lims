@@ -24,6 +24,7 @@ from felicity.apps.analysis.models.analysis import RejectionReason  # noqa
 from felicity.apps.analysis.models.analysis import AnalysisRequest  # noqa
 from felicity.apps.analysis.models.results import AnalysisResult  # noqa
 from felicity.apps.analysis.models.analysis import AnalysisCategory  # noqa
+from felicity.apps.analysis.models.qc import QCTemplate  # noqa
 from felicity.apps.worksheet.models import WorkSheetTemplate  # noqa
 from felicity.apps.worksheet.models import WorkSheet  # noqa
 from felicity.apps.job.models import Job  # noqa

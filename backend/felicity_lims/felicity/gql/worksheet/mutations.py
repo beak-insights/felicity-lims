@@ -20,17 +20,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-
 #
 # WorkSheetTemplate Mutations
 #
-
 class ReservedInputType(graphene.InputObjectType):
     position = graphene.Int()
-    name = graphene.String(required=True)
-    # row = graphene.String(required=False)
-    # col = graphene.String(required=False)
-    # sample_uid = graphene.String(required=False)
+    analysis_uid = graphene.String(required=False)
 
 
 class CreateWorkSheetTemplate(graphene.Mutation):
@@ -73,10 +68,14 @@ class CreateWorkSheetTemplate(graphene.Mutation):
 
         reserved = kwargs.get('reserved', None)
         incoming['reserved'] = []
+        _qc_analyses = []
         if reserved:
             positions = dict()
             for item in reserved:
                 positions[item['position']] = item
+                qc_anal = analysis_models.Analysis.get(uid=item['analysis_uid'])
+                if qc_anal not in _qc_analyses:
+                    _qc_analyses.append(qc_anal)
             incoming['reserved'] = positions
 
         _analyses = []
@@ -90,6 +89,7 @@ class CreateWorkSheetTemplate(graphene.Mutation):
         wst = models.WorkSheetTemplate.create(wst_schema)
 
         wst.analyses = _analyses
+        wst.qc_analyses = _qc_analyses
         wst.save()
 
         ok = True
@@ -134,10 +134,14 @@ class UpdateWorkSheetTemplate(graphene.Mutation):
                     pass
 
         reserved = kwargs.get('reserved', None)
+        _qc_analyses = []
         if reserved:
             positions = dict()
             for item in reserved:
                 positions[item['position']] = item
+                qc_anal = analysis_models.Analysis.get(uid=item['analysis_uid'])
+                if qc_anal not in _qc_analyses:
+                    _qc_analyses.append(qc_anal)
             setattr(ws_template, 'reserved', positions)
 
         wst_schema = schemas.WSTemplateUpdate(**ws_template.to_dict())
@@ -152,6 +156,7 @@ class UpdateWorkSheetTemplate(graphene.Mutation):
                     _analyses.append(anal)
 
         ws_template.analyses = _analyses
+        ws_template.qc_analyses = _qc_analyses
         ws_template.save()
 
         ok = True
@@ -199,6 +204,7 @@ class CreateWorkSheet(graphene.Mutation):
         ws_schema = schemas.WorkSheetCreate(**incoming)
         ws = models.WorkSheet.create(ws_schema)
         ws.analyses = ws_temp.analyses
+        ws.qc_analyses = ws_temp.qc_analyses
         ws.save()
 
         # Add a job

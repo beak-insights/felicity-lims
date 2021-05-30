@@ -1,23 +1,16 @@
 import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router';
 import adminRoutes from './admin';
+import patientRoutes from './patient';
+import clientRoutes from './client';
+
 
 import LoginView from '../views/auth/Login.vue';
 import DashBoardView from '../views/dashboard/index.vue';
 import PatientsView from '../views/patient/index.vue';
-import PatientsListing from '../views/patient/Patients.vue';
 import PatientsCompact from '../views/patient/PatientsCompact.vue';
-import PatientsRegistration from '../views/patient/AddPatient.vue';
-import PatientSingleView from '../views/patient/_id/index.vue';
-import PatientDetail from '../views/patient/_id/PatientDetail.vue';
 import ClientsView from '../views/client/index.vue';
-import ClientsListing from '../views/client/Clients.vue';
-import ClientSingleView from '../views/client/_id/index.vue';
-import ClientDetail from '../views/client/_id/ClientDetail.vue';
 import SamplesView from '../views/sample/index.vue';
 import SamplesListing from '../views/_components/SampleListing.vue';
-import SamplesAdd from '../views/sample/SamplesAdd.vue';
-import SampleSingleView from '../views/sample/_id/index.vue';
-import SampleDetail from '../views/sample/_id/SampleDetail.vue';
 import WorkSheetsView from '../views/worksheet/index.vue';
 import WorkSheetListing from '../views/worksheet/WorkSheetListing.vue';
 import WorkSheetSingleView from '../views/worksheet/_id/index.vue';
@@ -55,76 +48,7 @@ const routes: RouteRecordRaw[] = [
     path: '/patients',
     name: 'Patients',
     component: PatientsView,
-    children: [
-      {
-        path: '',
-        name: 'patients-listing',
-        component: PatientsListing,
-        meta: {
-          requiresAuth: true,
-        },
-      },
-      {
-        path: 'register',
-        name: 'patients-register',
-        component: PatientsRegistration,
-        meta: {
-          requiresAuth: true,
-        },
-      },
-      {
-        path: 'search',
-        name: 'patients-search',
-        component: PatientsListing,
-        meta: {
-          requiresAuth: true,
-        },
-      },
-      {
-        path: ':patientUid',
-        name: 'patient',
-        component: PatientSingleView,
-        children: [
-          {
-            path: '',
-            name: 'patient-detail',
-            component: PatientDetail,
-            meta: {
-              requiresAuth: true,
-            },
-          },
-          {
-            path: 'samples',
-            name: 'patient-sample',
-            component: SampleSingleView,
-            children: [
-              {
-                path: '',
-                name: 'patient-samples',
-                component: SampleSingleView,
-                meta: {
-                  requiresAuth: true,
-                },
-              },
-              {
-                path: ':sampleUid',
-                name: 'sample-detail',
-                component: SampleDetail,
-                meta: {
-                  requiresAuth: true,
-                },
-              },
-            ],
-            meta: {
-              requiresAuth: true,
-            },
-          },
-        ],
-        meta: {
-          requiresAuth: true,
-        },
-      },
-    ],
+    children: patientRoutes,
     meta: {
       requiresAuth: true,
     },
@@ -141,34 +65,7 @@ const routes: RouteRecordRaw[] = [
     path: '/clients',
     name: 'clients',
     component: ClientsView,
-    children: [
-      {
-        path: '',
-        name: 'clients-listing',
-        component: ClientsListing,
-        meta: {
-          requiresAuth: true,
-        },
-      },
-      {
-        path: 'single',
-        name: 'client-single-view',
-        component: ClientSingleView,
-        children: [
-          {
-            path: '',
-            name: 'client-detail',
-            component: ClientDetail,
-            meta: {
-              requiresAuth: true,
-            },
-          },
-        ],
-        meta: {
-          requiresAuth: true,
-        },
-      },
-    ],
+    children: clientRoutes,
     meta: {
       requiresAuth: true,
     },
@@ -182,14 +79,6 @@ const routes: RouteRecordRaw[] = [
         path: '',
         name: 'samples-listing',
         component: SamplesListing,
-        meta: {
-          requiresAuth: true,
-        },
-      },
-      {
-        path: 'add-new',
-        name: 'samples-add',
-        component: SamplesAdd,
         meta: {
           requiresAuth: true,
         },

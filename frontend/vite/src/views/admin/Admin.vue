@@ -33,7 +33,7 @@ export default defineComponent({
           { title: "Suppliers", path: "/admin/suppliers-conf",},
           { title: "Instruments, Methods", path: "/admin/instruments-conf",},
           { title: "Sample Types, Containers", path: "/admin/sampletypes-conf",},
-          { title: "Tests, Categories, Profiles", path: "/admin/analyses-conf",},
+          { title: "Tests, Categories, Profiles, QC", path: "/admin/analyses-conf",},
           { title: "WorkSheet Templates", path: "/admin/worksheets-conf",},
           { title: "Email, SMS", path: "/admin/publication-conf",},
       ])

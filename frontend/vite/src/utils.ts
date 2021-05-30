@@ -23,6 +23,13 @@ const isValidJson = function(str: any) {
     return true;
 };
 
+export const parseData = function(data: any) {
+    if (!data) return {};
+    if (typeof data === 'object') return data;
+    if (typeof data === 'string') return JSON.parse(data);
+    return {};
+}
+
 export const parseUrlParams = () => {
     const search = window.location.search.substring(1);
     if (!search) return {};

@@ -1,7 +1,13 @@
 import time
 import logging
+from felicity.apps.analysis.models.analysis import Sample, SampleType
+from felicity.apps.analysis import conf as analysis_conf
 from felicity.apps.analysis.models.results import AnalysisResult
-from felicity.apps.analysis.schemas import AnalysisResultUpdate
+from felicity.apps.analysis.schemas import (
+    AnalysisResultCreate,
+    SampleTypeCreate,
+    SampleCreate
+)
 from felicity.apps.job import models as job_models
 from felicity.apps.job.conf import states as job_states
 from felicity.apps.worksheet import models, conf
@@ -36,7 +42,8 @@ def populate_worksheet_plate(job_uid: int):
         return
 
     if ws.has_processed_samples():
-        job.change_status(new_status=job_states.FAILED, change_reason=f"WorkSheet {ws_uid} - contains at least a processed sample")
+        job.change_status(new_status=job_states.FAILED, change_reason=f"WorkSheet {ws_uid} - contains at least a "
+                                                                      f"processed sample")
         logger.warning(f"WorkSheet {ws_uid} - contains at least a processed sample")
         return
 
@@ -45,9 +52,10 @@ def populate_worksheet_plate(job_uid: int):
     samples = AnalysisResult.smart_query(
         filters={
             'assigned__exact': False,
+            # 'sample___internal_use__exact': False,  # ?
             # 'profiles__uid__in': [_p.uid for _p in ws.profiles],
             'analysis_uid__in': [_a.uid for _a in ws.analyses],
-            # 'sampletype_uid__exact': ws.sampletype,
+            'sample___sampletype_uid__exact': ws.sample_type_uid,
         },
         sort_attrs=['-sample___priority', '-created_at']
     ).all()
@@ -58,32 +66,15 @@ def populate_worksheet_plate(job_uid: int):
         logger.warning(f"There are no samples to assign to WorkSheet {ws_uid}")
         return
 
-    logger.info(f"Creating template factory instance ...")
-    plate_values = ws.plate_values()
-    factory = utils.WorkSheetPlater(**plate_values)
-    samples = samples[:factory.number_of_samples]
-    template = factory.create()
+    samples = samples[:ws.number_of_samples]
+    reserved = [int(r) for r in list(ws.reserved.keys())]
 
-    reserved = [int(r) for r in list(factory.reserved_positions.keys())]
-
-    logger.info(f"Filling template with samples ...")
-    index = 0
-    for k, v in list(template.items())[:available_samples]:
-        if k not in reserved:
-            template[k]['name'] = 'sample'
-            template[k]['sample_uid'] = samples[index].uid
-            index += 1
-
-    logger.info(f"Assigning template with samples to worksheet")
-    ws.set_plate(template)
-    for s in samples:
-        s.assign(ws.uid)
-        # update = {
-        #     'worksheet_uid': ws.uid,
-        #     'assigned': True,
-        # }
-        # update_schema = AnalysisResultUpdate(**update)
-        # s.update(update_schema)
+    position = 1
+    for key, sample in enumerate(reversed(samples)):
+        while position in reserved:
+            position += 1
+        sample.assign(ws.uid, position)
+        position += 1
 
     time.sleep(1)
 
@@ -91,9 +82,64 @@ def populate_worksheet_plate(job_uid: int):
     if ws.assigned_count > 0:
         ws.change_state(state=conf.worksheet_states.OPEN)
 
+    setup_ws_quality_control(ws)
+
     job.change_status(new_status=job_states.FINISHED)
     logger.info(f"Done !! Job {job_uid} was executed successfully :)")
 
 
 def run_ws_jobs():
     pass
+
+
+def get_qc_sample_type():
+    st = SampleType.get(name="QC Sample")
+    if not st:
+        st_in = SampleTypeCreate(name="QC Sample", description="QC Sample", abbr="QCS")
+        st = SampleType.create(st_in)
+    return st
+
+
+def get_sample_position(reserved, an_uid) -> int:
+    if not reserved:
+        return 0
+    an_uid = int(an_uid)
+    try:
+        for k, v in reserved.items():
+            analysis_uid = int(v.get('analysis_uid', 0))
+            if analysis_uid == an_uid:
+                return int(k)
+    except Exception:
+        pass
+    return 0
+
+
+def setup_ws_quality_control(ws):
+    reserved_pos = ws.reserved
+    if ws.qc_analyses:
+        for analysis in ws.qc_analyses:
+            sample_type = get_qc_sample_type()
+
+            # create qc_sample
+            s_in = SampleCreate(
+                sampletype_uid=sample_type.uid,
+                internal_use=True,
+                status=analysis_conf.states.sample.PENDING,
+            )
+            sample = Sample.create(s_in)
+            sample.analysis = [analysis]
+            sample.save()
+            logger.warning(f"Sample {sample.sample_id}, analysis {analysis.name}")
+
+            # create results linkages
+            a_result_in = {
+                'sample_uid': sample.uid,
+                'analysis_uid': analysis.uid,
+                'status': analysis_conf.states.result.PENDING
+            }
+            a_result_schema = AnalysisResultCreate(**a_result_in)
+            ar = AnalysisResult.create(a_result_schema)
+            position = get_sample_position(reserved_pos, analysis.uid)
+            ar.assign(ws.uid, position)
+
+

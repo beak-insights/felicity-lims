@@ -18,6 +18,7 @@ class ClientBase(BaseModel):
     mobile_phone: Optional[str] = None
     business_phone: Optional[str] = None
     consent_sms: Optional[bool] = None
+    internal_use: Optional[bool] = False
     active: Optional[bool] = True
 
 
