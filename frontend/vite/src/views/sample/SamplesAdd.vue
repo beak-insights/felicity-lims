@@ -141,7 +141,7 @@
 <script lang="ts">
 
 import { useMutation } from '@urql/vue';
-import { defineComponent, ref, toRefs, reactive, computed, toRefs, watch } from 'vue';
+import { defineComponent, ref, toRefs, reactive, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { ActionTypes as SampleActionTypes } from '../../store/modules/samples';

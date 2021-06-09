@@ -1,17 +1,18 @@
 import time
 import logging
-from felicity.apps.analysis.models.analysis import Sample, SampleType
+from felicity.apps.analysis.models.analysis import Sample
+from felicity.apps.analysis.models.qc import QCSet
 from felicity.apps.analysis import conf as analysis_conf
+from felicity.apps.analysis.utils import get_qc_sample_type
 from felicity.apps.analysis.models.results import AnalysisResult
 from felicity.apps.analysis.schemas import (
     AnalysisResultCreate,
-    SampleTypeCreate,
-    SampleCreate
+    SampleCreate,
+    QCSetCreate,
 )
 from felicity.apps.job import models as job_models
 from felicity.apps.job.conf import states as job_states
 from felicity.apps.worksheet import models, conf
-from felicity.apps.worksheet import utils
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -67,6 +68,7 @@ def populate_worksheet_plate(job_uid: int):
         return
 
     samples = samples[:ws.number_of_samples]
+    print(ws.reserved)
     reserved = [int(r) for r in list(ws.reserved.keys())]
 
     position = 1
@@ -92,22 +94,14 @@ def run_ws_jobs():
     pass
 
 
-def get_qc_sample_type():
-    st = SampleType.get(name="QC Sample")
-    if not st:
-        st_in = SampleTypeCreate(name="QC Sample", description="QC Sample", abbr="QCS")
-        st = SampleType.create(st_in)
-    return st
-
-
-def get_sample_position(reserved, an_uid) -> int:
+def get_sample_position(reserved, level_uid) -> int:
     if not reserved:
         return 0
-    an_uid = int(an_uid)
+    level_uid = int(level_uid)
     try:
         for k, v in reserved.items():
-            analysis_uid = int(v.get('analysis_uid', 0))
-            if analysis_uid == an_uid:
+            val_uid = int(v.get('level_uid', 0))
+            if val_uid == level_uid:
                 return int(k)
     except Exception:
         pass
@@ -116,30 +110,54 @@ def get_sample_position(reserved, an_uid) -> int:
 
 def setup_ws_quality_control(ws):
     reserved_pos = ws.reserved
-    if ws.qc_analyses:
-        for analysis in ws.qc_analyses:
-            sample_type = get_qc_sample_type()
+    if ws.template.qc_levels:
+        # if ws has qc set, then retrieve
+        _a_res = AnalysisResult.where(worksheet_uid=ws.uid).all()
+        _qc_sets = []
 
-            # create qc_sample
-            s_in = SampleCreate(
-                sampletype_uid=sample_type.uid,
-                internal_use=True,
-                status=analysis_conf.states.sample.PENDING,
-            )
-            sample = Sample.create(s_in)
-            sample.analysis = [analysis]
-            sample.save()
-            logger.warning(f"Sample {sample.sample_id}, analysis {analysis.name}")
+        for _a_r in _a_res:
+            if _a_r.sample.qc_set:
+                _qc_sets.append(_a_r.sample.qc_set)
 
-            # create results linkages
-            a_result_in = {
-                'sample_uid': sample.uid,
-                'analysis_uid': analysis.uid,
-                'status': analysis_conf.states.result.PENDING
-            }
-            a_result_schema = AnalysisResultCreate(**a_result_in)
-            ar = AnalysisResult.create(a_result_schema)
-            position = get_sample_position(reserved_pos, analysis.uid)
-            ar.assign(ws.uid, position)
+        try:
+            qc_set = _qc_sets[0]
+        except Exception:
+            qc_set_schema = QCSetCreate(name="Set", note="Auto Generated")
+            qc_set = QCSet.create(qc_set_schema)
+
+        for level in ws.template.qc_levels:
+            # if ws has qc_set with this level, skip
+            add_qc_sample = True
+            if qc_set.samples:
+                for _sample in qc_set.samples:
+                    if _sample.qc_level.uid == level.uid:
+                        add_qc_sample = False
+
+            if add_qc_sample:
+                sample_type = get_qc_sample_type()
+
+                # create qc_sample
+                s_in = SampleCreate(
+                    sampletype_uid=sample_type.uid,
+                    internal_use=True,
+                    status=analysis_conf.states.sample.PENDING,
+                )
+                sample: Sample = Sample.create(s_in)
+                sample.qc_set_uid = qc_set.uid
+                sample.qc_level_uid = level.uid
+                sample.analyses.append(ws.analyses[0])
+                sample.save()
+                logger.warning(f"Sample {sample.sample_id}, level {level.level}")
+
+                # create results linkages
+                a_result_in = {
+                    'sample_uid': sample.uid,
+                    'analysis_uid': ws.analyses[0].uid,
+                    'status': analysis_conf.states.result.PENDING
+                }
+                a_result_schema = AnalysisResultCreate(**a_result_in)
+                ar: AnalysisResult = AnalysisResult.create(a_result_schema)
+                position = get_sample_position(reserved_pos, level.uid)
+                ar.assign(ws.uid, position)
 
 

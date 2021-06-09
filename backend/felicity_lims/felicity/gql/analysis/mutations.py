@@ -10,6 +10,7 @@ from felicity.apps.setup.models import setup as setup_models
 from felicity.apps.analysis.models import analysis as analysis_models
 from felicity.apps.analysis.models import qc as qc_models
 from felicity.apps.analysis.models import results as result_models
+from felicity.apps.analysis.utils import get_qc_sample_type
 from felicity.apps.analysis import schemas
 from felicity.gql.analysis import types
 from felicity.apps.patient.models import logger
@@ -135,7 +136,7 @@ class UpdateAnalysisCategory(graphene.Mutation):
     analysis_category = graphene.Field(lambda: types.AnalysisCategoryType)
 
     @staticmethod
-    def mutate(root, info, uid, **kwargs):
+    def mutate(root, info, uid, **kwargs): # noqa
         analysis_category = analysis_models.AnalysisCategory.get(uid=uid)
         if not analysis_category:
             raise GraphQLError(f"AnalysisCategory with uid {uid} does not exist")
@@ -400,8 +401,6 @@ class CreateAnalysisRequest(graphene.Mutation):
             analyses = []
             _profiles_analyses = set()
 
-            logger.info(s)
-            logger.info(_profiles)
             for p_uid in _profiles:
                 profile = analysis_models.Profile.get(uid=p_uid)
                 profiles.append(profile)
@@ -417,7 +416,7 @@ class CreateAnalysisRequest(graphene.Mutation):
                     _profiles_analyses.add(analysis)
 
             sample_schema = schemas.SampleCreate(**sample_in)
-            sample = analysis_models.Sample.create(sample_schema)
+            sample: analysis_models.Sample = analysis_models.Sample.create(sample_schema)
             sample.analyses = analyses
             sample.profiles = profiles
             sample.save()
@@ -470,6 +469,9 @@ class UpdateAnalysisRequest(graphene.Mutation):
         return UpdateAnalysisRequest(ok=ok, analysisrequest=analysisrequest)
 
 
+#
+# AnalysisRequest Mutations
+#
 """TODO
 Add sample level functionalities:
 1. update sample parameters: sampletype, analyses and profiles
@@ -503,6 +505,11 @@ class UpdateSample(graphene.Mutation):
 
         ok = True
         return UpdateSample(ok, sample=sample)
+
+
+#
+# AnalysisResults Mutations
+#
 
 
 class ARResultInputType(graphene.InputObjectType):
@@ -615,6 +622,166 @@ class VerifyAnalysisResults(graphene.Mutation):
 
 
 #
+# QCSet Mutations
+#
+class QCSetInputType(graphene.InputObjectType):
+    qcTemplateUid = graphene.String(required=False)
+    qcLevels = graphene.List(graphene.String)
+    analysisProfiles = graphene.List(graphene.String)
+    analysisServices = graphene.List(graphene.String)
+
+
+class CreateQCSet(graphene.Mutation):
+    class Arguments:
+        samples = graphene.List(QCSetInputType, required=True)
+
+    ok = graphene.Boolean()
+    samples = graphene.List(lambda: types.SampleType)
+    qc_sets = graphene.List(lambda: types.QCSetType)
+
+    @staticmethod
+    def mutate(root, info, samples, **kwargs):
+        if not samples or len(samples) == 0:
+            raise GraphQLError("There are No QC Requests to create")
+
+        qc_sample_type = get_qc_sample_type()
+        qc_samples = []
+        qc_sets = []
+
+        for qc_set_in in samples:
+            qc_set_schema = schemas.QCSetCreate(name="Set", note="Auto Generated")
+            qc_set = qc_models.QCSet.create(qc_set_schema)
+
+            qc_levels = []
+            qc_levels_uids = []
+            if qc_set_in.qcTemplateUid:
+                qc_template = qc_models.QCTemplate.get(uid=qc_set_in.qcTemplateUid)
+                for level in qc_template.qc_levels:
+                    if level.uid not in qc_levels_uids:
+                        qc_levels.append(level)
+                        qc_levels_uids.append(level.uid)
+
+            if qc_set_in.qcLevels:
+                for level_uid in qc_set_in.qcLevels:
+                    if int(level_uid) not in qc_levels_uids:
+                        level = qc_models.QCLevel.get(uid=int(level_uid))
+                        qc_levels.append(level)
+                        qc_levels_uids.append(level_uid)
+
+            profiles = []
+            analyses = []
+            _profiles_analyses = set()
+
+            if qc_set_in.analysisProfiles:
+                for p_uid in qc_set_in.analysisProfiles:
+                    profile = analysis_models.Profile.get(uid=p_uid)
+                    profiles.append(profile)
+                    analyses_ = profile.analyses
+                    for _an in analyses_:
+                        _profiles_analyses.add(_an)
+
+            if qc_set_in.analysisServices:
+                # make sure the selected analyses are not part of the selected profiles
+                for a_uid in qc_set_in.analysisServices:
+                    analysis = analysis_models.Analysis.get(uid=a_uid)
+                    if analysis not in _profiles_analyses:
+                        analyses.append(analysis)
+                        _profiles_analyses.add(analysis)
+
+            for level in qc_levels:
+                # create qc_sample
+                s_in = schemas.SampleCreate(
+                    sampletype_uid=qc_sample_type.uid,
+                    internal_use=True,
+                    status=states.sample.PENDING,
+                )
+                sample: analysis_models.Sample = analysis_models.Sample.create(s_in)
+                sample.analyses = analyses
+                sample.profiles = profiles
+                sample.qc_set_uid = qc_set.uid
+                sample.qc_level_uid = level.uid
+                sample.save()
+
+                # Attach Analysis result for each Analyses
+                for _service in _profiles_analyses:
+                    a_result_in = {
+                        'sample_uid': sample.uid,
+                        'analysis_uid': _service.uid,
+                        'status': states.result.PENDING
+                    }
+                    a_result_schema = schemas.AnalysisResultCreate(**a_result_in)
+                    result_models.AnalysisResult.create(a_result_schema)
+
+                qc_samples.append(sample)
+
+            qc_sets.append(qc_set)
+
+        return CreateQCSet(ok=True, samples=qc_samples, qc_sets=qc_sets)
+
+
+#
+# QCLevel Mutations
+#
+class CreateQCLevel(graphene.Mutation):
+    class Arguments:
+        level = graphene.String(required=True)
+
+    ok = graphene.Boolean()
+    qc_level = graphene.Field(lambda: types.QCLevelType)
+
+    @staticmethod
+    def mutate(root, info, level, **kwargs):
+        if not level:
+            raise GraphQLError("Level Name is mandatory")
+
+        exists = qc_models.QCLevel.get(level=level)
+        if exists:
+            raise GraphQLError(f"A QCLevel named {level} already exists")
+
+        incoming = {
+            "level": level,
+        }
+        for k, v in kwargs.items():
+            incoming[k] = v
+
+        obj_in = schemas.QCLevelCreate(**incoming)
+        qc_level = qc_models.QCLevel.create(obj_in)
+
+        ok = True
+        return CreateQCLevel(ok=ok, qc_level=qc_level)
+
+
+class UpdateQCLevel(graphene.Mutation):
+    class Arguments:
+        uid = graphene.Int(required=True)
+        level = graphene.String(required=True)
+
+    ok = graphene.Boolean()
+    qc_level = graphene.Field(lambda: types.QCLevelType)
+
+    @staticmethod
+    def mutate(root, info, uid, **kwargs):
+        qc_level = qc_models.QCLevel.get(uid=uid)
+        if not qc_level:
+            raise GraphQLError(f"QCLevel with uid {uid} does not exist")
+
+        qc_data = jsonable_encoder(qc_level)
+        for field in qc_data:
+            if field in kwargs:
+                try:
+                    setattr(qc_level, field, kwargs[field])
+                except AttributeError as e:
+                    # raise GraphQLError(f"{e}")
+                    pass
+
+        qc_in = schemas.QCTemplateUpdate(**qc_level.to_dict())
+        qc_level.update(qc_in)
+
+        ok = True
+        return UpdateQCLevel(ok=ok, qc_level=qc_level)
+
+
+#
 # QCTemplate Mutations
 #
 class CreateQCTemplate(graphene.Mutation):
@@ -622,7 +789,7 @@ class CreateQCTemplate(graphene.Mutation):
         name = graphene.String(required=True)
         description = graphene.String(required=True)
         departments = graphene.List(graphene.String)
-        analyses = graphene.List(graphene.String)
+        levels = graphene.List(graphene.String)
 
     ok = graphene.Boolean()
     qc_template = graphene.Field(lambda: types.QCTemplateType)
@@ -641,19 +808,19 @@ class CreateQCTemplate(graphene.Mutation):
             "description": description,
         }
         for k, v in kwargs.items():
-            if k not in ['analyses', 'departments']:
+            if k not in ['levels', 'departments']:
                 incoming[k] = v
 
         obj_in = schemas.QCTemplateCreate(**incoming)
-        qc_template = qc_models.QCTemplate.create(obj_in)
+        qc_template: qc_models.QCTemplate = qc_models.QCTemplate.create(obj_in)
 
-        analyses = kwargs.get('analyses', None)
-        qc_template.analyses.clear()
-        if analyses:
-            for _uid in analyses:
-                anal = analysis_models.Analysis.get(uid=_uid)
-                if anal not in qc_template.analyses:
-                    qc_template.analyses.append(anal)
+        levels = kwargs.get('levels', None)
+        qc_template.qc_levels.clear()
+        if levels:
+            for _uid in levels:
+                level = qc_models.QCLevel.get(uid=_uid)
+                if level not in qc_template.qc_levels:
+                    qc_template.qc_levels.append(level)
         qc_template.save()
 
         departments = kwargs.get('departments', None)
@@ -675,7 +842,7 @@ class UpdateQCTemplate(graphene.Mutation):
         name = graphene.String(required=False)
         description = graphene.String(required=False)
         departments = graphene.List(graphene.String)
-        analyses = graphene.List(graphene.String)
+        levels = graphene.List(graphene.String)
 
     ok = graphene.Boolean()
     qc_template = graphene.Field(lambda: types.QCTemplateType)
@@ -698,13 +865,13 @@ class UpdateQCTemplate(graphene.Mutation):
         qc_in = schemas.QCTemplateUpdate(**qc_template.to_dict())
         qc_template.update(qc_in)
 
-        analyses = kwargs.get('analyses', None)
-        qc_template.analyses.clear()
-        if analyses:
-            for _uid in analyses:
-                anal = analysis_models.Analysis.get(uid=_uid)
-                if anal not in qc_template.analyses:
-                    qc_template.analyses.append(anal)
+        levels = kwargs.get('levels', None)
+        qc_template.qc_levels.clear()
+        if levels:
+            for _uid in levels:
+                level = qc_models.QCLevel.get(uid=_uid)
+                if level not in qc_template.qc_levels:
+                    qc_template.qc_levels.append(level)
         qc_template.save()
 
         departments = kwargs.get('departments', None)
@@ -733,6 +900,11 @@ class AnalysisMutations(graphene.ObjectType):
     # Analysis
     create_analysis = CreateAnalysis.Field()
     update_analysis = UpdateAnalysis.Field()
+    # QCSet
+    create_qc_set = CreateQCSet.Field()
+    # QCLevel
+    create_qc_level = CreateQCLevel.Field()
+    update_qc_level = UpdateQCLevel.Field()
     # QCTemplate
     create_qc_template = CreateQCTemplate.Field()
     update_qc_template = UpdateQCTemplate.Field()

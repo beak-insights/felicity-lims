@@ -5,6 +5,7 @@ from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import relationship
 
 from felicity.apps.analysis import schemas
+from felicity.apps.analysis.models.qc import QCLevel, QCSet
 from felicity.apps.analysis.conf import states
 from felicity.apps.client import models as ct_models
 from felicity.apps.core import BaseMPTT
@@ -207,7 +208,12 @@ class Sample(Auditable, BaseMPTT):
     invalidated_by_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
     date_invalidated = Column(DateTime, nullable=True)
     rejection_reasons = relationship(RejectionReason, secondary="rrslink", backref="samples")
-    internal_use = Column(Boolean(), default=False)  # e.g QC Samples
+    internal_use = Column(Boolean(), default=False)
+    # QC Samples
+    qc_set_uid = Column(Integer, ForeignKey('qcset.uid'), nullable=True)
+    qc_set = relationship(QCSet, backref="samples")
+    qc_level_uid = Column(Integer, ForeignKey('qclevel.uid'), nullable=True)
+    qc_level = relationship(QCLevel, backref="qcsamples")
 
     @classmethod
     def create_sample_id(cls, sampletype):

@@ -37,62 +37,147 @@
   <!-- Task Modal -->
   <modal v-if="showModal" @close="showModal = false"  :contentWidth="'w-3/5'">
     <template v-slot:header>
-         <div><span class="italic">in &rarr;</span> BackLog</div>
+         <div>
+          <span class="italic">in &rarr;</span>  
+          <span class=" ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-gray-100 bg-blue-600 rounded"> Backlog</span>
+         </div>
     </template>
     <template v-slot:body>
       <div class="grid grid-cols-3 gap-4">
           <section class="col-span-2">
-            <div>
-                <span>Complete</span>
-                <span class="mx-2">@aurthurm</span>
+            <div class="mb-3 -mt-2">
+                <span class="border border-green-500 text-green-500 rounded-md py-1 px-2  transition-colors duration-500 ease select-none hover:bg-green-500 hover:text-gray-100 focus:outline-none focus:shadow-outline">Complete</span>
+                <span class="ml-2">@aurthurm</span>
             </div>
             <hr>
-            <h3 class="text-xl font-medium my-2">{{ modalTitle }}</h3>
-            <hr>
-            <div class="text-sm font-light my-2 tracking-wide">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Modi quod, Lorem ipsum dolor sit amet consectetur adipisicing elit. 
-                Fugiat harum at tenetur eveniet dolore repellat 
-                voluptatum veritatis dolorum molestias ipsam! Ratione nam ducimus, deserunt optio quidem cum est. Amet, iure!
-            </div>
-            <hr>
-            <h4 class="text-xl font-medium my-2">+ CheckList Item</h4>
-            <div>
-                <span>x</span>
-                <span class="mx-2">Create BarCodes</span>
-                <span>@melisa</span>
-            </div>
-            <div>
-                <span>x</span>
-                <span class="mx-2">Write SOP</span>
-                <span>@melisa</span>
-            </div>
-            <hr>
-            <h4 class="text-xl font-medium my-2">Comments</h4>
-            <div>
-                <label class="block mb-2">
-                    <textarea
-                    cols="2"
-                    class="form-input mt-1 block w-full"
-                    placeholder="Description ..."
-                    />
-                </label>
-                <div>+ Add</div>
-            </div>
-            <div>
-                <span>x</span>
-                <span class="mx-2">Write SOP</span>
-                <span>@melisa</span>
+            <div class="pr-2 overflow-y-scroll" style="height: 65vh">
+              <section>
+                <h3 class="text-lg font-semibold my-4">{{ modalTitle }}</h3>
+                <div class="font-medium my-4 tracking-wide text-gray-500">
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Modi quod, Lorem ipsum dolor sit amet consectetur adipisicing elit. 
+                    Fugiat harum at tenetur eveniet dolore repellat 
+                    voluptatum veritatis dolorum molestias ipsam! Ratione nam ducimus, deserunt optio quidem cum est. Amet, iure!
+                </div>
+              </section>
+              <hr>
+              <section class="font-medium my-4">
+                <h4 class="my-4"> 
+                  <i class="fa fa-plus" aria-hidden="true"></i> 
+                  <span class="text-lg font-semibold ml-2">MileStones</span>
+                </h4>
+                <div class="mb-1 tracking-wide text-gray-500">
+                    <span>-</span>
+                    <span class="mx-2">Create BarCodes</span>
+                    <span>@melisa</span>
+                </div>
+                <div class="mb-1 tracking-wide text-gray-500">
+                    <span>-</span>
+                    <span class="mx-2">Write SOP</span>
+                    <span>@melisa</span>
+                </div>
+              </section>
+              <hr>
+              <section class="my-4">
+                <h4  class="text-lg font-semibold mb-2">Comments</h4>
+                <div class="mb-2">
+                    <label class="block mb-2">
+                        <textarea
+                        cols="2"
+                        class="form-input mt-1 block w-full"
+                        placeholder="Description ..."
+                        />
+                    </label>
+                    <button class="border border-blue-500 text-blue-500 rounded-md py-1 px-2  transition-colors duration-500 ease select-none hover:bg-blue-500 hover:text-gray-100 focus:outline-none focus:shadow-outline">Add Comment</button>
+                </div>
+                <div>
+                  <div class="font-small my-2 tracking-wide text-gray-400">
+                    <hr>
+                    <div class="mt-2 flex justify-end">
+                      <span>10/10/2021 12:45 am</span>
+                      <span class="ml-4">@melisa</span>
+                    </div>
+                    <span class="">voluptatum veritatis dolorum molestias ipsam! Ratione nam ducimus, deserunt optio quidem cum est. Amet, iure!</span>
+                  </div>
+                  <div class="font-small my-2 tracking-wide text-gray-400">
+                    <hr>
+                    <div class="mt-2 flex justify-end">
+                      <span>10/10/2021 12:45 am</span>
+                      <span class="ml-4">@melisa</span>
+                    </div>
+                    <span class="">voluptatum veritatis dolorum molestias ipsam! Ratione nam ducimus, deserunt optio quidem cum est. Amet, iure!</span>
+                  </div>
+                  <div class="font-small my-2 tracking-wide text-gray-400">
+                    <hr>
+                    <div class="mt-2 flex justify-end">
+                      <span>10/10/2021 12:45 am</span>
+                      <span class="ml-4">@melisa</span>
+                    </div>
+                    <span class="">voluptatum veritatis dolorum molestias ipsam! Ratione nam ducimus, deserunt optio quidem cum est. Amet, iure!</span>
+                  </div>
+                </div>
+              </section>
             </div>
           </section>
-          <section class="col-span-1">
-              <div>Due Date</div>
-              <div>Badges</div>
-              <div>Members</div>
-              <div>Stream</div>
-              <div>Move</div>
-              <div>Diblicate</div>
-              <div>Delete</div>
-              <div>Archive</div>
+          <section class="col-span-1 pr-2 overflow-y-scroll" style="height: 68vh">
+              <div class="flex justify-between mb-4">
+                <span class="text-lg font-semibold">Due Date</span>
+                <span>
+                  <input type="date" class="bg-blue-100 rounded-md px-1">
+                </span>
+              </div>
+              <hr>
+              <div class="flex justify-between my-4">
+                <div class="text-lg font-semibold">Members</div>
+                <div class="ml-4 flex flex-wrap">
+                  <span class="mr-2 cursor-pointer">@aurthur</span>
+                  <span class="mr-2 cursor-pointer">@melisa</span>
+                  <span class="mr-2 cursor-pointer">@josphat</span>
+                  <span class="mr-2 cursor-pointer">@theresia</span>
+                </div>
+              </div>
+              <hr>
+              <div class="flex flex-col my-4">
+                <div class="text-lg font-semibold">Move Task</div>
+                <label class="block mb-2">
+                  <select class="form-select block w-full mt-1">
+                      <option></option>
+                      <option value="1"> Option one</option>
+                      <option value="1"> Option two</option>
+                      <option value="1"> Option three</option>
+                      <option value="1"> Option four</option>
+                    </select>
+                </label>
+                <button class="border border-blue-500 text-blue-500 rounded-md py-1 px-2  transition-colors duration-500 ease select-none hover:bg-blue-500 hover:text-gray-100 focus:outline-none focus:shadow-outline">Move</button>
+              </div>
+              <hr>
+              <div class="flex flex-col my-4">
+                <div class="text-lg font-semibold">Duplicate Task</div>
+                <label class="block my-2 w-full" >
+                  <input class="form-input mt-1 block w-full" type="tect" placeholder="Task Title ...." />
+                </label>
+                <button class="border border-green-500 text-green-500 rounded-md py-1 px-2  transition-colors duration-500 ease select-none hover:bg-green-500 hover:text-gray-100 focus:outline-none focus:shadow-outline">Duplicate</button>
+              </div>
+              <hr>
+              <div class="flex justify-between my-4">
+                <span class="text-lg font-semibold">Delete Task</span>
+                <button class="border border-red-500 text-red-500 rounded-md py-1 px-2  transition-colors duration-500 ease select-none hover:bg-red-500 hover:text-gray-100 focus:outline-none focus:shadow-outline">Delete</button>
+              </div>
+              <hr>
+              <div class="flex justify-between my-4">
+                <span class="text-lg font-semibold">Archive Task</span>
+                <button class="border border-gray-500 text-gray-500 rounded-md py-1 px-2  transition-colors duration-500 ease select-none hover:bg-gray-500 hover:text-gray-100 focus:outline-none focus:shadow-outline">Archive</button>
+              </div>
+              <hr>
+              <div class=" my-4">
+                <div class="text-lg font-semibold">Task Activity Stream</div>
+                <div class="flex flex-col my-4 text-gray-400 italics font-light tracking-wide">
+                  <span class="my-1">@aurthur create task 3 days ago</span>
+                  <span class="my-1">@mellisa commented task 3 minutes ago</span>
+                  <span class="my-1">@jeffrey added milestone 2 seconds ago</span>
+                  <span class="my-1">@pedzi marked complete milestone task 3 days ago</span>
+                  <span class="my-1">@aurthur create task 3 days ago</span>
+                </div>
+              </div>
           </section>
       </div>
     </template>

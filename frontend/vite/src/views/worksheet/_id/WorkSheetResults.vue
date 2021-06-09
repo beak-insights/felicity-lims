@@ -103,6 +103,7 @@
     </div>
 
     <section class="my-4">
+      <button @click.prevent="unAssignSamples()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Un Assign</button>
       <button @click.prevent="submitResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Submit</button>
       <button class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Retract</button>
       <button @click.prevent="verifyResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Verify</button>
@@ -126,6 +127,7 @@ import { ActionTypes, WorkSheet } from '../../../store/modules/worksheets';
 import { ActionTypes as ResultActionTypes } from '../../../store/modules/samples';
 import { isNullOrWs } from '../../../utils';
 import { SUBMIT_ANALYSIS_RESULTS, VERIFY_ANALYSIS_RESULTS } from '../../../graphql/analyses.mutations';
+import { WORKSHEET_UPDATE } from '../../../graphql/worksheet.mutations';
 
 export default defineComponent({
   name: 'worksheet-results',
@@ -138,12 +140,20 @@ export default defineComponent({
     let worksheet = computed(()=> store.getters.getWorkSheet); 
 
     const { executeMutation: submitAnalysisResults } = useMutation(SUBMIT_ANALYSIS_RESULTS);  
+    const { executeMutation: workSheetUpdate } = useMutation(WORKSHEET_UPDATE);  
     const { executeMutation: verifyAnalysisResults } = useMutation(VERIFY_ANALYSIS_RESULTS);   
 
     function submitAnalysesResults(results): void {
       submitAnalysisResults({ analysisResults: results, }).then((result) => {
       //  store.dispatch(ResultActionTypes.UPDATE_ANALYSIS_RESULTS, result);
 
+      });
+    }
+
+    function unAssignAnalyses(analyses): void {
+      console.log({ worksheetUid: worksheet.value.uid, samples: analyses, action: "worksheet_un_assign" })
+      workSheetUpdate({ worksheetUid: worksheet.value.uid, samples: analyses, action: "worksheet_un_assign" }).then((result) => {
+      //  store.dispatch(ResultActionTypes.UPDATE_ANALYSIS_RESULTS, result);
       });
     }
 
@@ -250,6 +260,34 @@ export default defineComponent({
       }
     }
 
+    const unAssignSamples = async () => {
+      try {
+        Swal.fire({
+          title: 'Are you sure?',
+          text: "You want to Un-Assign these samples",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Yes, Un-Assign now!',
+          cancelButtonText: 'No, cancel UnAssign!',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            unAssignAnalyses(getResultsUids());
+
+            Swal.fire(
+              'Its Happening!',
+              'Selected samples have been UnAssignes.',
+              'success'
+            ).then(_ => location.reload())
+
+          }
+        })
+      } catch (error) {
+        logger.log(error)
+      }      
+    }
+
     const verifyResults = async () => {
       try {
         Swal.fire({
@@ -288,6 +326,7 @@ export default defineComponent({
       allChecked,
       checkCheck,
       check,
+      unAssignSamples,
       submitResults,
       verifyResults
     };

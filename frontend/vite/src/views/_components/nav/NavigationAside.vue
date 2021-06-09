@@ -39,7 +39,7 @@
           <span v-if="viewNavText">WorkSheets</span>
           <span v-else class="tooltip ">WorkSheets</span>
         </router-link>
-        <router-link to="/documents" id="markdown-link" class="flex items-center has-tooltip mt-1 py-2 px-6 text-gray-500 hover:bg-gray-600 hover:bg-opacity-25 hover:text-gray-100 border-l-4 border-gray-700">
+        <router-link to="/quality-control" id="markdown-link" class="flex items-center has-tooltip mt-1 py-2 px-6 text-gray-500 hover:bg-gray-600 hover:bg-opacity-25 hover:text-gray-100 border-l-4 border-gray-700">
           <span class="mr-4"><font-awesome-icon icon="anchor" /></span>
           <span v-if="viewNavText">QControl</span>
           <span v-else class="tooltip ">QControl</span>

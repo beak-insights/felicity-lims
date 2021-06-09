@@ -431,6 +431,17 @@ export const GET_ANALYSIS_RESULTS_BY_SAMPLE_UID = gql`
     }`;
 
 
+export const GET_ALL_QC_LEVELS = gql`
+  query getAllQCLevels {
+  qcLevelAll {
+    edges {
+      node {
+        uid
+        level
+      }
+    }
+  }
+}`;
 
 export const GET_ALL_QC_TEMPLATES = gql`
     query getAllQCTemplates {
@@ -440,14 +451,11 @@ export const GET_ALL_QC_TEMPLATES = gql`
           uid
           name
           description
-          analyses {
+          qcLevels {
             edges {
               node {
                 uid
-                name
-                keyword
-                unit
-                categoryUid
+                level
               }
             }
           }
@@ -465,5 +473,120 @@ export const GET_ALL_QC_TEMPLATES = gql`
   }`;
 
 
+export const GET_ALL_QC_SETS = gql`
+  query getQCSeTs {
+    qcSetAll {
+      edges {
+        node {
+          uid
+          name
+          note
+          createdAt
+          samples {
+            edges {
+              node {
+                uid
+                sampleId
+                status
+                qcLevel {
+                  uid
+                  level
+                }
+                analyses {
+                  edges {
+                    node {
+                      uid
+                      name
+                    }
+                  }
+                }
+                profiles {
+                  edges {
+                    node {
+                      uid
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      }
+  }`;
 
 
+export const GET_QC_SET_BY_UID = gql`
+    query getQCSetByUid($uid: String!) {
+      qcSetByUid(uid: $uid) {
+        uid
+        name
+        note
+        createdAt
+        samples {
+          edges {
+            node {
+              uid
+              sampleId
+              status
+              createdAt
+              updatedAt
+              assigned
+              qcLevel {
+                uid
+                level
+              }
+              analysisResults {
+                edges {
+                  node {
+                    status
+                    sampleUid
+                    result
+                    analysisUid
+                    analysis {
+                      uid
+                      name
+                    }
+                    method {
+                      uid
+                      name
+                    }
+                    instrument {
+                      uid
+                      name
+                    }
+                  }
+                }
+              }
+              analyses {
+                edges {
+                  node {
+                    uid
+                    name
+                    unit
+                    resultoptions {
+                      edges {
+                        node {
+                          uid
+                          optionKey
+                          value
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              profiles {
+                edges {
+                  node {
+                    uid
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }`;

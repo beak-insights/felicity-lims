@@ -5,18 +5,47 @@ from sqlalchemy.orm import relationship
 
 from felicity.apps.analysis import schemas
 from felicity.apps.setup.models.setup import Department
-from felicity.apps.analysis.models.analysis import Analysis
 from felicity.apps import DBModel
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class QCTALink(DBModel):
-    """Many to Many Link between QCTemplate and Analysis
+class QCSet(DBModel):
+    """A Set/Group of QC Samples that are run together.
+     - e.g a Viral Load Rack the QCLevels are a set i.e Negative Control, Low Pos Control, High Pos Control
     """
-    analysis_uid = Column(Integer, ForeignKey('analysis.uid'), primary_key=True)
-    qc_template_uid = Column(Integer, ForeignKey('qctemplate.uid'), primary_key=True)
+    name = Column(String, nullable=False)
+    note = Column(String, nullable=True)
+
+    @classmethod
+    def create(cls, obj_in:schemas.QCSetCreate) -> schemas.QCSet:
+        data = cls._import(obj_in)
+        return super().create(**data)
+
+    def update(self, obj_in: schemas.QCSetUpdate) -> schemas.QCSet:
+        data = self._import(obj_in)
+        return super().update(**data)
+
+
+class QCLevel(DBModel):
+    """Sample Level /category
+    - None - normal sample
+    - Negative Control
+    - PositiveControl
+    - Low Positive Control
+    - High Positive Control
+    """
+    level = Column(String, nullable=False)
+
+    @classmethod
+    def create(cls, obj_in:schemas.QCLevelCreate) -> schemas.QCLevel:
+        data = cls._import(obj_in)
+        return super().create(**data)
+
+    def update(self, obj_in: schemas.QCLevelUpdate) -> schemas.QCLevel:
+        data = self._import(obj_in)
+        return super().update(**data)
 
 
 class QCTDLink(DBModel):
@@ -26,8 +55,15 @@ class QCTDLink(DBModel):
     qc_template_uid = Column(Integer, ForeignKey('qctemplate.uid'), primary_key=True)
 
 
+class QCTQCLLink(DBModel):
+    """Many to Many Link between QCTemplate and  QCLevel
+    """
+    qc_level_uid = Column(Integer, ForeignKey('qclevel.uid'), primary_key=True)
+    qc_template_uid = Column(Integer, ForeignKey('qctemplate.uid'), primary_key=True)
+
+
 class QCTemplate(DBModel):
-    """QC Grouping e.g:
+    """QC Level Grouping e.g:
     Roche Viral Load CQ:
         - Neg Control
         - Low Pos Control
@@ -40,7 +76,7 @@ class QCTemplate(DBModel):
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
     departments = relationship(Department, secondary="qctdlink", backref="qc_templates")
-    analyses = relationship(Analysis, secondary="qctalink",  backref="qc_templates")
+    qc_levels = relationship(QCLevel, secondary="qctqcllink",  backref="qc_templates")
 
     @classmethod
     def create(cls, obj_in: schemas.QCTemplateCreate) -> schemas.QCTemplate:

@@ -25,8 +25,8 @@ priorities = Priorities()
 class Actions(object):
     WS_ASSIGN = "worksheet_assign"
     WS_VERIFY = "worksheet_verify"
-    WS_SUBMIT = "worksheet_sumbit"
-    WS_UNASSIGN = "worksheet_un_assign"
+    WS_SUBMIT = "worksheet_submit"
+    WS_UN_ASSIGN = "worksheet_un_assign"
 
 
 actions = Actions()

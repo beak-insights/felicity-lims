@@ -12,7 +12,7 @@
                 <thead>
                 <tr>
                     <th class="px-1 py-1 border-b-2 border-gray-300 text-left text-sm leading-4 text-black-500 tracking-wider">QC Template Name</th>
-                    <th class="px-1 py-1 border-b-2 border-gray-300 text-left text-sm leading-4 text-black-500 tracking-wider">Analyses Services (Controls)</th>
+                    <th class="px-1 py-1 border-b-2 border-gray-300 text-left text-sm leading-4 text-black-500 tracking-wider">Quality Control level(s)</th>
                     <th class="px-1 py-1 border-b-2 border-gray-300 text-left text-sm leading-4 text-black-500 tracking-wider">Department(s)</th>
                     <th class="px-1 py-1 border-b-2 border-gray-300"></th>
                 </tr>
@@ -29,7 +29,7 @@
                     <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
                     <div class="flex items-center">
                         <div>
-                        <div class="text-sm leading-5 text-gray-800">{{ analysesNames(templt.analyses) }}</div>
+                        <div class="text-sm leading-5 text-gray-800">{{ levelsNames(templt.qcLevels) }}</div>
                         </div>
                     </div>
                     </td>
@@ -56,7 +56,7 @@
       <form action="post" class="p-1">
         <div class="grid grid-cols-2 gap-x-4 mb-4">
           <label class="block col-span-2 mb-2">
-            <span class="text-gray-700">Category Name</span>
+            <span class="text-gray-700">QC Template Name</span>
             <input
               class="form-input mt-1 block w-full"
               v-model="form.name"
@@ -73,17 +73,17 @@
             />
           </label>
           <label class="block col-span-2 mb-2">
-              <span class="text-gray-700">Analysis Services (Control Levels)</span>
+              <span class="text-gray-700">Quality Control Sample Levels</span>
               <select 
               name="controlLevels" 
               id="controlLevels" 
-              v-model="form.analyses"
+              v-model="form.qcLevels"
               class="form-input mt-1 block w-full" multiple>
                 <option value=""></option>
                 <option  
-                v-for="(service, index) in qcAnalyses"
-                :key="service.uid"
-                :value="service.uid" >{{ service.name }}</option>
+                v-for="(level, index) in qcLevels"
+                :key="level.uid"
+                :value="level" >{{ level.level }}</option>
             </select>
           </label>
         </div>
@@ -123,12 +123,12 @@ import { useMutation } from '@urql/vue';
 import { defineComponent, ref, reactive, computed } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
-import { ActionTypes, QCTemplate, IQCTemplate } from '../../../../store/modules/analyses';
+import { ActionTypes, QCTemplate, IQCTemplate, IQCLevel } from '../../../../store/modules/analyses';
 import { ADD_QC_TEMPLATE, EDIT_QC_TEMPLATE  } from '../../../../graphql/analyses.mutations';
 
 
 export default defineComponent({
-  name: "tab-analyses-qc",
+  name: "tab-quality-control-templates",
   components: {
     modal,
   },
@@ -140,20 +140,28 @@ export default defineComponent({
     let form = reactive({ ...(new QCTemplate()) });
     const formAction = ref(true);
 
+    store.dispatch(ActionTypes.FETCH_QC_LEVELS);
     store.dispatch(ActionTypes.FETCH_ANALYSES_QC_TEMPLATES);
     const { executeMutation: createQCTemplate } = useMutation(ADD_QC_TEMPLATE);
     const { executeMutation: updateQCTemplate } = useMutation(EDIT_QC_TEMPLATE);
 
     function addQCTemplate(): void {
-      createQCTemplate({ name: form.name, description: form.description, analyses: form.analyses, departments: form.departments}).then((result) => {
+      createQCTemplate({ name: form.name, description: form.description, levels: levelsUids(form.qcLevels), departments: form.departments}).then((result) => {
        store.dispatch(ActionTypes.ADD_QC_TEMPLATE, result);
       });
     }
 
     function editQCTemplate(): void {
-      updateQCTemplate({ uid: form.uid, name: form.name, description: form.description, analyses: form.analyses, departments: form.departments}).then((result) => {
+      updateQCTemplate({ uid: form.uid, name: form.name, description: form.description, levels: levelsUids(form.qcLevels), departments: form.departments}).then((result) => {
         store.dispatch(ActionTypes.UPDATE_QC_TEMPLATE, result);
       });
+    }
+
+    function levelsUids(levels: IQCLevel[]): string[] {
+      if (levels?.length <= 0 ) return [];
+      let qcLevels = [];
+      levels?.forEach(level => qcLevels.push(level.uid));
+      return qcLevels;
     }
 
     function FormManager(create: boolean, obj: IQCTemplate):void {
@@ -167,14 +175,15 @@ export default defineComponent({
       }
     }
 
-    function analysesNames(analyses: IAnalysisService[]): string[] {
-      if (analyses?.length <= 0 ) return '';
-      let services = [];
-      analyses?.forEach(anal => services.push(anal.name));
-      return services.join(", ");
+    function levelsNames(levels: IQCLevel[]): string[] {
+      if (levels?.length <= 0 ) return '';
+      let qcLevels = [];
+      levels?.forEach(level => qcLevels.push(level.level));
+      return qcLevels.join(", ");
     }
 
     function saveForm():void {
+      console.log(form)
       if (formAction.value === true) addQCTemplate();
       if (formAction.value === false) editQCTemplate();
       showModal.value = false;
@@ -182,13 +191,9 @@ export default defineComponent({
 
     return {
       showModal, 
-      analysesNames,
-      qcTemplates: computed(() =>store.getters.getQCTemplates),
-      qcAnalyses: computed(() => {
-        const services = store.getters.getAnalysesServicesSimple;
-        const forQC = services?.filter(service => service?.category?.name === 'Quality Control');
-        return forQC;
-      }),
+      levelsNames,
+      qcTemplates: computed(() => store.getters.getQCTemplates),
+      qcLevels: computed(() => store.getters.getQCLevels),
       FormManager,
       form,
       formTitle,

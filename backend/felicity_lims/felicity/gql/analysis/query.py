@@ -126,7 +126,15 @@ class AnalysisQuery(graphene.ObjectType):
     analysis_result_by_uid = graphene.Field(lambda: a_types.AnalysisResultType, uid=graphene.String(default_value=""))
     analysis_result_by_sample_uid = graphene.List(lambda: a_types.AnalysisResultType, uid=graphene.String(default_value=""))
 
-    # AnalysisQCTemplate Queries
+    # QCLevels Queries
+    qc_level_all = SQLAlchemyConnectionField(a_types.QCLevelType.connection)
+    qc_level_by_uid = graphene.Field(lambda: a_types.QCLevelType, uid=graphene.String(default_value=""))
+
+    # QCSet Queries
+    qc_set_all = SQLAlchemyConnectionField(a_types.QCSetType.connection)
+    qc_set_by_uid = graphene.Field(lambda: a_types.QCSetType, uid=graphene.String(default_value=""))
+
+    # QCTemplate Queries
     qc_template_all = SQLAlchemyConnectionField(a_types.QCTemplateType.connection)
     qc_template_by_uid = graphene.Field(lambda: a_types.QCTemplateType, uid=graphene.String(default_value=""))
 
@@ -228,6 +236,16 @@ class AnalysisQuery(graphene.ObjectType):
     def resolve_analysis_result_by_sample_uid(self, info, uid):
         analysis_results = r_models.AnalysisResult.where(sample_uid__exact=uid)
         return analysis_results
+
+    @staticmethod
+    def resolve_qc_set_by_uid(self, info, uid):
+        qc_set = qc_models.QCSet.get(uid=uid)
+        return qc_set
+
+    @staticmethod
+    def resolve_qc_level_by_uid(self, info, uid):
+        qc_template = qc_models.QCLevel.get(uid=uid)
+        return qc_template
 
     @staticmethod
     def resolve_qc_template_by_uid(self, info, uid):

@@ -1,7 +1,7 @@
 import { useQuery } from '@urql/vue';
 import { urqlClient } from '../../urql';
 import { RootState } from '../state';
-import { parseEdgeNodeToList } from '../../utils'
+import { parseEdgeNodeToList, parseDate } from '../../utils'
 import { ActionTree, GetterTree, MutationTree } from 'vuex';
 
 import {
@@ -9,7 +9,8 @@ import {
   GET_ALL_SAMPLES,
   GET_ANALYSIS_REQUESTS_BY_PATIENT_UID,
   GET_ANALYSIS_REQUESTS_BY_CLIENT_UID,
-  GET_ANALYSIS_RESULTS_BY_SAMPLE_UID
+  GET_ANALYSIS_RESULTS_BY_SAMPLE_UID,
+  GET_ALL_QC_SETS, GET_QC_SET_BY_UID
 } from '../../graphql/analyses.queries';
 import { IAnalysisProfile, IAnalysisRequest, IAnalysisService, ISample } from './analyses';
 
@@ -23,11 +24,11 @@ export interface ISampleType {
 
 export class SampleType implements ISampleType{
   constructor(
-    public uid?: string,
-    public name?: string,
-    public abbr?: string,
-    public description?: string,
-    public active?: boolean,
+    public uid: string,
+    public name: string,
+    public abbr: string,
+    public description: string,
+    public active: boolean,
   ) {
     this.active = true;
   }
@@ -43,14 +44,14 @@ export interface ISampleRequest extends ISample {
 
 export class SampleRequest implements ISampleRequest {
   constructor(
-    public uid?: string, 
-    public sampleId?: string, 
-    public priority?: string,
-    public status?: string,
-    public analysisRequest?: IAnalysisRequest,
-    public sampleType?: ISampleType,
-    public profiles?: IAnalysisProfile[],
-    public analyses?: IAnalysisService[],
+    public uid: string, 
+    public sampleId: string, 
+    public priority: string,
+    public status: string,
+    public analysisRequest: IAnalysisRequest,
+    public sampleType: ISampleType,
+    public profiles: IAnalysisProfile[],
+    public analyses: IAnalysisService[],
      ){}
 }
 
@@ -68,17 +69,26 @@ export interface IAnalysisResult {
 
 export class AnalysisResult implements IAnalysisResult {
   constructor(
-    public uid?: string,
-    public analysisUid?: string,
-    public analysis?: IAnalysisService,
-    public worksheetPosition?: number,
-    public sampleUId?: string,
-    public sample?: ISampleRequest,
-    public status?: string,
-    public result?: string,
+    public uid: string,
+    public analysisUid: string,
+    public analysis: IAnalysisService,
+    public worksheetPosition: number,
+    public sampleUId: string,
+    public sample: ISampleRequest,
+    public status: string,
+    public result: string,
   ) {
     this.result = "";
   }
+}
+
+
+export interface IQCSet {
+  uid?: string;
+  name?: string;
+  note?: string;
+  createdAt?: string;
+  samples?: ISample[];
 }
 
 // state contract
@@ -90,6 +100,8 @@ export interface IState {
   sample: ISampleRequest | null;
   analysisRequests: IAnalysisRequest[];
   analysisResults: IAnalysisResult[];
+  qcSets: IQCSet[];
+  qcSet: IQCSet | null;
 }
 
 export const initialState = () => {
@@ -101,6 +113,8 @@ export const initialState = () => {
     sample: null,
     analysisRequests: [], // for patient detail
     analysisResults: [],
+    qcSets: [],
+    qcSet: null,
   };
 };
 
@@ -121,6 +135,10 @@ export enum MutationTypes {
 
   SET_ANALYSES_RESULTS = 'SET_ANALYSES_RESULTS',
   UPDATE_ANALYSIS_RESULTS = 'UPDATE_ANALYSIS_RESULTS',
+
+  SET_QC_SETS = 'FETCH_QC_SETS',
+  SET_QC_SET = 'FETCH_QC_SET',
+  RESET_QC_SET = 'RESET_QC_SET',
 }
 
 export enum ActionTypes {
@@ -139,6 +157,11 @@ export enum ActionTypes {
 
   FETCH_ANALYSIS_RESULTS_FOR_SAMPLE = 'FETCH_ANALYSIS_RESULTS_FOR_SAMPLE',
   UPDATE_ANALYSIS_RESULTS = 'UPDATE_ANALYSIS_RESULTS',
+
+  FETCH_QC_SETS = 'FETCH_QC_SETS',
+  FETCH_QC_SET_BY_UID = 'FETCH_QC_SET_BY_UID',
+  ADD_QC_SETS = 'ADD_QC_SETS',
+  RESET_QC_SET = 'RESET_QC_SET',
   
 }
 
@@ -159,6 +182,8 @@ export const getters = <GetterTree<IState, RootState>>{
   getSample: (state) => state.sample,
   getAnalysisRequests: (state) => state.analysisRequests,
   getAnalysisResults: (state) => state.analysisResults,
+  getQCSets: (state) => state.qcSets,
+  getQCSet: (state) => state.qcSet,
 };
 
 
@@ -243,6 +268,38 @@ export const mutations = <MutationTree<IState>>{
     })
   },
 
+  // QC SETS
+  [MutationTypes.RESET_QC_SET](state: IState): void {
+    state.qcSet = null;
+  },
+
+  [MutationTypes.SET_QC_SETS](state: IState, payload: any[]): void {
+    let qcSets = parseEdgeNodeToList(payload)
+    qcSets?.forEach((item: any) => {
+      item.createdAt = parseDate(item?.createdAt);
+      item.samples = parseEdgeNodeToList(item?.samples) || [];
+      item.samples?.forEach((sample: any) => {
+        sample.profiles = parseEdgeNodeToList(sample?.profiles) || [];
+        sample.analyses = parseEdgeNodeToList(sample?.analyses) || [];
+      });
+      if(!state.qcSets?.some(s => s.uid === item.uid)) {
+        state.qcSets.push(item);
+      }
+    })
+  },
+
+  [MutationTypes.SET_QC_SET](state: IState, payload: any): void {
+    let qcSet = payload;
+    qcSet.samples = parseEdgeNodeToList(qcSet?.samples) || [];
+    qcSet.samples?.forEach((sample: any) => {
+      sample.profiles = parseEdgeNodeToList(sample?.profiles) || [];
+      sample.analyses = parseEdgeNodeToList(sample?.analyses) || [];
+      sample.analyses.resultoptions = parseEdgeNodeToList(sample?.analyses?.resultoptions) || [];
+      sample.analysisResults = parseEdgeNodeToList(sample?.analysisResults) || [];
+    })
+    state.qcSet = qcSet;
+  },
+
 };
 
 // Actions
@@ -316,6 +373,30 @@ export const actions = <ActionTree<IState, RootState>>{
 
   async [ActionTypes.UPDATE_ANALYSIS_RESULTS]({ commit }, payload){
     commit(MutationTypes.UPDATE_ANALYSIS_RESULTS, payload.data.submitAnalysisResults.analysisResults);
+  },
+
+  // QC SETS
+  async [ActionTypes.RESET_QC_SET]({ commit }){
+    commit(MutationTypes.RESET_QC_SET);
+  },
+
+  async [ActionTypes.FETCH_QC_SETS]({ commit }){
+    await useQuery({ query: GET_ALL_QC_SETS })
+          .then(payload => commit(MutationTypes.SET_QC_SETS, payload.data.value.qcSetAll));
+  },  
+  
+  async [ActionTypes.FETCH_QC_SET_BY_UID]({ commit }, uid){
+    if(!uid) return;
+    await urqlClient
+    .query( GET_QC_SET_BY_UID, { uid })
+    .toPromise()
+    .then(result => {
+      commit(MutationTypes.SET_QC_SET, result.data.qcSetByUid);
+    })
+  },
+
+  async [ActionTypes.ADD_QC_SETS]({ commit }, payload){
+    commit(MutationTypes.SET_QC_SETS, payload.data.createQcSet.qcSets);
   },
 
 };

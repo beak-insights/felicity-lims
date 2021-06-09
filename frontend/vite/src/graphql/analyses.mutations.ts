@@ -311,23 +311,46 @@ export const VERIFY_ANALYSIS_RESULTS = gql`
       }
   }
 `; 
+ 
+
+// qc levels
+export const ADD_QC_LEVEL = gql`
+  mutation AddQCLevel($level: String!) {
+    createQcLevel(level: $level ){
+      qcLevel {
+        uid
+        level
+    }
+  }
+  }
+`;
+
+export const EDIT_QC_LEVEL = gql`
+  mutation EditQCLevel ($uid: Int!, $level: String!) {
+    updateQcLevel(uid: $uid, level: $level){
+      qcLevel {
+        uid
+        level
+      }
+    }
+  }
+`;
+
+
 
 // ANALYSIS_CATEGORIES
 export const ADD_QC_TEMPLATE = gql`
-  mutation AddQCTemplate ($name: String!, $description: String!, $analyses: [String], $departments: [String]) {
-    createQcTemplate(name: $name, description: $description, analyses: $analyses, departments: $departments ){
+  mutation AddQCTemplate ($name: String!, $description: String!, $levels: [String], $departments: [String]) {
+    createQcTemplate(name: $name, description: $description, levels: $levels, departments: $departments ){
       qcTemplate {
         uid
           name
           description
-          analyses {
+          qcLevels {
             edges {
               node {
                 uid
-                name
-                keyword
-                unit
-                categoryUid
+                level
               }
             }
           }
@@ -345,20 +368,17 @@ export const ADD_QC_TEMPLATE = gql`
 `;
 
 export const EDIT_QC_TEMPLATE = gql`
-  mutation EditQCTemplate ($uid: Int!, $name: String!, $description: String!, $analyses: [String], $departments: [String]) {
-    updateQcTemplate(uid: $uid, name: $name, description: $description, analyses: $analyses, departments: $departments){
+  mutation EditQCTemplate ($uid: Int!, $name: String!, $description: String!, $levels: [String], $departments: [String]) {
+    updateQcTemplate(uid: $uid, name: $name, description: $description, levels: $levels, departments: $departments){
       qcTemplate {
         uid
         name
         description
-        analyses {
+        qcLevels {
           edges {
             node {
               uid
-              name
-              keyword
-              unit
-              categoryUid
+              level
             }
           }
         }
@@ -367,6 +387,50 @@ export const EDIT_QC_TEMPLATE = gql`
             node {
               uid
               name
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+
+// ANALYSIS_CATEGORIES
+export const ADD_QC_REQUEST = gql`
+  mutation AddQCRequest($samples: [QCSetInputType]!) {
+    createQcSet(samples: $samples){
+      qcSets {
+        uid
+        name
+        note
+        createdAt
+        samples {
+          edges {
+            node {
+              uid
+              sampleId
+              status
+              qcLevel {
+                uid
+                level
+              }
+              analyses {
+                edges {
+                  node {
+                    uid
+                    name
+                  }
+                }
+              }
+              profiles {
+                edges {
+                  node {
+                    uid
+                    name
+                  }
+                }
+              }
             }
           }
         }

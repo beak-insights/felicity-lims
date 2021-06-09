@@ -1,3 +1,13 @@
+import moment from 'moment';
+
+
+export const parseDate = function(str: string) {
+    let date = moment(str);
+    if(date.isValid()) {
+        return date.format('MMMM Do YYYY, h:mm:ss a');
+    }
+    return str;
+}
 
 export const parseEdgeNodeToList = (payload: any) => {
     const list: any[] = [];
@@ -61,7 +71,14 @@ let data = {
  }
  
 
- export const snakeToCamel = (s: any) => s.replace(/(_\w)/g, (k: any) => k[1].toUpperCase());
- 
-// Example : data = Object.entries(data).reduce((x,[k,v]) => (x[snakeToCamel(k)]=v) && x, {})
- 
+export const snakeToCamel = (val: any) => {
+    const convert = (s: any) => s.replace(/(_\w)/g, (k: any) => k[1].toUpperCase());
+    if (typeof val === 'object') {
+        data = Object.entries(val).reduce((x: any,[k,v]) => (x[convert(k)]=v) && x, {});
+        return data;
+    }
+    if (typeof val === 'string') {
+        return convert(val);
+    }
+    throw "--- error converting ---"
+}

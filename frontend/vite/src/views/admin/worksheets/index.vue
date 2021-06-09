@@ -327,9 +327,9 @@
                             <label class="block col-span-2 mb-2">
                                 <span class="text-gray-700">Blank/Control</span>
                                 <select 
-                                v-model="reserved.analysisUid"
+                                v-model="reserved.levelUid"
                                 class="form-input mt-1 block w-full">
-                                <option v-for="service in qcAnalyses" :key="service.uid" :value="service.uid"> {{ service.name }}</option>
+                                <option v-for="level in qcLevels" :key="level.uid" :value="level.uid"> {{ level.level }}</option>
                               </select>
                             </label>
                         </div>
@@ -409,6 +409,7 @@ export default defineComponent({
     store.dispatch(SampleActionTypes.FETCH_SAMPLE_TYPES);
     store.dispatch(SetupActionTypes.FETCH_INSTRUMENTS);
     store.dispatch(AnalysisActionTypes.FETCH_ANALYSES_QC_TEMPLATES);
+    store.dispatch(AnalysisActionTypes.FETCH_QC_LEVELS);
     store.dispatch(ActionTypes.FETCH_WORKSHEET_TEMPLATES);
 
     const { executeMutation: createWorksheetTemplate } = useMutation(ADD_WORKSHEET_TEMPLATE);
@@ -423,6 +424,7 @@ export default defineComponent({
         sampleTypeUid: workSheetTemplate.sampleType.uid,
         instrumentUid: workSheetTemplate.instrument.uid,
         description: workSheetTemplate.description,
+        qcTemplateUid: workSheetTemplate.qcTemplateUid,
         reserved: workSheetTemplate.reserved,
         numberOfSamples: workSheetTemplate.numberOfSamples,
         worksheetType: workSheetTemplate.worksheetType,
@@ -442,6 +444,7 @@ export default defineComponent({
         sampleTypeUid: workSheetTemplate.sampleType.uid,
         instrumentUid: workSheetTemplate.instrument.uid,
         description: workSheetTemplate.description,
+        qcTemplateUid: workSheetTemplate.qcTemplateUid,
         reserved: workSheetTemplate.reserved,
         numberOfSamples: workSheetTemplate.numberOfSamples,
         worksheetType: workSheetTemplate.worksheetType,
@@ -499,10 +502,10 @@ export default defineComponent({
       workSheetTemplate.reserved = [];
       if(!(workSheetTemplate.qcTemplateUid)) return;
       const template = qcTemplates.value?.find(item => item.uid === workSheetTemplate.qcTemplateUid);
-      template?.analyses.forEach((control, index) => {
+      template?.qcLevels.forEach((level, index) => {
         let reserved = new Reserved();
         reserved.position = index + 1;
-        reserved.analysisUid = control.uid;
+        reserved.levelUid = level.uid;
         workSheetTemplate.reserved?.push(reserved)
       });
     } 
@@ -554,11 +557,7 @@ export default defineComponent({
         const forQC = services?.filter(service => service?.category?.name !== 'Quality Control');
         return forQC;
       }),
-      qcAnalyses: computed(() => {
-        const services = store.getters.getAnalysesServicesSimple;
-        const forQC = services?.filter(service => service?.category?.name === 'Quality Control');
-        return forQC;
-      }),
+      qcLevels: computed(() => store.getters.getQCLevels),
       sampleTypes: computed(() => store.getters.getSampleTypes),
       workSheetTemplate,
       selectWorkSheetTemplate,

@@ -11,6 +11,10 @@ import PatientsCompact from '../views/patient/PatientsCompact.vue';
 import ClientsView from '../views/client/index.vue';
 import SamplesView from '../views/sample/index.vue';
 import SamplesListing from '../views/_components/SampleListing.vue';
+import QualityControlView from '../views/qcontrol/index.vue';
+import QualityControlListing from '../views/qcontrol/Listing.vue';
+import QCSetView from '../views/qcontrol/_id/index.vue';
+import QCSetDetail from '../views/qcontrol/_id/QCSet.vue';
 import WorkSheetsView from '../views/worksheet/index.vue';
 import WorkSheetListing from '../views/worksheet/WorkSheetListing.vue';
 import WorkSheetSingleView from '../views/worksheet/_id/index.vue';
@@ -79,6 +83,42 @@ const routes: RouteRecordRaw[] = [
         path: '',
         name: 'samples-listing',
         component: SamplesListing,
+        meta: {
+          requiresAuth: true,
+        },
+      },
+    ],
+    meta: {
+      requiresAuth: true,
+    },
+  },
+  {
+    path: '/quality-control',
+    name: 'quality-control',
+    component: QualityControlView,
+    children: [
+      {
+        path: '',
+        name: 'quality-control-listing',
+        component: QualityControlListing,
+        meta: {
+          requiresAuth: true,
+        },
+      },
+      {
+        path: '/qc-set/:qcSetUid',
+        name: 'qc-set-view',
+        component: QCSetView,
+        children: [
+          {
+            path: '',
+            name: 'qc-set-detail',
+            component: QCSetDetail,
+            meta: {
+              requiresAuth: true,
+            },
+          },
+        ],
         meta: {
           requiresAuth: true,
         },

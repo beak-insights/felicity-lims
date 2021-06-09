@@ -9,6 +9,7 @@ from felicity.apps.core.utils import sequencer
 from felicity.apps.setup.models.setup import Instrument
 from felicity.apps.user.models import User
 from felicity.apps.analysis.models import analysis as analysis_models
+from felicity.apps.analysis.models import qc as qc_models
 from felicity.apps.analysis import conf as analysis_conf
 from felicity.apps.worksheet import schemas, conf
 
@@ -50,11 +51,11 @@ class WSTALink(DBModel):
     analysis_uid = Column(Integer, ForeignKey('analysis.uid'), primary_key=True)
 
 
-class WSTAQCLink(DBModel):
-    """Many to Many Link between WorkSheetTemplate and Analysis for QC
+class WSTQCLLink(DBModel):
+    """Many to Many Link between WorkSheetTemplate and QCLevel
     """
     ws_template_uid = Column(Integer, ForeignKey('worksheettemplate.uid'), primary_key=True)
-    analysis_uid = Column(Integer, ForeignKey('analysis.uid'), primary_key=True)
+    qc_level_uid = Column(Integer, ForeignKey('qclevel.uid'), primary_key=True)
 
 
 class WorkSheetTemplate(WSBase):
@@ -67,7 +68,10 @@ class WorkSheetTemplate(WSBase):
     description = Column(String)
     profiles = relationship(analysis_models.Profile, secondary="wstplink", backref="worksheet_templates")
     analyses = relationship(analysis_models.Analysis, secondary="wstalink", backref="worksheet_templates")
-    qc_analyses = relationship(analysis_models.Analysis, secondary="wstaqclink")
+    qc_template_uid = Column(Integer, ForeignKey('qctemplate.uid'), nullable=True)
+    qc_template = relationship(qc_models.QCTemplate, backref='worksheet_templates')
+    # to help cater for those created without template we also keep the qc_levels
+    qc_levels = relationship(qc_models.QCLevel, secondary="wstqcllink")
     instrument_uid = Column(Integer, ForeignKey('instrument.uid'), nullable=True)
     instrument = relationship(Instrument, backref='worksheet_templates')
     sample_type_uid = Column(Integer, ForeignKey('sampletype.uid'), nullable=False)
@@ -97,13 +101,6 @@ class WSALink(DBModel):
     analysis_uid = Column(Integer, ForeignKey('analysis.uid'), primary_key=True)
 
 
-class WSAQCLink(DBModel):
-    """Many to Many Link between WorkSheetTemplate and Analysis for QC
-    """
-    worksheet_uid = Column(Integer, ForeignKey('worksheet.uid'), primary_key=True)
-    analysis_uid = Column(Integer, ForeignKey('analysis.uid'), primary_key=True)
-
-
 class WorkSheet(WSBase):
     template_uid = Column(Integer, ForeignKey('worksheettemplate.uid'), nullable=False)
     template = relationship('WorkSheetTemplate', backref='worksheets')
@@ -112,7 +109,6 @@ class WorkSheet(WSBase):
     worksheet_id = Column(String, index=True, unique=True, nullable=False)
     profiles = relationship(analysis_models.Profile, secondary="wsplink", backref="worksheets")
     analyses = relationship(analysis_models.Analysis, secondary="wsalink", backref="worksheets")
-    qc_analyses = relationship(analysis_models.Analysis, secondary="wsaqclink")
     instrument_uid = Column(Integer, ForeignKey('instrument.uid'), nullable=True)
     instrument = relationship(Instrument, backref='worksheets')
     sample_type_uid = Column(Integer, ForeignKey('sampletype.uid'), nullable=False)

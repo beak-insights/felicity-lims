@@ -1,20 +1,21 @@
 import logging
 
+from typing import Optional
 import graphene
 from graphql import GraphQLError
 from fastapi.encoders import jsonable_encoder
 
-from felicity.apps.worksheet.tasks import populate_worksheet_plate
 from felicity.apps.job import (
     models as job_models,
     schemas as job_schemas
 )
-from felicity.apps.job.sched import felicity_resume_workforce
 from felicity.apps.user import models as user_models
 from felicity.apps.worksheet import models, schemas, tasks, conf
 from felicity.gql.worksheet.types import WorkSheetType, WorkSheetTemplateType
 from felicity.apps.job.conf import actions, categories, priorities, states
 from felicity.apps.analysis.models import analysis as analysis_models
+from felicity.apps.analysis.models import results as result_models
+from felicity.apps.analysis.models import qc as qc_models
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ logger = logging.getLogger(__name__)
 #
 class ReservedInputType(graphene.InputObjectType):
     position = graphene.Int()
-    analysis_uid = graphene.String(required=False)
+    level_uid = graphene.String(required=False)
 
 
 class CreateWorkSheetTemplate(graphene.Mutation):
@@ -34,6 +35,7 @@ class CreateWorkSheetTemplate(graphene.Mutation):
         sample_type_uid = graphene.String(required=True)
         analyses = graphene.List(graphene.String, required=True)
         description = graphene.String(required=False)
+        qc_template_uid = graphene.String(required=False)
         reserved = graphene.List(ReservedInputType, required=True)
         number_of_samples = graphene.String(required=False)
         worksheet_type = graphene.String(required=False)
@@ -66,16 +68,22 @@ class CreateWorkSheetTemplate(graphene.Mutation):
         for k, v in kwargs.items():
             incoming[k] = v
 
+        qc_template_uid = kwargs.get('qc_template_uid', None)
+        _qc_levels = []
+        if qc_template_uid:
+            qc_template = qc_models.QCTemplate.get(uid=qc_template_uid)
+            if qc_template:
+                _qc_levels = qc_template.qc_levels
+
         reserved = kwargs.get('reserved', None)
         incoming['reserved'] = []
-        _qc_analyses = []
         if reserved:
             positions = dict()
             for item in reserved:
                 positions[item['position']] = item
-                qc_anal = analysis_models.Analysis.get(uid=item['analysis_uid'])
-                if qc_anal not in _qc_analyses:
-                    _qc_analyses.append(qc_anal)
+                qc_level = qc_models.QCLevel.get(uid=item['level_uid'])
+                if qc_level not in _qc_levels:
+                    _qc_levels.append(qc_level)
             incoming['reserved'] = positions
 
         _analyses = []
@@ -89,7 +97,7 @@ class CreateWorkSheetTemplate(graphene.Mutation):
         wst = models.WorkSheetTemplate.create(wst_schema)
 
         wst.analyses = _analyses
-        wst.qc_analyses = _qc_analyses
+        wst.qc_levels = _qc_levels
         wst.save()
 
         ok = True
@@ -103,6 +111,7 @@ class UpdateWorkSheetTemplate(graphene.Mutation):
         sample_type_uid = graphene.String(required=True)
         analyses = graphene.List(graphene.String, required=True)
         description = graphene.String(required=False)
+        qc_template_uid = graphene.String(required=False)
         reserved = graphene.List(ReservedInputType, required=True)
         number_of_samples = graphene.String(required=False)
         worksheet_type = graphene.String(required=False)
@@ -133,15 +142,21 @@ class UpdateWorkSheetTemplate(graphene.Mutation):
                     # raise GraphQLError(f"{e}")
                     pass
 
+        qc_template_uid = kwargs.get('qc_template_uid', None)
+        _qc_levels = []
+        if qc_template_uid:
+            qc_template = qc_models.QCTemplate.get(uid=qc_template_uid)
+            if qc_template:
+                _qc_levels = qc_template.qc_levels
+
         reserved = kwargs.get('reserved', None)
-        _qc_analyses = []
         if reserved:
             positions = dict()
             for item in reserved:
                 positions[item['position']] = item
-                qc_anal = analysis_models.Analysis.get(uid=item['analysis_uid'])
-                if qc_anal not in _qc_analyses:
-                    _qc_analyses.append(qc_anal)
+                qc_level = qc_models.QCLevel.get(uid=item['level_uid'])
+                if qc_level not in _qc_levels:
+                    _qc_levels.append(qc_level)
             setattr(ws_template, 'reserved', positions)
 
         wst_schema = schemas.WSTemplateUpdate(**ws_template.to_dict())
@@ -156,7 +171,7 @@ class UpdateWorkSheetTemplate(graphene.Mutation):
                     _analyses.append(anal)
 
         ws_template.analyses = _analyses
-        ws_template.qc_analyses = _qc_analyses
+        ws_template.qc_levels = _qc_levels
         ws_template.save()
 
         ok = True
@@ -204,7 +219,7 @@ class CreateWorkSheet(graphene.Mutation):
         ws_schema = schemas.WorkSheetCreate(**incoming)
         ws = models.WorkSheet.create(ws_schema)
         ws.analyses = ws_temp.analyses
-        ws.qc_analyses = ws_temp.qc_analyses
+        # ws.qc_levels = ws_temp.qc_levels
         ws.save()
 
         # Add a job
@@ -223,59 +238,54 @@ class CreateWorkSheet(graphene.Mutation):
         return CreateWorkSheet(worksheet=ws, ok=ok)
 
 
-# UpdateWorksheet: action=[verify, submit, assign, unassign', sample_ids]
+# UpdateWorksheet: action=[unassign, etc]
 class UpdateWorkSheet(graphene.Mutation):
     class Arguments:
         worksheet_uid = graphene.Int(required=True)
         analyst_uid = graphene.Int(required=False)
-        action = graphene.String(required=True)  # verify, submit, assign, unassign etc
-        samples = graphene.Int(required=False)  # must be a List of sample_uids
+        action = graphene.String(required=False)  # unassign etc
+        samples = graphene.List(graphene.Int)  # must be a List of sample_uids
 
     ok = graphene.Boolean()
     worksheet = graphene.Field(lambda: WorkSheetType)
 
     @staticmethod
-    def mutate(root, info, template_uid, analyst_uid, **kwargs):
-        if not template_uid or not analyst_uid:
-            raise GraphQLError("Analyst and Template are mandatory")
+    def mutate(root, info, worksheet_uid, **kwargs):
+        if not worksheet_uid:
+            raise GraphQLError("Worksheet uid required")
 
-        ws_temp = models.WorkSheetTemplate.get(uid=template_uid)
-        if not ws_temp:
-            raise GraphQLError(f"WorkSheet Template {template_uid} does not exist")
+        worksheet: Optional[models.WorkSheet] = models.WorkSheet.get(uid=worksheet_uid)
+        if not worksheet:
+            raise GraphQLError(f"WorkSheet Template {worksheet_uid} does not exist")
 
-        analyst = user_models.User.get(uid=analyst_uid)
-        if not analyst:
-            raise GraphQLError(f"Selected Analyst {analyst_uid} does not exist")
+        analyst_uid = kwargs.get('analyst_uid')
+        if analyst_uid:
+            analyst = user_models.User.get(uid=analyst_uid)
+            if not analyst:
+                raise GraphQLError(f"Selected Analyst {analyst_uid} does not exist")
 
-        incoming = {
-            "template_uid": template_uid,
-            "analyst_uid": analyst_uid,
-            "instrument_uid": ws_temp.instrument_uid,
-            "worksheet_id": models.WorkSheet.create_worksheet_id(),
-            "reserved": ws_temp.reserved,
-            "number_of_samples": ws_temp.number_of_samples,
-            "rows": ws_temp.rows,
-            "cols": ws_temp.cols,
-            "row_wise": ws_temp.row_wise,
-        }
+            incoming = {
+                "analyst_uid": analyst_uid,
+            }
+            ws_schema = schemas.WorkSheetUpdate(**incoming)
+            worksheet = models.WorkSheet.update(ws_schema)
 
-        ws_schema = schemas.WorkSheetCreate(**incoming)
-        ws = models.WorkSheet.create(ws_schema)
-
-        # Add a job
-        job_schema = job_schemas.JobCreate(
-            action=actions.WS_ASSIGN,
-            category=categories.WORKSHEET,
-            priority=priorities.MEDIUM,
-            job_id=ws.uid,
-            status=states.PENDING
-        )
-        # job = job_models.Job.create(job_schema)
-
-        # Add WorkSheet Population as a bg task
+        action = kwargs.get('action')
+        samples = kwargs.get('samples')
+        if action and samples:
+            if action == actions.WS_UN_ASSIGN:
+                for res_uid in samples:
+                    result = result_models.AnalysisResult.get(uid=res_uid)
+                    if not result:
+                        continue
+                    if not result.sample.qc_level_uid:  # skip un assign of quality control samples
+                        result.un_assign()
+                worksheet.reset_assigned_count()
+        else:
+            pass
 
         ok = True
-        return CreateWorkSheet(worksheet=ws, ok=ok)
+        return CreateWorkSheet(worksheet=worksheet, ok=ok)
 
 
 #
@@ -301,6 +311,9 @@ class UpdateWorkSheetApplyTemplate(graphene.Mutation):
         ws_temp = models.WorkSheetTemplate.get(uid=template_uid)
         if not ws_temp:
             raise GraphQLError(f"WorkSheet Template {template_uid} does not exist")
+
+        # TODO:
+        #   If templates are different then first un-assign else fill in the difference or or un-assign and refill
 
         incoming = {
             "template_uid": template_uid,
@@ -341,4 +354,5 @@ class WorkSheetMutations(graphene.ObjectType):
     update_worksheet_template = UpdateWorkSheetTemplate.Field()
     # WorkSheet
     create_worksheet = CreateWorkSheet.Field()
+    update_worksheet = UpdateWorkSheet.Field()
     update_worksheet_apply_template = UpdateWorkSheetApplyTemplate.Field()

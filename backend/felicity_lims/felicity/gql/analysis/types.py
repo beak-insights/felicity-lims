@@ -11,7 +11,7 @@ from felicity.apps.analysis.models.analysis import (
     ResultOption,
     RejectionReason
 )
-from felicity.apps.analysis.models.qc import QCTemplate
+from felicity.apps.analysis.models.qc import QCSet, QCLevel, QCTemplate
 from felicity.apps.analysis.models.results import AnalysisResult
 
 
@@ -82,4 +82,18 @@ class RejectionReasonType(SQLAlchemyObjectType):
 class QCTemplateType(SQLAlchemyObjectType):
     class Meta:
         model = QCTemplate
+        interfaces = (relay.Node, )
+
+
+# Graphene QCSet Type
+class QCSetType(SQLAlchemyObjectType):
+    class Meta:
+        model = QCSet
+        interfaces = (relay.Node, )
+
+
+# Graphene QCLevel Type
+class QCLevelType(SQLAlchemyObjectType):
+    class Meta:
+        model = QCLevel
         interfaces = (relay.Node, )

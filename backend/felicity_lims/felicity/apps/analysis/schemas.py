@@ -380,6 +380,79 @@ class AnalysisResultInDB(AnalysisResultBaseInDB):
 
 
 #
+# QCSet Schemas
+#
+
+# Shared properties
+class QCSetBase(BaseAuditModel):
+    name: Optional[str] = None
+    note: Optional[str] = None
+
+
+class QCSetBaseInDB(QCSetBase):
+    uid: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
+# Properties to receive via API on creation
+class QCSetCreate(QCSetBase):
+    pass
+
+
+# Properties to receive via API on update
+class QCSetUpdate(QCSetBase):
+    pass
+
+
+# Properties to return via API
+class QCSet(QCSetBaseInDB):
+    pass
+
+
+# Properties stored in DB
+class QCSetInDB(QCSetBaseInDB):
+    pass
+
+
+#
+# QCLevel Schemas
+#
+
+# Shared properties
+class QCLevelBase(BaseAuditModel):
+    level: Optional[str] = None
+
+
+class QCLevelBaseInDB(QCLevelBase):
+    uid: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
+# Properties to receive via API on creation
+class QCLevelCreate(QCLevelBase):
+    pass
+
+
+# Properties to receive via API on update
+class QCLevelUpdate(QCLevelBase):
+    pass
+
+
+# Properties to return via API
+class QCLevel(QCLevelBaseInDB):
+    pass
+
+
+# Properties stored in DB
+class QCLevelInDB(QCLevelBaseInDB):
+    pass
+
+
+#
 # QCTemplate Schemas
 #
 
@@ -388,7 +461,7 @@ class QCTemplateBase(BaseAuditModel):
     name: Optional[str] = None
     description: Optional[str] = None
     departments: Optional[List[Department]] = []
-    analyses: Optional[List[Analysis]] = []
+    qc_levels: Optional[List[QCLevel]] = []
 
 
 class QCTemplateBaseInDB(QCTemplateBase):

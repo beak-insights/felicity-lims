@@ -8,19 +8,19 @@ import {
 } from '../../graphql/worksheet.queries';
 import { IInstrument } from './setup';
 import { IAnalysisService } from './analyses';
-import { parseEdgeNodeToList, parseData } from '../../utils';
+import { parseEdgeNodeToList, parseData, snakeToCamel } from '../../utils';
 import { IAnalysisResult } from './samples';
 
 
 export interface IReserved {
   position: number;
-  analysisUid?: string;
+  levelUid?: string;
 }
 
 export class Reserved implements IReserved {
   constructor(
     public position: number,
-    public analysisUid?: string,
+    public levelUid?: string,
   ){
   }
 }
@@ -172,9 +172,10 @@ export const mutations = <MutationTree<IState>>{
       const data: any = template.reserved;
       const reserved = Object.entries(parseData(data)) as any[];
       let new_res: IReserved[] = [];
-      reserved?.forEach(item => new_res.push(item[1] as IReserved || {}));
+      reserved?.forEach(item => new_res.push(snakeToCamel(item[1]) as IReserved || {}));
       template.reserved = new_res;
     });
+    console.log(wst)
     state.workSheetTemplates = wst;
   },
 
