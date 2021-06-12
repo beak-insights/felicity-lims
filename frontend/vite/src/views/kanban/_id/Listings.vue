@@ -1,7 +1,7 @@
 <template>
     <div class="flex justify-start">
         <div class="h-tasks flex overflow-x-scroll py-2">
-            <div v-for="listing in board?.boardListings" :key="listing?.title" class="bg-gray-100 rounded-lg px-3 py-3 column-width rounded mr-4">
+            <div v-for="listing in board?.boardListings" :key="listing?.title" class="bg-gray-100 px-3 py-3 column-width rounded mr-4">
                 <h4 class="h4 text-gray-600 font-bold font-sans tracking-wide text-medium">{{listing?.title}}</h4>
                 <p class="h4 text-gray-500 font-normal italic font-sans tracking-wide text-small">{{listing?.description}}</p>
                 <draggable 

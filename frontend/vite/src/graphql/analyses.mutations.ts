@@ -16,7 +16,7 @@ export const ADD_SAMPLE_TYPE= gql`
 `;
 
 export const EDIT_SAMPLE_TYPE= gql`
-  mutation AddSampleType ($uid: Int!, $name: String, $abbr: String, $active: Boolean, $description: String) {
+  mutation EditSampleType ($uid: Int!, $name: String, $abbr: String, $active: Boolean, $description: String) {
     updateSampleType(uid: $uid, name: $name, abbr: $abbr, active: $active, description: $description){
       sampleType {
         uid
