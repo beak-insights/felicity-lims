@@ -62,8 +62,7 @@
               <hr>
               <section class="font-medium my-4">
                 <h4 class="my-4"> 
-                  <i class="fa fa-plus" aria-hidden="true"></i> 
-                  <span class="text-lg font-semibold ml-2">MileStones</span>
+                  <span class="text-lg font-semibold">CheckList</span>
                 </h4>
                 <div class="mb-1 tracking-wide text-gray-500">
                     <span>-</span>
@@ -118,7 +117,7 @@
               </section>
             </div>
           </section>
-          <section class="col-span-1 pr-2 overflow-y-scroll" style="height: 68vh">
+          <section class="col-span-1 pr-2">
               <div class="flex justify-between mb-4">
                 <span class="text-lg font-semibold">Due Date</span>
                 <span>
@@ -166,17 +165,6 @@
               <div class="flex justify-between my-4">
                 <span class="text-lg font-semibold">Archive Task</span>
                 <button class="border border-gray-500 text-gray-500 rounded-md py-1 px-2  transition-colors duration-500 ease select-none hover:bg-gray-500 hover:text-gray-100 focus:outline-none focus:shadow-outline">Archive</button>
-              </div>
-              <hr>
-              <div class=" my-4">
-                <div class="text-lg font-semibold">Task Activity Stream</div>
-                <div class="flex flex-col my-4 text-gray-400 italics font-light tracking-wide">
-                  <span class="my-1">@aurthur create task 3 days ago</span>
-                  <span class="my-1">@mellisa commented task 3 minutes ago</span>
-                  <span class="my-1">@jeffrey added milestone 2 seconds ago</span>
-                  <span class="my-1">@pedzi marked complete milestone task 3 days ago</span>
-                  <span class="my-1">@aurthur create task 3 days ago</span>
-                </div>
               </div>
           </section>
       </div>

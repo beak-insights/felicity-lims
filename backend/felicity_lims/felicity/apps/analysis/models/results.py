@@ -39,6 +39,7 @@ class AnalysisResult(Auditable, BaseMPTT):
     date_verified = Column(DateTime, nullable=True)
     invalidated_by_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
     date_invalidated = Column(DateTime, nullable=True)
+    retest = Column(Boolean(), default=False)
     reportable = Column(Boolean(), default=True)  # for retests or reflex
     status = Column(String, nullable=False)
 
@@ -56,6 +57,14 @@ class AnalysisResult(Auditable, BaseMPTT):
 
     def verify(self):
         self.status = conf.states.result.VERIFIED
+        self.save()
+
+    def change_status(self, status):
+        self.status = status
+        self.save()
+
+    def hide_report(self):
+        self.reportable = False
         self.save()
 
     @classmethod

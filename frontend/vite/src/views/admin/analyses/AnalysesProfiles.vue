@@ -212,15 +212,15 @@
 </template>
 
 <script lang="ts">
-import modal from '../../../_components/SimpleModal.vue';
-import accordion from '../../../_components/Accordion.vue';
+import modal from '../../_components/SimpleModal.vue';
+import accordion from '../../_components/Accordion.vue';
 
 import { useMutation } from '@urql/vue';
 import { defineComponent, ref, reactive, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
-import { ActionTypes, AnalysisProfile, IAnalysisProfile } from '../../../../store/modules/analyses';
-import { ADD_ANALYSIS_PROFILE, EDIT_ANALYSIS_PROFILE  } from '../../../../graphql/analyses.mutations';
+import { ActionTypes, AnalysisProfile, IAnalysisProfile } from '../../../store/modules/analyses';
+import { ADD_ANALYSIS_PROFILE, EDIT_ANALYSIS_PROFILE  } from '../../../graphql/analyses.mutations';
 
 export default defineComponent({
   name: "tab-analyses-profiles",

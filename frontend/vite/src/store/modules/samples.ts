@@ -65,6 +65,7 @@ export interface IAnalysisResult {
   status?: string;
   result?: string;
   editResult?: string;
+  createdAt?: string;
 }
 
 export class AnalysisResult implements IAnalysisResult {
@@ -166,9 +167,19 @@ export enum ActionTypes {
 }
 
 function sortAnalysisRequests(ars: IAnalysisRequest[]): IAnalysisRequest[] {
-  console.log(ars)
   ars = ars?.sort((a: IAnalysisRequest, b: IAnalysisRequest) => (a?.createdAt || 0) < (b?.createdAt || 1) ? 1 : -1);
   return ars;
+}
+
+function sortResults(results: IAnalysisResult[]): IAnalysisResult[] {
+  console.log(results)
+  results = results?.sort((a: IAnalysisResult, b: IAnalysisResult) => {
+    if(a?.analysisUid === b?.analysisUid) {
+      return (a?.uid || 0) > (b?.uid || 0) ? 1 : -1;
+    }
+    return (a?.analysis?.sortKey || 0) > (b?.analysis?.sortKey || 1) ? 1 : -1;
+  });
+  return results;
 }
 
 
@@ -258,7 +269,7 @@ export const mutations = <MutationTree<IState>>{
     results?.forEach((result: any) => {
       result.analysis.resultoptions = parseEdgeNodeToList(result?.analysis?.resultoptions) || [];
     })
-    state.analysisResults = results;
+    state.analysisResults = sortResults(results);
   },
 
   [MutationTypes.UPDATE_ANALYSIS_RESULTS](state: IState, payload: IAnalysisResult[]): void {
@@ -296,6 +307,9 @@ export const mutations = <MutationTree<IState>>{
       sample.analyses = parseEdgeNodeToList(sample?.analyses) || [];
       sample.analyses.resultoptions = parseEdgeNodeToList(sample?.analyses?.resultoptions) || [];
       sample.analysisResults = parseEdgeNodeToList(sample?.analysisResults) || [];
+      sample.analysisResults?.forEach(((result: any) => {
+        result.analysis.resultoptions = parseEdgeNodeToList(result.analysis.resultoptions) || [];
+      }));
     })
     state.qcSet = qcSet;
   },

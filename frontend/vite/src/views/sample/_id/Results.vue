@@ -22,14 +22,16 @@
                     <th class="px-1 py-1 border-b-2 border-gray-300 text-left text-sm leading-4 text-black-500 tracking-wider">Submitted</th>
                     <th class="px-1 py-1 border-b-2 border-gray-300 text-left text-sm leading-4 text-black-500 tracking-wider">Due Date</th>
                     <th class="px-1 py-1 border-b-2 border-gray-300 text-left text-sm leading-4 text-black-500 tracking-wider">Status</th>
-                    <th class="px-1 py-1 border-b-2 border-gray-300 text-left text-sm leading-4 text-black-500 tracking-wider">Hidden</th>
+                    <th class="px-1 py-1 border-b-2 border-gray-300 text-left text-sm leading-4 text-black-500 tracking-wider">Reportable</th>
                     <th class="px-1 py-1 border-b-2 border-gray-300"></th>
                 </tr>
             </thead>
             <tbody class="bg-white">
-                    <tr v-for="result in analysisResults"  :key="result.uid" >
+                    <tr v-for="result in analysisResults"  :key="result.uid" 
+                    :class="[getResultRowColor(result)]"
+                    >
                       <td>
-                          <input type="checkbox" class="" v-model="result.checked" @change="checkCheck(result)">
+                          <input type="checkbox" class="" v-model="result.checked" @change="checkCheck(result)" :disabled="isDisabledRowCheckBox(result)">
                       </td>
                         <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500"></td>
                         <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
@@ -60,7 +62,14 @@
                           </label>
                         </td>
                         <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
-                          <div class="text-sm leading-5 text-blue-900">NO</div>
+                          <div class="text-sm leading-5 text-blue-900">
+                            <span v-if="result?.retest" class="text-green-500">
+                              <i class="fa fa-check-circle" aria-hidden="true"></i>
+                            </span>
+                            <span v-else class="text-red-500">
+                              <i class="fa fa-times-circle" aria-hidden="true"></i>
+                            </span>
+                          </div>
                         </td>
                         <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
                           <div class="text-sm leading-5 text-blue-900">2020-10-10</div>
@@ -70,6 +79,16 @@
                         </td>
                         <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
                           <button type="button" class="bg-blue-400 text-white p-1 rounded leading-none">{{ result.status }}</button>
+                        </td>
+                        <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
+                          <div class="text-sm leading-5 text-blue-900">
+                            <span v-if="result?.reportable" class="text-green-500">
+                              <i class="fa fa-thumbs-up" aria-hidden="true"></i>
+                            </span>
+                            <span v-else class="text-red-500">
+                              <i class="fa fa-thumbs-down" aria-hidden="true"></i>
+                            </span>
+                          </div>
                         </td>
                         <td class="px-1 py-1 whitespace-no-wrap text-right border-b border-gray-500 text-sm leading-5">
                           <button @click.prevent="submitResult(result)" 
@@ -85,9 +104,9 @@
 
     <section class="my-4">
       <button @click.prevent="submitResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Submit</button>
-      <button class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Retract</button>
+      <button @click.prevent="retractResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Retract</button>
       <button @click.prevent="verifyResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Verify</button>
-      <button class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Retest</button>
+      <button @click.prevent="retestResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Retest</button>
     </section>
 
 </template>
@@ -106,7 +125,7 @@ import { useMutation } from '@urql/vue';
 import { isNullOrWs } from '../../../utils';
 import { ActionTypes, ISampleRequest, IAnalysisResult } from '../../../store/modules/samples';
 import { GET_ANALYSIS_RESULTS_BY_SAMPLE_UID } from '../../../graphql/analyses.queries';
-import { SUBMIT_ANALYSIS_RESULTS, VERIFY_ANALYSIS_RESULTS } from '../../../graphql/analyses.mutations';
+import { SUBMIT_ANALYSIS_RESULTS, VERIFY_ANALYSIS_RESULTS, RETEST_ANALYSIS_RESULTS, RETRACT_ANALYSIS_RESULTS } from '../../../graphql/analyses.mutations';
 export default defineComponent({
   name: 'analyses-results',
   setup(props) {
@@ -121,6 +140,8 @@ export default defineComponent({
 
     const { executeMutation: submitAnalysisResults } = useMutation(SUBMIT_ANALYSIS_RESULTS);
     const { executeMutation: verifyAnalysisResults } = useMutation(VERIFY_ANALYSIS_RESULTS);  
+    const { executeMutation: retestAnalysisResults } = useMutation(RETEST_ANALYSIS_RESULTS); 
+    const { executeMutation: retractAnalysisResults } = useMutation(RETRACT_ANALYSIS_RESULTS); 
     
     function submitAnalysesResults(results): void {
       submitAnalysisResults({ analysisResults: results, }).then((result) => {
@@ -135,6 +156,18 @@ export default defineComponent({
     
     function verifyAnalysesResults(analyses): void {
       verifyAnalysisResults({ analyses }).then((result) => {
+      //  store.dispatch(ResultActionTypes.UPDATE_ANALYSIS_RESULTS, result);
+      });
+    }  
+    
+    function retractAnalysesResults(analyses): void {
+      retractAnalysisResults({ analyses }).then((result) => {
+      //  store.dispatch(ResultActionTypes.UPDATE_ANALYSIS_RESULTS, result);
+      });
+    }  
+    
+    function retestAnalysesResults(analyses): void {
+      retestAnalysisResults({ analyses }).then((result) => {
       //  store.dispatch(ResultActionTypes.UPDATE_ANALYSIS_RESULTS, result);
       });
     }
@@ -208,6 +241,36 @@ export default defineComponent({
       return ready;
     }
 
+    function getResultRowColor(result: any): string {
+      switch (result?.status){
+        case "retracted":
+          return 'bg-gray-300'
+        case "verified":
+          if(result?.reportable === false){
+            return 'bg-red-100';
+          } else {
+            return '';
+          }
+        default:
+          return ''
+      }
+    }
+
+    function isDisabledRowCheckBox(result: any): boolean {
+      switch (result?.status){
+        case "retracted":
+          return true;
+        case "verified":
+          if(result?.reportable === false){
+            return true;
+          } else {
+            return false;
+          }
+        default:
+          return false;
+      }
+    }
+
     const submitResults = async () => {
       try {
         Swal.fire({
@@ -264,10 +327,69 @@ export default defineComponent({
       }
     }
 
+    const retractResults = async () => {
+      try {
+        Swal.fire({
+          title: 'Are you sure?',
+          text: "You want to retract these results",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Yes, retract now!',
+          cancelButtonText: 'No, cancel retraction!',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            retractAnalysesResults(getResultsUids());
+
+            Swal.fire(
+              'Its Happening!',
+              'Your results have been retracted.',
+              'success'
+            ).then(_ => location.reload())
+
+          }
+        })
+      } catch (error) {
+        logger.log(error)
+      }
+    }
+
+    const retestResults = async () => {
+      try {
+        Swal.fire({
+          title: 'Are you sure?',
+          text: "You want to retest these results",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Yes, retest now!',
+          cancelButtonText: 'No, cancel retesting!',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            retestAnalysesResults(getResultsUids());
+
+            Swal.fire(
+              'Its Happening!',
+              'Your results have been retested.',
+              'success'
+            ).then(_ => location.reload())
+
+          }
+        })
+      } catch (error) {
+        logger.log(error)
+      }
+    }
+
+
     return {
       sample,
       profileAnalysesText,
       analysisResults,
+      isDisabledRowCheckBox,
+      getResultRowColor,
       submitResult,
       isEditable,
       toggleCheckAll,
@@ -276,6 +398,8 @@ export default defineComponent({
       check,
       submitResults,
       verifyResults,
+      retractResults,
+      retestResults
     }
   },
 });

@@ -33,6 +33,7 @@ if initialize_felicity():
             # logger.info(f"trial middle ware: {request}")
             # logger.info(f"trial middle ware: {dir(request)}")
             if "Authorization" not in request.headers:
+                logger.info(f"No Authorization Data")
                 return
 
             # logger.info(f"Authorization checking: {request.headers}")
@@ -43,19 +44,21 @@ if initialize_felicity():
                 if scheme.lower() == 'basic':
                     decoded = base64.b64decode(credentials).decode("ascii")
                     username, _, password = decoded.partition(":")
-                    # TODO: You'd want to verify the username and password here.
+                    # TODO: You'd want to verify the username and password here if needed
                 elif scheme.lower() == 'bearer':
                     """"get is active user from token"""
                     logger.info(f"credentials bearer: {credentials}")
                     user = get_current_active_user(credentials)
-                    logger.info(f"User from token: {user}")
+                    logger.info(f"User from token: {user.auth.user_name}")
                     username, _, password = user.auth.user_name, None, None
                 else:
-                    return
+                    raise AuthenticationError(f'UnKnown Authentication Backend: {scheme.lower()}')
+
+                return AuthCredentials(["authenticated"]), SimpleUser(username)
+
             except (ValueError, UnicodeDecodeError, binascii.Error) as exc:
                 raise AuthenticationError('Invalid auth credentials')
 
-            return AuthCredentials(["authenticated"]), SimpleUser(username)
 
     flims = FastAPI(
         title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"

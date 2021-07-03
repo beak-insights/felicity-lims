@@ -152,8 +152,7 @@
             <input type="text">
         </div>
         <div v-else-if="currentTab === 'result-options'">
-          <h3>Result Options</h3>
-          <hr>
+          <result-options :analysis="analysisService" :analysisUid="analysisService?.uid"/>
         </div>
         <div v-else-if="currentTab === 'methods'">
           <h3>Methods</h3>
@@ -259,6 +258,7 @@
 <script lang="ts">
 import modal from '../../../_components/SimpleModal.vue';
 import accordion from '../../../_components/Accordion.vue';
+import ResultOptions from './ResultOptions.vue';
 
 import { useMutation } from '@urql/vue';
 import { defineComponent, ref, reactive, computed, watch } from 'vue';
@@ -272,12 +272,13 @@ export default defineComponent({
   components: {
     accordion,
     modal,
+    ResultOptions,
   },
   setup() {
 
     // each tab if just gonna be forms with updatable values on button click
     let currentTab = ref('general');
-    const tabs = ['general', 'analyses', 'uncertainities', 'result-options', 'methods', 'financials'];
+    const tabs = ['general', 'calculations', 'uncertainities', 'result-options', 'methods', 'financials'];
 
     let store = useStore();
     

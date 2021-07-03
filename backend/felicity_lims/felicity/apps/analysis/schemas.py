@@ -349,7 +349,8 @@ class AnalysisResultBase(BaseAuditModel):
     worksheet_uid: Optional[int] = None
     worksheet_position: Optional[int] = None
     assigned: Optional[bool] = False
-    reportable: Optional[bool] = False
+    retest: Optional[bool] = False
+    reportable: Optional[bool] = True
 
 
 class AnalysisResultBaseInDB(AnalysisResultBase):

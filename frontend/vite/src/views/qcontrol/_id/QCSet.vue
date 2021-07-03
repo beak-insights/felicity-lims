@@ -30,8 +30,20 @@
               <td 
               v-for="result in analyte?.items" :key="result.uid"
               class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
-                <div class="text-sm leading-5 text-blue-900"> {{ result?.sample?.qcLevel?.level }}</div>
-                <div class="text-sm leading-5 text-blue-900"> {{ result.result }}</div>
+                <!-- <div class="text-sm leading-5 text-blue-900"> {{ result?.sample?.qcLevel?.level }}</div> -->
+                <div  v-if="!isEditable(result)" class="text-sm leading-5 text-blue-900" >{{ result?.result  }}</div>
+                <label v-else-if="result?.analysis?.resultoptions?.length < 1" class="block" >
+                  <input class="form-input mt-1 block w-full" v-model="result.result" @keyup="check(result)"/>
+                </label>
+                <label v-else class="block col-span-2 mb-2" >
+                    <select class="form-input mt-1 block w-full" v-model="result.result" @change="check(result)">
+                      <option value=""></option>
+                      <option  
+                      v-for="(option, index) in result?.analysis?.resultoptions"
+                      :key="option.optionKey"
+                      :value="option.value" >{{ option.value }}</option>
+                  </select>
+                </label>
               </td>
           </tr>
           </tbody>
@@ -46,6 +58,7 @@ import { defineComponent, ref, toRefs, computed, PropType } from 'vue';
 import { useStore } from 'vuex';
 import { useRoute } from 'vue-router';
 import { ActionTypes } from '../../../store/modules/samples';
+import { isNullOrWs } from '../../../utils';
 
 export default defineComponent({
   name: 'qcset-detail',
@@ -81,11 +94,34 @@ export default defineComponent({
           })
         }
       })
-      return { levels: final.levels, analytes: final.analytes };
+
+      return { 
+        levels: final.levels, 
+        analytes: final.analytes,
+      };
     });
+
+    function check(result): void {
+      result.checked = true;
+    }
+
+    function editResult(result: any): void {
+      result.editable = true;
+    }
+
+    function isEditable(result): Boolean {
+      console.log(result)
+      if(result?.editable || isNullOrWs(result?.result)) {
+        editResult(result)
+        return true
+      };
+      return false;
+    }
 
     return {
       qcSet,
+      check,
+      isEditable,
     };
   },
 });

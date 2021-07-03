@@ -24,7 +24,17 @@ export const GET_ALL_ANALYSES_SERVICES = gql`
                     name
                     keyword
                     active
+                    sortKey
                     categoryUid
+                    resultoptions {
+                      edges {
+                        node {
+                          uid
+                          optionKey
+                          value
+                        }
+                      }
+                    }
                     category {
                         uid
                         name
@@ -49,7 +59,17 @@ export const GET_ANALYSES_SERVICES_FOR_QC = gql`
         name
         keyword
         active
+        sortKey
         categoryUid
+        resultoptions {
+          edges {
+            node {
+              uid
+              optionKey
+              value
+            }
+          }
+        }
         category {
             uid
             name
@@ -82,6 +102,7 @@ export const GET_ALL_ANALYSES_PROFILES = gql`
                                 name
                                 keyword
                                 active
+                                sortKey
                             }
                         }
                     }
@@ -107,6 +128,7 @@ export const GET_ALL_ANALYSES_PROFILES_AND_SERVICES = gql`
                                 uid
                                 name
                                 keyword
+                                sortKey
                                 active
                             }
                         }
@@ -122,7 +144,17 @@ export const GET_ALL_ANALYSES_PROFILES_AND_SERVICES = gql`
                     name
                     keyword
                     active
+                    sortKey
                     categoryUid
+                    resultoptions {
+                      edges {
+                        node {
+                          uid
+                          optionKey
+                          value
+                        }
+                      }
+                    }
                     category {
                         uid
                         name
@@ -201,6 +233,7 @@ export const GET_ALL_SAMPLES = gql`
                             node {
                                 uid
                                 name
+                                sortKey
                             }
                         }
                     }
@@ -255,6 +288,7 @@ query getAnalysesRequestsByPatientUid($uid: String!) {
               node {
                 uid
                 name
+                sortKey
               }
             }
           }
@@ -313,6 +347,7 @@ query getAnalysesRequestsByClientUid($uid: String!) {
               node {
                 uid
                 name
+                sortKey
               }
             }
           }
@@ -366,6 +401,7 @@ export const GET_ANALYSIS_RESULTS_BY_SAMPLE_UID = gql`
           uid
           name
           unit
+          sortKey
           resultoptions {
             edges {
               node {
@@ -376,6 +412,8 @@ export const GET_ANALYSIS_RESULTS_BY_SAMPLE_UID = gql`
             }
           }
         }
+        retest
+        reportable
         createdAt
         createdByUid
         updatedAt
@@ -497,6 +535,7 @@ export const GET_ALL_QC_SETS = gql`
                     node {
                       uid
                       name
+                      sortKey
                     }
                   }
                 }
@@ -544,9 +583,21 @@ export const GET_QC_SET_BY_UID = gql`
                     sampleUid
                     result
                     analysisUid
+                    retest
+                    reportable
                     analysis {
                       uid
                       name
+                      sortKey
+                      resultoptions {
+                        edges {
+                          node {
+                            uid
+                            optionKey
+                            value
+                          }
+                        }
+                      }
                     }
                     method {
                       uid
@@ -590,3 +641,14 @@ export const GET_QC_SET_BY_UID = gql`
         }
       }
     }`;
+
+
+export const GET_RESULT_OPTIONS_FOR_ANALYSIS = gql`
+    query resultOptionsByAnalysisUid($uid: String!) {
+      resultOptionsByAnalysisUid(uid: $uid) {
+        uid
+        optionKey
+        value
+        analysisUid
+      }
+  }`;

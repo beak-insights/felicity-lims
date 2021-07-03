@@ -117,14 +117,14 @@
 </style>
 
 <script lang="ts" scope="ts">
-import modal from '../../../_components/SimpleModal.vue';
+import modal from '../../_components/SimpleModal.vue';
 
 import { useMutation } from '@urql/vue';
 import { defineComponent, ref, reactive, computed } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
-import { ActionTypes, QCTemplate, IQCTemplate, IQCLevel } from '../../../../store/modules/analyses';
-import { ADD_QC_TEMPLATE, EDIT_QC_TEMPLATE  } from '../../../../graphql/analyses.mutations';
+import { ActionTypes, QCTemplate, IQCTemplate, IQCLevel } from '../../../store/modules/analyses';
+import { ADD_QC_TEMPLATE, EDIT_QC_TEMPLATE  } from '../../../graphql/analyses.mutations';
 
 
 export default defineComponent({

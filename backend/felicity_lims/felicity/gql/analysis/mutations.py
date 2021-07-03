@@ -10,7 +10,10 @@ from felicity.apps.setup.models import setup as setup_models
 from felicity.apps.analysis.models import analysis as analysis_models
 from felicity.apps.analysis.models import qc as qc_models
 from felicity.apps.analysis.models import results as result_models
-from felicity.apps.analysis.utils import get_qc_sample_type
+from felicity.apps.analysis.utils import (
+    get_qc_sample_type,
+    retest_analysis_result
+)
 from felicity.apps.analysis import schemas
 from felicity.gql.analysis import types
 from felicity.apps.patient.models import logger
@@ -87,6 +90,75 @@ class UpdateSampleType(graphene.Mutation):
         sampletype.update(sampletype_in)
         ok = True
         return UpdateSampleType(ok=ok, sample_type=sampletype)
+
+
+#
+# ResultOption Mutations
+#
+class CreateResultOption(graphene.Mutation):
+    class Arguments:
+        analysis_uid = graphene.String(required=True)
+        option_key = graphene.String(required=True)
+        value = graphene.String(required=True)
+
+    ok = graphene.Boolean()
+    result_option = graphene.Field(lambda: types.ResultOptionType)
+
+    @staticmethod
+    def mutate(root, info, analysis_uid, option_key, value, **kwargs):
+        if not analysis_uid:
+            raise GraphQLError("Analysis to attach Result Option Required")
+
+        if not option_key or not value:
+            raise GraphQLError("Result option key and value Required")
+
+        analysis = analysis_models.Analysis.get(uid=analysis_uid)
+        if not analysis:
+            raise GraphQLError(f"Analysis with uid {analysis_uid} does not exist")
+
+        incoming = {
+            "analysis_uid": analysis_uid,
+            "value": value,
+            "option_key": option_key
+        }
+        for k, v in kwargs.items():
+            incoming[k] = v
+
+        obj_in = schemas.ResultOptionCreate(**incoming)
+        result_option = analysis_models.ResultOption.create(obj_in)
+        ok = True
+        return CreateResultOption(ok=ok, result_option=result_option)
+
+
+class UpdateResultOption(graphene.Mutation):
+    class Arguments:
+        uid = graphene.Int(required=True)
+        option_key = graphene.String(required=False)
+        value = graphene.String(required=False)
+
+    ok = graphene.Boolean()
+    result_option = graphene.Field(lambda: types.ResultOptionType)
+
+    @staticmethod
+    def mutate(root, info, uid, **kwargs):
+        result_option = analysis_models.ResultOption.get(uid=uid)
+        if not result_option:
+            raise GraphQLError(f"ResultOption with uid {uid} does not exist")
+
+        ro_data = jsonable_encoder(result_option)
+        for field in ro_data:
+            if field in kwargs:
+                try:
+                    setattr(result_option, field, kwargs[field])
+                except Exception as e:
+                    # raise GraphQLError(f"{e}")
+                    pass
+
+        result_option_in = schemas.ResultOptionUpdate(**result_option.to_dict())
+        result_option.update(result_option_in)
+
+        ok = True
+        return UpdateResultOption(ok=ok, result_option=result_option)
 
 
 #
@@ -538,7 +610,8 @@ class SubmitAnalysisResults(graphene.Mutation):
             if not a_result:
                 raise GraphQLError(f"AnalysisResult with uid {uid} not found")
 
-            analysis_result = jsonable_encoder(a_result)
+            analysis_result = a_result.to_dict(nested=False)
+            # analysis_result = jsonable_encoder(a_result)
 
             for field in analysis_result:
                 if field in _ar:
@@ -619,6 +692,81 @@ class VerifyAnalysisResults(graphene.Mutation):
 
         ok = True
         return SubmitAnalysisResults(ok, analysis_results=return_results)
+
+
+class RetractAnalysisResults(graphene.Mutation):
+    class Arguments:
+        analyses = graphene.List(graphene.String, required=True)
+
+    ok = graphene.Boolean()
+    analysis_results = graphene.List(lambda: types.AnalysisResultType)
+
+    @staticmethod
+    def mutate(root, info, analyses, **kwargs):
+        return_results = []
+
+        if len(analyses) == 0:
+            raise GraphQLError(f"No analyses to retract are provided!")
+
+        for _ar_uid in analyses:
+            a_result: result_models.AnalysisResult = result_models.AnalysisResult.get(uid=_ar_uid)
+            if not a_result:
+                raise GraphQLError(f"AnalysisResult with uid {_ar_uid} not found")
+
+            status = getattr(a_result, 'status', None)
+            if status not in [states.result.RESULTED]:
+                continue
+            else:
+                retest = retest_analysis_result(a_result)
+                a_result.change_status(states.result.RETRACTED)
+                a_result.hide_report()
+
+                # if in worksheet then keep add retest to ws
+                if a_result.worksheet_uid:
+                    retest.worksheet_uid = a_result.worksheet_uid
+                    retest.worksheet_position = a_result.worksheet_position
+                    retest.assigned = True
+                    retest.save()
+
+                return_results.append(retest)
+            return_results.append(a_result)
+
+        ok = True
+        return RetractAnalysisResults(ok, analysis_results=return_results)
+
+
+class RetestAnalysisResults(graphene.Mutation):
+    class Arguments:
+        analyses = graphene.List(graphene.String, required=True)
+
+    ok = graphene.Boolean()
+    analysis_results = graphene.List(lambda: types.AnalysisResultType)
+
+    @staticmethod
+    def mutate(root, info, analyses, **kwargs):
+        return_results = []
+
+        if len(analyses) == 0:
+            raise GraphQLError(f"No analyses to Retest are provided!")
+
+        for _ar_uid in analyses:
+            a_result: result_models.AnalysisResult = result_models.AnalysisResult.get(uid=_ar_uid)
+            if not a_result:
+                raise GraphQLError(f"AnalysisResult with uid {_ar_uid} not found")
+
+            status = getattr(a_result, 'status', None)
+            if status not in [states.result.RESULTED]:
+                continue
+            else:
+                retest = retest_analysis_result(a_result)
+                a_result.verify()
+                a_result.hide_report()
+
+                return_results.append(retest)
+            return_results.append(a_result)
+
+        ok = True
+        return RetestAnalysisResults(ok, analysis_results=return_results)
 
 
 #
@@ -914,3 +1062,8 @@ class AnalysisMutations(graphene.ObjectType):
     # AnalysisResults
     submit_analysis_results = SubmitAnalysisResults.Field()
     verify_analysis_results = VerifyAnalysisResults.Field()
+    retest_analysis_results = RetestAnalysisResults.Field()
+    retract_analysis_results = RetractAnalysisResults.Field()
+    # Result options
+    create_result_option = CreateResultOption.Field()
+    update_result_option = UpdateResultOption.Field()

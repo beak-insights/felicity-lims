@@ -35,9 +35,9 @@
             </tr>
             </thead>
             <tbody class="bg-white">
-            <tr v-for="result in worksheet?.analysisResults" :key="result.uid">
+            <tr v-for="result in worksheet?.analysisResults" :key="result.uid" :class="[getResultRowColor(result)]">
                 <td>
-                    <input type="checkbox" class="" v-model="result.checked" @change="checkCheck(result)">
+                    <input type="checkbox" class="" v-model="result.checked" @change="checkCheck(result)" :disabled="checkDisabled(result)">
                 </td>
                 <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
                     <span v-if="result?.sample?.priority > 0"
@@ -53,26 +53,26 @@
                     <router-link :to="{ name: 'sample-detail', params: { patientUid: result?.sample?.analysisrequest?.patient?.uid, sampleUid: result?.sample?.uid  }}">{{ result?.sample?.sampleId }} </router-link>
                   </div>
                   <span v-if="viewDetail">
-                    <div class="text-sm leading-5 text-blue-900">
+                    <div >
                           {{ result?.sample?.analysisrequest?.patient?.firstName }}
                           {{ result?.sample?.analysisrequest?.patient?.lastName }}
                     </div>
-                    <div class="text-sm leading-5 text-blue-900">
+                    <div >
                           {{ result?.sample?.analysisrequest?.client?.name }}
                     </div>
                   </span>
                 </td>
                 <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
-                <div class="text-sm leading-5 text-blue-900">{{ result?.analysis?.name }}</div>
+                <div >{{ result?.analysis?.name }}</div>
                 </td>
                 <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
-                <div class="text-sm leading-5 text-blue-900">{{ result?.instrument?.name  || "None"  }}</div>
+                <div >{{ result?.instrument?.name  || "None"  }}</div>
                 </td>
                 <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
-                <div class="text-sm leading-5 text-blue-900">{{ result?.method?.name || "None"  }}</div>
+                <div >{{ result?.method?.name || "None"  }}</div>
                 </td>
                 <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
-                  <div  v-if="!isEditable(result)" class="text-sm leading-5 text-blue-900">{{ result?.result  }}</div>
+                  <div  v-if="!isEditable(result)" >{{ result?.result  }}</div>
                   <label v-else-if="result?.analysis?.resultoptions?.length === 0" class="block" >
                     <input class="form-input mt-1 block w-full" v-model="result.result" @keyup="check(result)"/>
                   </label>
@@ -87,7 +87,7 @@
                   </label>
                 </td>
                 <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
-                <div class="text-sm leading-5 text-blue-900">{{ result?.analysis?.unit || "---"  }}</div>
+                <div >{{ result?.analysis?.unit || "---"  }}</div>
                 </td>
                 <td class="px-1 py-1 whitespace-no-wrap border-b border-gray-500">
                 <button type="button" class="bg-blue-400 text-white p-1 rounded leading-none">{{ result?.status || "unknown" }}</button>
@@ -105,9 +105,9 @@
     <section class="my-4">
       <button @click.prevent="unAssignSamples()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Un Assign</button>
       <button @click.prevent="submitResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Submit</button>
-      <button class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Retract</button>
+      <button @click.prevent="retractResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Retract</button>
       <button @click.prevent="verifyResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Verify</button>
-      <button class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Retest</button>
+      <button @click.prevent="retestResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Retest</button>
     </section>
 
   </div>
@@ -126,7 +126,7 @@ import { useStore } from 'vuex';
 import { ActionTypes, WorkSheet } from '../../../store/modules/worksheets';
 import { ActionTypes as ResultActionTypes } from '../../../store/modules/samples';
 import { isNullOrWs } from '../../../utils';
-import { SUBMIT_ANALYSIS_RESULTS, VERIFY_ANALYSIS_RESULTS } from '../../../graphql/analyses.mutations';
+import { SUBMIT_ANALYSIS_RESULTS, VERIFY_ANALYSIS_RESULTS, RETEST_ANALYSIS_RESULTS, RETRACT_ANALYSIS_RESULTS } from '../../../graphql/analyses.mutations';
 import { WORKSHEET_UPDATE } from '../../../graphql/worksheet.mutations';
 
 export default defineComponent({
@@ -141,7 +141,9 @@ export default defineComponent({
 
     const { executeMutation: submitAnalysisResults } = useMutation(SUBMIT_ANALYSIS_RESULTS);  
     const { executeMutation: workSheetUpdate } = useMutation(WORKSHEET_UPDATE);  
-    const { executeMutation: verifyAnalysisResults } = useMutation(VERIFY_ANALYSIS_RESULTS);   
+    const { executeMutation: verifyAnalysisResults } = useMutation(VERIFY_ANALYSIS_RESULTS);  
+    const { executeMutation: retestAnalysisResults } = useMutation(RETEST_ANALYSIS_RESULTS); 
+    const { executeMutation: retractAnalysisResults } = useMutation(RETRACT_ANALYSIS_RESULTS); 
 
     function submitAnalysesResults(results): void {
       submitAnalysisResults({ analysisResults: results, }).then((result) => {
@@ -161,6 +163,18 @@ export default defineComponent({
       verifyAnalysisResults({ analyses }).then((result) => {
       //  store.dispatch(ResultActionTypes.UPDATE_ANALYSIS_RESULTS, result);
 
+      });
+    }
+    
+    function retractAnalysesResults(analyses): void {
+      retractAnalysisResults({ analyses }).then((result) => {
+      //  store.dispatch(ResultActionTypes.UPDATE_ANALYSIS_RESULTS, result);
+      });
+    }  
+    
+    function retestAnalysesResults(analyses): void {
+      retestAnalysisResults({ analyses }).then((result) => {
+      //  store.dispatch(ResultActionTypes.UPDATE_ANALYSIS_RESULTS, result);
       });
     }
 
@@ -185,7 +199,15 @@ export default defineComponent({
     }
 
     function check(result): void {
+      if(checkDisabled(result)) {
+        unCheck(result);
+        return;
+      };
       result.checked = true;
+    }
+
+    function checkDisabled(result): boolean {
+      return ["retracted", 'verified'].includes(result.status);
     }
 
     function unCheck(result): void {
@@ -230,6 +252,50 @@ export default defineComponent({
       let ready = [];
       results?.forEach(result => ready.push(result.uid))
       return ready;
+    }
+
+
+
+    function getResultRowColor(result: any): string {
+      switch (result?.status){
+        case "retracted":
+          return 'bg-gray-300 text-sm italic text-gray-500'
+        case "pending":
+          if(result?.retest === true){
+            return 'bg-blue-100 text-sm leading-5 text-blue-900';
+          } else {
+            return '';
+          }
+        case "resulted":
+          if(result?.retest === true){
+            return 'bg-blue-100 text-sm leading-5 text-blue-900';
+          } else {
+            return '';
+          }
+        case "verified":
+          if(result?.retest === true){
+            return 'bg-blue-100 text-sm leading-5 text-blue-900';
+          } else {
+            return '';
+          }
+        default:
+          return 'text-sm leading-5 text-blue-900'
+      }
+    }
+
+    function isDisabledRowCheckBox(result: any): boolean {
+      switch (result?.status){
+        case "retracted":
+          return true;
+        case "verified":
+          if(result?.reportable === false){
+            return true;
+          } else {
+            return false;
+          }
+        default:
+          return false;
+      }
     }
 
     const submitResults = async () => {
@@ -316,9 +382,68 @@ export default defineComponent({
       }
     }
 
+    const retractResults = async () => {
+      try {
+        Swal.fire({
+          title: 'Are you sure?',
+          text: "You want to retract these results",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Yes, retract now!',
+          cancelButtonText: 'No, cancel retraction!',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            retractAnalysesResults(getResultsUids());
+
+            Swal.fire(
+              'Its Happening!',
+              'Your results have been retracted.',
+              'success'
+            ).then(_ => location.reload())
+
+          }
+        })
+      } catch (error) {
+        logger.log(error)
+      }
+    }
+
+    const retestResults = async () => {
+      try {
+        Swal.fire({
+          title: 'Are you sure?',
+          text: "You want to retest these results",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Yes, retest now!',
+          cancelButtonText: 'No, cancel retesting!',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            retestAnalysesResults(getResultsUids());
+
+            Swal.fire(
+              'Its Happening!',
+              'Your results have been retested.',
+              'success'
+            ).then(_ => location.reload())
+
+          }
+        })
+      } catch (error) {
+        logger.log(error)
+      }
+    }
+
     return {
       worksheet,
       analysesText,
+      getResultRowColor,
+      isDisabledRowCheckBox,
+      checkDisabled,
       viewDetail,
       isNullOrWs,
       isEditable,
@@ -328,7 +453,9 @@ export default defineComponent({
       check,
       unAssignSamples,
       submitResults,
-      verifyResults
+      verifyResults,
+      retractResults,
+      retestResults
     };
   },
 });

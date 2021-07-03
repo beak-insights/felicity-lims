@@ -3,7 +3,7 @@
     <div class="container w-full my-4">
         <hr>
           <button @click="FormManager(true, null)"
-           class="px-2 py-1 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Add QC Template</button>
+           class="px-2 py-1 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Add QC Level</button>
         <hr>
 
         <div class="overflow-x-auto mt-4">
@@ -82,14 +82,14 @@
 </style>
 
 <script lang="ts" scope="ts">
-import modal from '../../../_components/SimpleModal.vue';
+import modal from '../../_components/SimpleModal.vue';
 
 import { useMutation } from '@urql/vue';
 import { defineComponent, ref, reactive, computed } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
-import { ActionTypes, QCLevel, IQCLevel } from '../../../../store/modules/analyses';
-import { ADD_QC_LEVEL, EDIT_QC_LEVEL  } from '../../../../graphql/analyses.mutations';
+import { ActionTypes, QCLevel, IQCLevel } from '../../../store/modules/analyses';
+import { ADD_QC_LEVEL, EDIT_QC_LEVEL  } from '../../../graphql/analyses.mutations';
 
 
 export default defineComponent({

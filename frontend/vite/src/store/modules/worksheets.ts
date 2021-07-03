@@ -145,7 +145,12 @@ export enum ActionTypes {
 }
 
 function sortAnalysisResults(ws: any): IWorkSheet {
-  ws.analysisResults = ws?.analysisResults?.sort((a: IAnalysisResult, b: IAnalysisResult) => (a?.worksheetPosition || 0) > (b?.worksheetPosition || 1) ? 1 : -1);
+  ws.analysisResults = ws?.analysisResults?.sort((a: IAnalysisResult, b: IAnalysisResult) => {
+    if(a.worksheetPosition === b.worksheetPosition) {
+      return (a?.uid || 0) > (b?.uid || 0) ? 1 : -1;;
+    }
+    return (a?.worksheetPosition || 0) > (b?.worksheetPosition || 1) ? 1 : -1
+  });
   return ws;
 }
 

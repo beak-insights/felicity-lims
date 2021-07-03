@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 # https://itnext.io/python-graphql-tips-tricks-and-performance-improvements-beede1f4adb6
 
+
 class AuthorizedMutation(relay.ClientIDMutation):
     class Meta:
         abstract = True

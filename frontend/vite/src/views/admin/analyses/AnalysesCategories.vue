@@ -95,14 +95,14 @@
 </style>
 
 <script lang="ts" scope="ts">
-import modal from '../../../_components/SimpleModal.vue';
+import modal from '../../_components/SimpleModal.vue';
 
 import { useMutation } from '@urql/vue';
 import { defineComponent, ref, reactive, computed } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
-import { ActionTypes, AnalysisCategory, IAnalysisCategory } from '../../../../store/modules/analyses';
-import { ADD_ANALYSIS_CATEGORY, EDIT_ANALYSIS_CATEGORY  } from '../../../../graphql/analyses.mutations';
+import { ActionTypes, AnalysisCategory, IAnalysisCategory } from '../../../store/modules/analyses';
+import { ADD_ANALYSIS_CATEGORY, EDIT_ANALYSIS_CATEGORY  } from '../../../graphql/analyses.mutations';
 
 
 export default defineComponent({

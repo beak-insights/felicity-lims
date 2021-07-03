@@ -1,10 +1,10 @@
 import { defineComponent, ref, computed } from 'vue';
 
-import tabAnalysesCategories from './comps/AnalysesCategories.vue';
-import tabAnalysesProfiles from './comps/AnalysesProfiles.vue';
-import tabAnalysesServices from './comps/AnalysesServices.vue';
-import tabQualityControlLevels from './comps/QCLevels.vue';
-import tabQualityControlTemplates from './comps/QCTemplates.vue';
+import tabAnalysesCategories from './AnalysesCategories.vue';
+import tabAnalysesProfiles from './AnalysesProfiles.vue';
+import tabAnalysesServices from './services/index.vue';
+import tabQualityControlLevels from './QCLevels.vue';
+import tabQualityControlTemplates from './QCTemplates.vue';
 
 export default defineComponent({
   name: 'analyses-conf',

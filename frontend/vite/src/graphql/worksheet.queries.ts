@@ -127,6 +127,8 @@ export const GET_WORKSHEET_BY_UID = gql`
           result
           status
           worksheetPosition
+          retest 
+          reportable
           method {
             uid
             name

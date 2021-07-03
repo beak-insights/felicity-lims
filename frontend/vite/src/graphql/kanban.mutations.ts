@@ -18,9 +18,9 @@ export const ADD_BOARD = gql`
 `;
 
 export const EDIT_BOARD = gql`
-  mutation editBoard($uid: String!, $title: String, $departmentUid: String, $description: String){
-    updateDocument(uid: $uid, title: $title, departmentUid: $departmentUid, description: $description){
-      document {
+  mutation editBoard($uid: String!, $title: String!, $departmentUid: String, $description: String){
+    updateBoard(uid: $uid, title: $title, departmentUid: $departmentUid, description: $description){
+      board {
           uid
           title
           description

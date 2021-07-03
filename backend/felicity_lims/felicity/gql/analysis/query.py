@@ -115,6 +115,9 @@ class AnalysisQuery(graphene.ObjectType):
     analysis_by_uid = graphene.Field(lambda: a_types.AnalysisType, uid=graphene.String(default_value=""))
     analysis_for_qc = graphene.List(lambda: a_types.AnalysisType)
 
+    # Result Option Queries
+    result_options_by_analysis_uid = graphene.List(lambda: a_types.ResultOptionType, uid=graphene.String(default_value=""))
+
     # AnalysisRequest Queries
     analysis_request_all = SQLAlchemyConnectionField(a_types.AnalysisRequestType.connection)
     analysis_request_by_uid = graphene.Field(lambda: a_types.AnalysisRequestType, uid=graphene.String(default_value=""))
@@ -251,3 +254,8 @@ class AnalysisQuery(graphene.ObjectType):
     def resolve_qc_template_by_uid(self, info, uid):
         qc_template = qc_models.QCTemplate.get(uid=uid)
         return qc_template
+
+    @staticmethod
+    def resolve_result_options_by_analysis_uid(self, info, uid):
+        r_options = a_models.ResultOption.where(analysis_uid__exact=uid).all()
+        return r_options

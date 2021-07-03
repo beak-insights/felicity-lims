@@ -31,6 +31,14 @@ export class AnalysisCategory implements IAnalysisCategory {
   }
 }
 
+
+export interface IResultOption {
+  uid?: string;
+  analysisUid?: string;
+  optionKey?: string;
+  value?: string;
+}
+
 export interface IAnalysisService {
   uid?: string;
   name?: string;
@@ -38,6 +46,7 @@ export interface IAnalysisService {
   description?: string;
   profiles?: IAnalysisProfile[];
   category?: IAnalysisCategory;
+  resultoptions?: IResultOption[],
   categoryUid?: string,
   sortKey?: number;
   active?: boolean;
@@ -53,6 +62,7 @@ export class AnalysisService implements IAnalysisService {
     public keyword: string,
     public profiles: IAnalysisProfile[],
     public category: IAnalysisCategory,
+    public resultoptions: IResultOption[],
     public categoryUid: string,
     public sortKey: number,
     public active: boolean,
@@ -225,6 +235,10 @@ export enum MutationTypes {
   SET_ANALYSES_QC_TEMPLATES = 'SET_ANALYSES_QC_TEMPLATES',
   ADD_QC_TEMPLATE = 'ADD_QC_TEMPLATE',
   UPDATE_QC_TEMPLATE = 'UPDATE_QC_TEMPLATE',
+
+  SET_RESULT_OPTIONS = 'SET_RESULT_OPTIONS',
+  ADD_RESULT_OPTION = 'ADD_RESULT_OPTION',
+  UPDATE_RESULT_OPTION = 'UPDATE_RESULT_OPTION',
 }
 
 export enum ActionTypes {
@@ -252,6 +266,10 @@ export enum ActionTypes {
   UPDATE_QC_TEMPLATE = 'UPDATE_QC_TEMPLATE',
 
   FETCH_SAMPLES = 'FETCH_SAMPLES',
+
+  FETCH_RESULT_OPTIONS = 'FETCH_RESULT_OPTIONS',
+  ADD_RESULT_OPTION = 'ADD_RESULT_OPTION',
+  UPDATE_RESULT_OPTION = 'UPDATE_RESULT_OPTION',
 }
 
 function groupByCategory(analyses: IAnalysisService[]): any {
@@ -300,6 +318,7 @@ export const mutations = <MutationTree<IState>>{
     state.analysesServices = [];
     let services =  parseEdgeNodeToList(payload);
     services.forEach((service: IAnalysisService) => {
+      service.resultoptions = parseEdgeNodeToList(service?.resultoptions) || [];
       service.profiles = parseEdgeNodeToList(service?.profiles) || [];
     })
     state.analysesServices = services;
@@ -307,10 +326,12 @@ export const mutations = <MutationTree<IState>>{
 
   [MutationTypes.UPDATE_ANALYSES_SERVICE](state: IState, payload: IAnalysisService): void {
     const index = state.analysesServices.findIndex(x => x.uid === payload.uid);
+    payload.resultoptions = parseEdgeNodeToList(payload?.resultoptions);
     state!.analysesServices[index] = payload;
   },
 
   [MutationTypes.ADD_ANALYSES_SERVICE](state: IState, payload: IAnalysisService): void {
+    payload.resultoptions = parseEdgeNodeToList(payload?.resultoptions);
     state.analysesServices.push(payload);
   },
 
@@ -372,6 +393,33 @@ export const mutations = <MutationTree<IState>>{
     template.qcLevels = parseEdgeNodeToList(template?.qcLevels) || [];
     template.departments = parseEdgeNodeToList(template?.departments) || [];
     state.qcTemplates.push(template);
+  },
+
+  // RESULT OPTIONS
+  [MutationTypes.UPDATE_RESULT_OPTION](state: IState, payload: any): void {
+    console.log(payload);
+    state?.analysesServices?.forEach(service => {
+      console.log(service?.uid, payload?.analysisUid);
+      if (service?.uid == payload?.analysisUid){
+        const index = service.resultoptions!.findIndex(ro => ro.uid === payload.uid);
+        console.log(service!.resultoptions![index])
+        service!.resultoptions![index] = payload;
+        console.log(service!.resultoptions![index])
+      }
+    });
+    console.log(state?.analysesServices);
+  },
+
+  [MutationTypes.ADD_RESULT_OPTION](state: IState, payload: any): void {
+    state?.analysesServices?.forEach(service => {
+      if (service?.uid == payload?.analysisUid){
+        if(service?.resultoptions){
+          service?.resultoptions?.push(payload);
+        } else {
+          service!.resultoptions = [payload];
+        }
+      }
+    });
   },
 
 };
@@ -461,6 +509,16 @@ export const actions = <ActionTree<IState, RootState>>{
   async [ActionTypes.ADD_QC_TEMPLATE]({ commit }, payload ){
     commit(MutationTypes.ADD_QC_TEMPLATE, payload.data.createQcTemplate.qcTemplate);
   },
+
+  // Result Options
+  async [ActionTypes.ADD_RESULT_OPTION]({ commit }, payload ){
+    commit(MutationTypes.ADD_RESULT_OPTION, payload.data.createResultOption.resultOption);
+  },
+
+  async [ActionTypes.UPDATE_RESULT_OPTION]({ commit }, payload ){
+    commit(MutationTypes.UPDATE_RESULT_OPTION, payload.data.updateResultOption.resultOption);
+  },
+
 
 };
 
