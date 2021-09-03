@@ -103,10 +103,22 @@
 </div>
 
     <section class="my-4">
-      <button @click.prevent="submitResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Submit</button>
-      <button @click.prevent="retractResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Retract</button>
-      <button @click.prevent="verifyResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Verify</button>
-      <button @click.prevent="retestResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Retest</button>
+      <button 
+      v-if="can_submit"
+      @click.prevent="submitResults()" 
+      class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Submit</button>
+      <button 
+      v-if="can_retract"
+      @click.prevent="retractResults()" 
+      class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Retract</button>
+      <button 
+      v-if="can_verify"
+      @click.prevent="verifyResults()" 
+      class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Verify</button>
+      <button 
+      v-if="can_retest"
+      @click.prevent="retestResults()" 
+      class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Retest</button>
     </section>
 
 </template>
@@ -117,7 +129,7 @@ import tabCases from '../comps/CaseTable.vue';
 import tabLogs from '../../_components/timeline/AuditLog.vue';
 
 import Swal from 'sweetalert2';
-import { defineComponent, ref, toRefs, computed, PropType } from 'vue';
+import { defineComponent, ref, toRefs, computed, PropType, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStore } from 'vuex';
 import { useMutation } from '@urql/vue';
@@ -131,6 +143,11 @@ export default defineComponent({
   setup(props) {
     const route = useRoute();
     const store = useStore();
+
+    let can_submit = ref(false);
+    let can_retract = ref(false);
+    let can_verify = ref(false);
+    let can_retest = ref(false);
 
     let allChecked = ref(false);
 
@@ -191,22 +208,32 @@ export default defineComponent({
      } else {
         allChecked.value = false;
      }
+      console.log("check action perms");
+      checkUserActionPermissios()
     }
 
     function check(result): void {
       result.checked = true;
+      console.log("check action perms");
+      checkUserActionPermissios()
     }
 
     function unCheck(result): void {
       result.checked = false;
+      console.log("check action perms");
+      checkUserActionPermissios()
     }
 
-    function toggleCheckAll(): void {
-      analysisResults?.value?.forEach(result => allChecked.value ? check(result) : unCheck(result));
+    async function toggleCheckAll(): void {
+      await analysisResults?.value?.forEach(result => allChecked.value ? check(result) : unCheck(result));
+      console.log("check action perms");
+      checkUserActionPermissios()
     }
 
-    function unCheckAll(): void {
-      analysisResults?.value?.forEach(result => unCheck(result))
+    async function unCheckAll(): void {
+      await analysisResults?.value?.forEach(result => unCheck(result))
+      console.log("check action perms");
+      checkUserActionPermissios()
     }
 
     function profileAnalysesText(profiles: IProfile[], analyses: IAnalysis[]): string {
@@ -270,6 +297,34 @@ export default defineComponent({
         default:
           return false;
       }
+    }
+
+    function checkUserActionPermissios(): void {
+      // reset
+      can_submit.value = false;
+      can_retract.value = false;
+      can_verify.value = false;
+      can_retest.value = false;
+
+      const checked = getResultsChecked();
+      if(checked.length === 0) return;
+
+      // can submit
+      if(checked.every(result => result.status === 'pending')){
+        can_submit.value = true;
+      }
+
+      // can verify/ retract
+      if(checked.every(result => result.status === 'resulted')){
+        can_retract.value = true;
+        can_verify.value = true;
+      }
+
+      // can retest
+      if(checked.every(result => result.status === 'verified')){
+        can_retest.value = true;
+      }
+
     }
 
     const submitResults = async () => {
@@ -400,7 +455,11 @@ export default defineComponent({
       submitResults,
       verifyResults,
       retractResults,
-      retestResults
+      retestResults,
+      can_submit,
+      can_retract,
+      can_verify,
+      can_retest,
     }
   },
 });

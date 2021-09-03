@@ -127,7 +127,6 @@ class WorkSheet(WSBase):
     def has_processed_samples(self):
         states = [
             analysis_conf.states.result.RESULTED,
-            analysis_conf.states.result.TO_BE_VERIFIED,
             analysis_conf.states.result.VERIFIED]
         processed = any([res.status in states for res in self.analysis_results])
         return processed
@@ -136,7 +135,6 @@ class WorkSheet(WSBase):
         if self.state != conf.worksheet_states.TO_BE_VERIFIED:
             states = [
                 analysis_conf.states.result.RESULTED,
-                analysis_conf.states.result.TO_BE_VERIFIED,
                 analysis_conf.states.result.VERIFIED]
 
             if all([res.status in states for res in self.analysis_results]):

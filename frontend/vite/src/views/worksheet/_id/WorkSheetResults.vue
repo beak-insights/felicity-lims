@@ -103,11 +103,21 @@
     </div>
 
     <section class="my-4">
-      <button @click.prevent="unAssignSamples()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Un Assign</button>
-      <button @click.prevent="submitResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Submit</button>
-      <button @click.prevent="retractResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Retract</button>
-      <button @click.prevent="verifyResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Verify</button>
-      <button @click.prevent="retestResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Retest</button>
+      <button  
+      v-if="can_unassign"
+      @click.prevent="unAssignSamples()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Un Assign</button>
+      <button  
+      v-if="can_submit"
+      @click.prevent="submitResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Submit</button>
+      <button  
+      v-if="can_retract"
+      @click.prevent="retractResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Retract</button>
+      <button  
+      v-if="can_verify"
+      @click.prevent="verifyResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Verify</button>
+      <button  
+      v-if="can_retest"
+      @click.prevent="retestResults()" class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Retest</button>
     </section>
 
   </div>
@@ -134,6 +144,12 @@ export default defineComponent({
   setup(props) {
     const route = useRoute();
     const store = useStore();
+
+    let can_submit = ref(false);
+    let can_retract = ref(false);
+    let can_verify = ref(false);
+    let can_retest = ref(false);
+    let can_unassign = ref(false);
 
     let allChecked = ref(false);
     let viewDetail = ref(false);
@@ -196,6 +212,7 @@ export default defineComponent({
      } else {
         allChecked.value = false;
      }
+     checkUserActionPermissios()
     }
 
     function check(result): void {
@@ -204,6 +221,7 @@ export default defineComponent({
         return;
       };
       result.checked = true;
+      checkUserActionPermissios()
     }
 
     function checkDisabled(result): boolean {
@@ -212,14 +230,17 @@ export default defineComponent({
 
     function unCheck(result): void {
       result.checked = false;
+      checkUserActionPermissios()
     }
 
     function toggleCheckAll(): void {
       worksheet?.value?.analysisResults?.forEach(result => allChecked.value ? check(result) : unCheck(result));
+      checkUserActionPermissios()
     }
 
     function unCheckAll(): void {
       worksheet?.value?.analysisResults?.forEach(result => unCheck(result))
+      checkUserActionPermissios()
     }
 
     function analysesText(analyses: IAnalysis[]): string {
@@ -297,6 +318,39 @@ export default defineComponent({
           return false;
       }
     }
+
+
+
+    function checkUserActionPermissios(): void {
+      // reset
+      can_submit.value = false;
+      can_unassign.value = false;
+      can_retract.value = false;
+      can_verify.value = false;
+      can_retest.value = false;
+
+      const checked = getResultsChecked();
+      if(checked.length === 0) return;
+
+      // can submit
+      if(checked.every(result => result.status === 'pending')){
+        can_submit.value = true;
+        can_unassign.value = true;
+      }
+
+      // can verify/ retract
+      if(checked.every(result => result.status === 'resulted')){
+        can_retract.value = true;
+        can_verify.value = true;
+      }
+
+      // can retest
+      if(checked.every(result => result.status === 'verified')){
+        can_retest.value = true;
+      }
+
+    }
+
 
     const submitResults = async () => {
       try {
@@ -455,7 +509,12 @@ export default defineComponent({
       submitResults,
       verifyResults,
       retractResults,
-      retestResults
+      retestResults,
+      can_submit,
+      can_retract,
+      can_verify,
+      can_retest,
+      can_unassign,
     };
   },
 });
