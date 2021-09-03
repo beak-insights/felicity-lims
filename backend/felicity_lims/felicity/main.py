@@ -8,7 +8,10 @@ if initialize_felicity():
 
     from starlette.middleware.authentication import AuthenticationMiddleware
     from starlette.authentication import (
-        AuthenticationBackend, AuthenticationError, SimpleUser, UnauthenticatedUser,
+        AuthenticationBackend,
+        AuthenticationError,
+        SimpleUser,
+        # UnauthenticatedUser,
         AuthCredentials
     )
     import base64
@@ -57,7 +60,7 @@ if initialize_felicity():
                 return AuthCredentials(["authenticated"]), SimpleUser(username)
 
             except (ValueError, UnicodeDecodeError, binascii.Error) as exc:
-                raise AuthenticationError('Invalid auth credentials')
+                raise AuthenticationError(f'Invalid auth credentials: {exc}')
 
 
     flims = FastAPI(

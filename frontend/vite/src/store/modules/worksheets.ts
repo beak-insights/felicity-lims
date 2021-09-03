@@ -8,7 +8,7 @@ import {
 } from '../../graphql/worksheet.queries';
 import { IInstrument } from './setup';
 import { IAnalysisService } from './analyses';
-import { parseEdgeNodeToList, parseData, snakeToCamel } from '../../utils';
+import { parseEdgeNodeToList, parseData, snakeToCamel, keysToCamel } from '../../utils';
 import { IAnalysisResult } from './samples';
 
 
@@ -177,7 +177,8 @@ export const mutations = <MutationTree<IState>>{
       const data: any = template.reserved;
       const reserved = Object.entries(parseData(data)) as any[];
       let new_res: IReserved[] = [];
-      reserved?.forEach(item => new_res.push(snakeToCamel(item[1]) as IReserved || {}));
+      console.log(reserved);
+      reserved?.forEach(item => new_res.push(keysToCamel(item[1]) as IReserved || {}));
       template.reserved = new_res;
     });
     console.log(wst)

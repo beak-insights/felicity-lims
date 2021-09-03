@@ -1,5 +1,5 @@
 <template>
-  <div class="px-6">
+  <div class="">
     <h4>Sippliers Page</h4>
   </div>
 </template>

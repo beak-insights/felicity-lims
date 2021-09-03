@@ -144,7 +144,7 @@ class WorkSheet(WSBase):
 
     def verify(self):
         if self.state != conf.worksheet_states.VERIFIED:
-            states = [analysis_conf.states.result.VERIFIED]
+            states = [analysis_conf.states.result.VERIFIED, analysis_conf.states.result.RETRACTED]
 
             if all([res.status in states for res in self.analysis_results]):
                 self.change_state(conf.worksheet_states.VERIFIED)

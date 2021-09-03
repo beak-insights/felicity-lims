@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-4 px-6">
+  <div class="mt-4">
     <div class="flex items-center">
       <h1 class="h1 my-4 font-bold text-dark-700">WorkSheet Templates</h1>
         <button

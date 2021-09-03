@@ -610,6 +610,11 @@ class SubmitAnalysisResults(graphene.Mutation):
             if not a_result:
                 raise GraphQLError(f"AnalysisResult with uid {uid} not found")
 
+            # only submit results in pending state
+            if a_result.status not in [states.result.PENDING]:
+                return_results.append(a_result)
+                continue
+
             analysis_result = a_result.to_dict(nested=False)
             # analysis_result = jsonable_encoder(a_result)
 
@@ -633,7 +638,7 @@ class SubmitAnalysisResults(graphene.Mutation):
             # check if all sibling analyses for connected sample are resulted and change sample state \
             # to to_be_verified
 
-            statuses = [states.result.RESULTED]  # or not in [states.result.PENDING, states.result.RETRACTED]
+            statuses = [states.result.RESULTED, states.result.RETRACTED, states.result.VERIFIED]
             siblings = a_result.sample.analysis_results
             match = all([(sibling.status in statuses) for sibling in siblings])
             if match:
@@ -675,10 +680,10 @@ class VerifyAnalysisResults(graphene.Mutation):
             else:
                 continue
 
-            # check if all sibling analyses for connected sample are verified and change sample state \
+            # check if all sibling analyses for connected sample are verified/retracted and change sample state \
             # to verified
 
-            statuses = [states.result.VERIFIED]
+            statuses = [states.result.VERIFIED, states.result.RETRACTED]
             siblings = a_result.sample.analysis_results
             match = all([(sibling.status in statuses) for sibling in siblings])
             if match:
@@ -714,12 +719,10 @@ class RetractAnalysisResults(graphene.Mutation):
                 raise GraphQLError(f"AnalysisResult with uid {_ar_uid} not found")
 
             status = getattr(a_result, 'status', None)
-            if status not in [states.result.RESULTED]:
-                continue
-            else:
+            if status in [states.result.RESULTED]:
                 retest = retest_analysis_result(a_result)
-                a_result.change_status(states.result.RETRACTED)
                 a_result.hide_report()
+                a_result.change_status(states.result.RETRACTED)
 
                 # if in worksheet then keep add retest to ws
                 if a_result.worksheet_uid:
@@ -728,7 +731,10 @@ class RetractAnalysisResults(graphene.Mutation):
                     retest.assigned = True
                     retest.save()
 
+                # add retest
                 return_results.append(retest)
+
+            # add original
             return_results.append(a_result)
 
         ok = True
@@ -755,14 +761,13 @@ class RetestAnalysisResults(graphene.Mutation):
                 raise GraphQLError(f"AnalysisResult with uid {_ar_uid} not found")
 
             status = getattr(a_result, 'status', None)
-            if status not in [states.result.RESULTED]:
-                continue
-            else:
+            if status in [states.result.RESULTED]:
                 retest = retest_analysis_result(a_result)
-                a_result.verify()
                 a_result.hide_report()
+                a_result.verify()
 
                 return_results.append(retest)
+
             return_results.append(a_result)
 
         ok = True

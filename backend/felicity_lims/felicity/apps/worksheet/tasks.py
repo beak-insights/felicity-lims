@@ -159,5 +159,3 @@ def setup_ws_quality_control(ws):
                 ar: AnalysisResult = AnalysisResult.create(a_result_schema)
                 position = get_sample_position(reserved_pos, level.uid)
                 ar.assign(ws.uid, position)
-
-

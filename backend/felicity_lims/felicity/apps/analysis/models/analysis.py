@@ -128,7 +128,7 @@ class ResultOption(BaseAuditDBModel):
 
 
 class AnalysisRequest(BaseAuditDBModel):
-    """AnalysisRequest"""
+    """AnalysisRequest a.k.a Laboratory Request"""
     patient_uid = Column(Integer, ForeignKey('patient.uid'))
     patient = relationship(pt_models.Patient, backref="analysis_requests")
     client_uid = Column(Integer, ForeignKey('client.uid'))

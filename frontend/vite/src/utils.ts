@@ -82,3 +82,34 @@ export const snakeToCamel = (val: any) => {
     }
     throw "--- error converting ---"
 }
+
+export const toCamel = (str: string) => {
+    return str.replace(/([-_][a-z])/ig, ($1) => {
+      return $1.toUpperCase()
+        .replace('-', '')
+        .replace('_', '');
+    });
+  };
+  
+export  const isObject = (obj: any) => {
+    return obj === Object(obj) && !Array.isArray(obj) && typeof obj !== 'function';
+};
+
+export const keysToCamel:any = (obj: any) => {
+    if (isObject(obj)) {
+      const n = {};
+  
+      Object.keys(obj)
+        .forEach((k) => {
+          n[toCamel(k)] = keysToCamel(obj[k]);
+        });
+  
+      return n;
+    } else if (Array.isArray(obj)) {
+      return obj.map((i) => {
+        return keysToCamel(i);
+      });
+    }
+    
+    return obj;
+};

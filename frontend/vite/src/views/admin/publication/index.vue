@@ -1,6 +1,6 @@
 <template>
-  <div class="px-6">
-    <h4>Sippliers Page</h4>
+  <div class="">
+    <h4>Publication Preferences:> email and sms</h4>
   </div>
 </template>
 

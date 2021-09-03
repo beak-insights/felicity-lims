@@ -28,4 +28,7 @@ def retest_analysis_result(to_retest: results.AnalysisResult) -> results.Analysi
     retest.parent_id = to_retest.uid
     retest.save()
 
+    # to_retest.reportable = False
+    # to_retest.save()
+
     return retest

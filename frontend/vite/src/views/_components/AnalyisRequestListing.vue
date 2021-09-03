@@ -1,5 +1,4 @@
 <template>
-
     <div class="overflow-x-auto mt-4">
         <div class="align-middle inline-block min-w-full shadow overflow-hidden bg-white shadow-dashboard px-2 pt-1 rounded-bl-lg rounded-br-lg">
             <table class="min-w-full">

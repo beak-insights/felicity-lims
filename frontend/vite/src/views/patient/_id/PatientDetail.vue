@@ -2,6 +2,11 @@
   <div class="">
       <section class="col-span-12" >
 
+        <section class="my-4">
+          <button class="px-2 py-1 mr-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none"
+          @click.prevent="addSample(patient)">Add Sample</button>
+        </section>
+
         <!-- Sample and Case Data -->
         <nav class="bg-white px-6 pt-2 shadow-md mt-2">
           <div class="-mb-px flex justify-start">
@@ -51,6 +56,7 @@ import tabLogs from '../../_components/AuditLog.vue';
 
 import { defineComponent, ref, toRefs, computed, PropType } from 'vue';
 import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
   name: 'patient-detail',
@@ -61,16 +67,27 @@ export default defineComponent({
   },
   setup() {
     let store = useStore();
+    let router = useRouter();
 
     let currentTab = ref('samples');
     const tabs = ['samples', 'cases', 'logs'];
     let currentTabComponent = computed(() => 'tab-' + currentTab.value);
+
+    function addSample(patient: IPatient): void {
+      router?.push({
+          name: 'samples-add',
+          params: {
+              patientUid: patient.uid
+          }
+      })
+    }
 
     return {
       tabs,
       currentTab,
       currentTabComponent,
       patient: computed(() => store.getters.getPatient),
+      addSample,
     };
   },
 });

@@ -91,10 +91,10 @@
                           </div>
                         </td>
                         <td class="px-1 py-1 whitespace-no-wrap text-right border-b border-gray-500 text-sm leading-5">
-                          <button @click.prevent="submitResult(result)" 
+                          <!-- <button @click.prevent="submitResult(result)" 
                             class="p-1 ml-2 border-white border text-gray-500 rounded transition duration-300 hover:border-blue-500 hover:text-blue-500 focus:outline-none">
                             submit
-                          </button>
+                          </button> -->
                         </td>
                     </tr>
             </tbody>
@@ -150,6 +150,7 @@ export default defineComponent({
     }    
 
     function submitResult(result: ISampleResult): void {
+      if(result.status !== "pending") return;
       result.result = result.editResult;
       submitAnalysesResults([{ uid: result.uid , result: result.result }])
     }    

@@ -1,6 +1,6 @@
 <template>
 
-    <div class="container  mx-auto w-full my-4">
+    <div class="container w-full my-4">
         <hr>
           <button @click="FormManager(true, null)"
            class="px-2 py-1 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">Add Sample Type</button>

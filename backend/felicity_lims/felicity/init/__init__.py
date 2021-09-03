@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def initialize_felicity() -> bool:
-    logger.info("Initializing Felicity LIMS")
+    logger.info("Initializing Felicity LIMS ...")
     # Felicity Health Status Checks
     check_db_conn_status()
     
@@ -23,5 +23,5 @@ def initialize_felicity() -> bool:
     create_categories()
     create_qc_levels()
     
-    logger.info("Felicity LIMS Initializing Success :) YaY")
+    logger.info("Felicity LIMS Initialisation completed.")
     return True

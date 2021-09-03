@@ -19,10 +19,10 @@ worksheet_types = WSTypes()
 class WSStates(object):
     """Worksheet States
     """
-    PENDING_ASSIGNMENT = 'pending_assignment'
-    OPEN = 'open'
-    TO_BE_VERIFIED = 'to_be_verified'
-    VERIFIED = 'verified'
+    PENDING_ASSIGNMENT = 'pending_assignment'  # worksheets without samples
+    OPEN = 'open'  # worksheets containing at least a single 'pending' analyte
+    TO_BE_VERIFIED = 'to_be_verified'  # worksheets whose analytes are results but not all approved/verified
+    VERIFIED = 'verified'  # worksheets where all analytes are approved/verified
 
 
 worksheet_states = WSStates()
