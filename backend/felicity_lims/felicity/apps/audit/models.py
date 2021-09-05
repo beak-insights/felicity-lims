@@ -1,13 +1,12 @@
+import json
+import logging
+
 from sqlalchemy import Column, Integer, String, UnicodeText
 
 from felicity.apps import DBModel
 
-
-def _current_user_id_or_none():
-    try:
-        return 1  # current_user.id
-    except Exception:
-        return None
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class AuditLog(DBModel):
@@ -22,23 +21,54 @@ class AuditLog(DBModel):
                                           "column names and new values")
 
     def __init__(self, target_type, target_id, action, state_before, state_after):
-        self.user_id = _current_user_id_or_none()  # get it from state_before or state_after
+
+        self.state_after = state_after
         self.target_type = target_type
         self.target_id = target_id
         self.action = action
         self.state_before = state_before
-        self.state_after = state_after
+
+        if isinstance(state_after, str):
+            state_after = json.loads(state_after)
+
+        try:
+            updated_by_uid = state_after['updated_by_uid']
+        except KeyError:
+            updated_by_uid = None
+
+        self.user_id = updated_by_uid  # current user id
 
     def __repr__(self):
         return '<AuditLog %r: %r -> %r>' % (self.user_id, self.target_type, self.action)
 
     def save(self, connection):
+
+        state_after = self.state_after
+        if isinstance(state_after, str):
+            state_after = json.loads(state_after)
+
+        state_before = self.state_before
+        if isinstance(state_before, str):
+            state_before = json.loads(state_before)
+
+        to_delete = []
+        for key in state_after.keys():
+            if state_after[key] == state_before[key]:
+                to_delete.append(key)
+
+        for _key in to_delete:
+            del state_after[_key]
+            del state_before[_key]
+
+        state_after = json.dumps(state_after)
+        state_before = json.dumps(state_before)
+
         connection.execute(
             self.__table__.insert(),
             user_id=self.user_id,
             target_type=self.target_type,
             target_id=self.target_id,
             action=self.action,
-            state_before=self.state_before,
-            state_after=self.state_after
+            state_before=state_before,
+            state_after=state_after
         )

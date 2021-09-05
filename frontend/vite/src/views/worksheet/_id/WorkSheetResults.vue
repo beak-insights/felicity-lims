@@ -338,14 +338,10 @@ export default defineComponent({
         can_unassign.value = true;
       }
 
-      // can verify/ retract
+      // can verify/ retract/ retest
       if(checked.every(result => result.status === 'resulted')){
         can_retract.value = true;
         can_verify.value = true;
-      }
-
-      // can retest
-      if(checked.every(result => result.status === 'verified')){
         can_retest.value = true;
       }
 

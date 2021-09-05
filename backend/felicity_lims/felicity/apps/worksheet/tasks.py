@@ -51,7 +51,7 @@ def populate_worksheet_plate(job_uid: int):
         return
 
     # Enforce WS sample size limit
-    if not ws.assigned_count < ws.ws.number_of_samples:
+    if not ws.assigned_count < ws.number_of_samples:
         job.change_status(new_status=job_states.FAILED, change_reason=f"WorkSheet {ws_uid} already has "
                                                                       f"{ws.assigned_count} assigned samples")
         logger.warning(f"WorkSheet {ws_uid} already has {ws.assigned_count} assigned samples")
@@ -186,7 +186,7 @@ def setup_ws_quality_control(ws):
                 s_in = SampleCreate(
                     sampletype_uid=sample_type.uid,
                     internal_use=True,
-                    status=analysis_conf.states.sample.PENDING,
+                    status=analysis_conf.states.sample.RECEIVED,
                 )
                 sample: Sample = Sample.create(s_in)
                 sample.qc_set_uid = qc_set.uid

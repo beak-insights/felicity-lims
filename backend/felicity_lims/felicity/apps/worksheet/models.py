@@ -1,10 +1,10 @@
 from datetime import datetime
 
-from sqlalchemy import Column, String, Integer, ForeignKey, Boolean
+from sqlalchemy import Column, String, Integer, ForeignKey, Boolean, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import JSONB
 
-from felicity.database.base_class import DBModel
+from felicity.apps import BaseAuditDBModel, DBModel, Auditable
 from felicity.apps.core.utils import sequencer
 from felicity.apps.setup.models.setup import Instrument
 from felicity.apps.user.models import User
@@ -101,11 +101,11 @@ class WSALink(DBModel):
     analysis_uid = Column(Integer, ForeignKey('analysis.uid'), primary_key=True)
 
 
-class WorkSheet(WSBase):
+class WorkSheet(Auditable, WSBase):
     template_uid = Column(Integer, ForeignKey('worksheettemplate.uid'), nullable=False)
     template = relationship('WorkSheetTemplate', backref='worksheets')
     analyst_uid = Column(Integer, ForeignKey('user.uid'), nullable=False)
-    analyst = relationship(User, backref='worksheets')
+    analyst = relationship(User, foreign_keys=[analyst_uid], backref="analysed_worksheets")
     worksheet_id = Column(String, index=True, unique=True, nullable=False)
     profiles = relationship(analysis_models.Profile, secondary="wsplink", backref="worksheets")
     analyses = relationship(analysis_models.Analysis, secondary="wsalink", backref="worksheets")
@@ -114,6 +114,13 @@ class WorkSheet(WSBase):
     sample_type_uid = Column(Integer, ForeignKey('sampletype.uid'), nullable=False)
     sample_type = relationship(analysis_models.SampleType, backref='worksheets')
     assigned_count = Column(Integer, nullable=False, default=0)
+    #
+    submitted_by_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
+    submitted_by = relationship(User, foreign_keys=[submitted_by_uid], backref="submitted_worksheets")
+    date_submitted = Column(DateTime, nullable=True)
+    verified_by_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
+    verified_by = relationship(User, foreign_keys=[verified_by_uid], backref="verified_worksheets")
+    date_verified = Column(DateTime, nullable=True)
 
     def reset_assigned_count(self):
         # TODO: DO NOT COUNT QC SAMPLES

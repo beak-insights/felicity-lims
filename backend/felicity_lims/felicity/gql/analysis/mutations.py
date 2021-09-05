@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 import graphene
 from graphql import GraphQLError
@@ -15,6 +16,7 @@ from felicity.apps.analysis.utils import (
     retest_analysis_result
 )
 from felicity.apps.analysis import schemas
+from felicity.gql import auth_from_info, verify_user_auth
 from felicity.gql.analysis import types
 from felicity.apps.patient.models import logger
 from felicity.apps.analysis.conf import priorities, states
@@ -39,6 +41,9 @@ class CreateSampleType(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, name, abbr, active=True, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create sample types")
+
         if not name or not abbr:
             raise GraphQLError("Name and Description are mandatory")
 
@@ -74,6 +79,9 @@ class UpdateSampleType(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, uid, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update sample types")
+
         sampletype = analysis_models.SampleType.get(uid=uid)
         if not sampletype:
             raise GraphQLError(f"Sample type with uid {uid} does not exist")
@@ -106,6 +114,9 @@ class CreateResultOption(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, analysis_uid, option_key, value, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can add result options")
+
         if not analysis_uid:
             raise GraphQLError("Analysis to attach Result Option Required")
 
@@ -141,6 +152,9 @@ class UpdateResultOption(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, uid, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update result options")
+
         result_option = analysis_models.ResultOption.get(uid=uid)
         if not result_option:
             raise GraphQLError(f"ResultOption with uid {uid} does not exist")
@@ -175,6 +189,9 @@ class CreateAnalysisCategory(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, name, description, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create analysis categories")
+
         logger.info("hello there 1")
         if not name or not description:
             raise GraphQLError("Name and Description are mandatory")
@@ -209,6 +226,9 @@ class UpdateAnalysisCategory(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, uid, **kwargs): # noqa
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update analysis categories")
+
         analysis_category = analysis_models.AnalysisCategory.get(uid=uid)
         if not analysis_category:
             raise GraphQLError(f"AnalysisCategory with uid {uid} does not exist")
@@ -243,6 +263,9 @@ class CreateProfile(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, name, description, active=True, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create analysis profiles")
+
         if not name or not description:
             raise GraphQLError("Name and Description are mandatory")
 
@@ -278,6 +301,9 @@ class UpdateProfile(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, uid, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update analysis profiles")
+
         profile = analysis_models.Profile.get(uid=uid)
         if not profile:
             raise GraphQLError(f"Profile with uid {uid} does not exist")
@@ -326,6 +352,9 @@ class CreateAnalysis(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, name, description, keyword, active=True, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create analysis")
+
         if not name or not description:
             raise GraphQLError("Name and Description are mandatory")
 
@@ -377,6 +406,9 @@ class UpdateAnalysis(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, uid, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update analysis")
+
         analysis = analysis_models.Analysis.get(uid=uid)
         if not analysis:
             raise GraphQLError(f"Analysis with uid {uid} does not exist -- cannot update")
@@ -427,7 +459,10 @@ class CreateAnalysisRequest(graphene.Mutation):
     analysisrequest = graphene.Field(lambda: types.AnalysisRequestType)
 
     @staticmethod
-    def mutate(root, info, patient_uid, client_uid, priority=0, **kwargs):
+    def mutate(root, info, patient_uid, client_uid, priority=priorities.sample.NORMAL, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create analysis requests")
+
         samples = kwargs.get('samples')
         logger.info(f"samples {samples}")
 
@@ -466,7 +501,7 @@ class CreateAnalysisRequest(graphene.Mutation):
                 'sampletype_uid': _st_uid,
                 'sample_id': None,  # analysis_models.Sample.create_sample_id(sampletype=stype),
                 'priority': priority,
-                'status': states.sample.PENDING
+                'status': states.sample.RECEIVED
             }
 
             profiles = []
@@ -524,6 +559,9 @@ class UpdateAnalysisRequest(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, uid, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update analysis requests")
+
         analysisrequest = analysis_models.AnalysisRequest.get(uid=uid)
         if not analysisrequest:
             raise GraphQLError(f"AnalysisRequest with uid {uid} does not exist")
@@ -566,6 +604,9 @@ class UpdateSample(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, uid, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update samples")
+
         sample = analysis_models.Sample.get(uid=uid)
         if not sample:
             raise GraphQLError(f"Sample with uid {uid} not found")
@@ -599,6 +640,9 @@ class SubmitAnalysisResults(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, analysis_results, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can submit analysis results")
+
         return_results = []
 
         if len(analysis_results) == 0:
@@ -606,7 +650,7 @@ class SubmitAnalysisResults(graphene.Mutation):
 
         for _ar in analysis_results:
             uid = _ar['uid']
-            a_result = result_models.AnalysisResult.get(uid=uid)
+            a_result: result_models.AnalysisResult  = result_models.AnalysisResult.get(uid=uid)
             if not a_result:
                 raise GraphQLError(f"AnalysisResult with uid {uid} not found")
 
@@ -632,6 +676,16 @@ class SubmitAnalysisResults(graphene.Mutation):
             else:
                 setattr(a_result, 'status', states.result.RESULTED)
 
+                # set submitter ad date_submitted
+                setattr(a_result, 'submitted_by_uid', felicity_user.uid)
+                setattr(a_result, 'date_submitted', datetime.now())
+
+                # set updated_by
+                try:
+                    setattr(a_result, 'updated_by_uid', felicity_user.uid)
+                except AttributeError as e:
+                    pass
+
             a_result_in = schemas.AnalysisResultUpdate(**a_result.to_dict())
             a_result.update(a_result_in)
 
@@ -642,7 +696,7 @@ class SubmitAnalysisResults(graphene.Mutation):
             siblings = a_result.sample.analysis_results
             match = all([(sibling.status in statuses) for sibling in siblings])
             if match:
-                a_result.sample.submit()
+                a_result.sample.submit(submitted_by=felicity_user)
 
             # try to submit associated worksheet
             if a_result.worksheet:
@@ -663,20 +717,23 @@ class VerifyAnalysisResults(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, analyses, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can verify analysis results")
+
         return_results = []
 
         if len(analyses) == 0:
             raise GraphQLError(f"No analyses to verify are provided!")
 
         for _ar_uid in analyses:
-            a_result = result_models.AnalysisResult.get(uid=_ar_uid)
+            a_result: result_models.AnalysisResult = result_models.AnalysisResult.get(uid=_ar_uid)
             if not a_result:
                 raise GraphQLError(f"AnalysisResult with uid {_ar_uid} not found")
 
             # No Empty Results
             status = getattr(a_result, 'status', None)
             if status == states.result.RESULTED:
-                a_result.verify()
+                a_result.verify(verifier=felicity_user)
             else:
                 continue
 
@@ -687,7 +744,7 @@ class VerifyAnalysisResults(graphene.Mutation):
             siblings = a_result.sample.analysis_results
             match = all([(sibling.status in statuses) for sibling in siblings])
             if match:
-                a_result.sample.verify()
+                a_result.sample.verify(verified_by=felicity_user)
 
             # try to submit associated worksheet
             if a_result.worksheet:
@@ -708,6 +765,9 @@ class RetractAnalysisResults(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, analyses, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can retract analysis results")
+
         return_results = []
 
         if len(analyses) == 0:
@@ -722,7 +782,7 @@ class RetractAnalysisResults(graphene.Mutation):
             if status in [states.result.RESULTED]:
                 retest = retest_analysis_result(a_result)
                 a_result.hide_report()
-                a_result.change_status(states.result.RETRACTED)
+                a_result.retract(retracted_by=felicity_user)
 
                 # if in worksheet then keep add retest to ws
                 if a_result.worksheet_uid:
@@ -750,6 +810,9 @@ class RetestAnalysisResults(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, analyses, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can retest analysis results")
+
         return_results = []
 
         if len(analyses) == 0:
@@ -764,7 +827,7 @@ class RetestAnalysisResults(graphene.Mutation):
             if status in [states.result.RESULTED]:
                 retest = retest_analysis_result(a_result)
                 a_result.hide_report()
-                a_result.verify()
+                a_result.verify(verifier=felicity_user)
 
                 return_results.append(retest)
 
@@ -794,6 +857,9 @@ class CreateQCSet(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, samples, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create qc-sets")
+
         if not samples or len(samples) == 0:
             raise GraphQLError("There are No QC Requests to create")
 
@@ -884,6 +950,9 @@ class CreateQCLevel(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, level, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create qc-levels")
+
         if not level:
             raise GraphQLError("Level Name is mandatory")
 
@@ -914,6 +983,9 @@ class UpdateQCLevel(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, uid, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update qc-levels")
+
         qc_level = qc_models.QCLevel.get(uid=uid)
         if not qc_level:
             raise GraphQLError(f"QCLevel with uid {uid} does not exist")
@@ -949,6 +1021,9 @@ class CreateQCTemplate(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, name, description, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create qc-templates")
+
         if not name:
             raise GraphQLError("Name is mandatory")
 
@@ -1002,6 +1077,9 @@ class UpdateQCTemplate(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, uid, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update qc-templates")
+
         qc_template = qc_models.QCTemplate.get(uid=uid)
         if not qc_template:
             raise GraphQLError(f"QCTemplate with uid {uid} does not exist")

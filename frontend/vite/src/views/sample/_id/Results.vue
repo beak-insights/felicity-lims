@@ -208,31 +208,26 @@ export default defineComponent({
      } else {
         allChecked.value = false;
      }
-      console.log("check action perms");
       checkUserActionPermissios()
     }
 
     function check(result): void {
       result.checked = true;
-      console.log("check action perms");
       checkUserActionPermissios()
     }
 
     function unCheck(result): void {
       result.checked = false;
-      console.log("check action perms");
       checkUserActionPermissios()
     }
 
     async function toggleCheckAll(): void {
       await analysisResults?.value?.forEach(result => allChecked.value ? check(result) : unCheck(result));
-      console.log("check action perms");
       checkUserActionPermissios()
     }
 
     async function unCheckAll(): void {
       await analysisResults?.value?.forEach(result => unCheck(result))
-      console.log("check action perms");
       checkUserActionPermissios()
     }
 
@@ -314,14 +309,10 @@ export default defineComponent({
         can_submit.value = true;
       }
 
-      // can verify/ retract
+      // can verify/ retract/retest
       if(checked.every(result => result.status === 'resulted')){
         can_retract.value = true;
         can_verify.value = true;
-      }
-
-      // can retest
-      if(checked.every(result => result.status === 'verified')){
         can_retest.value = true;
       }
 

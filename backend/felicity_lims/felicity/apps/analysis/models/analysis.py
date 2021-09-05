@@ -12,6 +12,7 @@ from felicity.apps.core import BaseMPTT
 from felicity.apps.core.utils import sequencer
 from felicity.apps.patient import models as pt_models
 from felicity.apps import BaseAuditDBModel, DBModel, Auditable
+from felicity.apps.user.models import User
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -205,7 +206,14 @@ class Sample(Auditable, BaseMPTT):
     priority = Column(Integer, nullable=False, default=0)
     status = Column(String, nullable=False)
     assigned = Column(Boolean(), default=False)
+    submitted_by_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
+    submitted_by = relationship(User, foreign_keys=[submitted_by_uid], backref="submitted_samples")
+    date_submitted = Column(DateTime, nullable=True)
+    verified_by_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
+    verified_by = relationship(User, foreign_keys=[verified_by_uid], backref="verified_samples")
+    date_verified = Column(DateTime, nullable=True)
     invalidated_by_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
+    invalidated_by = relationship(User, foreign_keys=[invalidated_by_uid], backref="invalidated_samples")
     date_invalidated = Column(DateTime, nullable=True)
     rejection_reasons = relationship(RejectionReason, secondary="rrslink", backref="samples")
     internal_use = Column(Boolean(), default=False)
@@ -229,8 +237,9 @@ class Sample(Auditable, BaseMPTT):
         self.status = states.sample.CANCELLED
         self.save()
 
-    def submit(self):
+    def submit(self, submitted_by):
         self.status = states.sample.TO_BE_VERIFIED
+        self.updated_by_uid = submitted_by.uid  # noqa
         self.save()
 
     def assign(self):
@@ -241,8 +250,9 @@ class Sample(Auditable, BaseMPTT):
         self.assigned = False
         self.save()
 
-    def verify(self):
+    def verify(self, verified_by):
         self.status = states.sample.VERIFIED
+        self.updated_by_uid = verified_by.uid  # noqa
         self.save()
 
         # DO REFLEX HERE

@@ -5,8 +5,11 @@ import graphene
 import graphene_sqlalchemy
 from abc import abstractmethod
 
+from felicity.apps.user.models import UserAuth
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 #
 # All my mutations subclass AuthorizedMutation and just implement their
@@ -33,7 +36,8 @@ class AuthorizedMutation(relay.ClientIDMutation):
 def anonymous_return(value):
     def anonymous_return_decorator(func):
         def anonymous_return_wrapper(obj, info, **kwargs):
-            has_authenticated = is_authenticated(info.context.get('request')) or same_origin(info.context.get('request'))
+            has_authenticated = is_authenticated(info.context.get('request')) or same_origin(
+                info.context.get('request'))
             if has_authenticated:
                 logger.info(f"has_authenticated")
                 return func(obj, info, **kwargs)
@@ -42,7 +46,9 @@ def anonymous_return(value):
             if callable(value):
                 return value()
             return value
+
         return anonymous_return_wrapper
+
     return anonymous_return_decorator
 
 
@@ -61,13 +67,6 @@ class AuthenticationRequired(graphene.ObjectType):
 
 
 def is_authenticated(request):
-    # logger.info(request)
-
-    # logger.info(f"{dir(request)}")
-    # logger.info(f"{request.headers}")
-    # logger.info(f"{request.user}")
-    # logger.info(f"{dir(request.user)}")
-
     return request.user.is_authenticated
 
 
@@ -86,3 +85,45 @@ class FilterableConnectionField(graphene_sqlalchemy.SQLAlchemyConnectionField):
             if field not in cls.RELAY_ARGS:
                 query = query.filter(getattr(model, field) == value)
         return query
+
+
+def auth_from_info(info):
+    is_auth = is_authenticated(info.context['request'])
+
+    try:
+        username = info.context['request'].user.username
+    except AttributeError:
+        username = None
+
+    if not username:
+        return False, None
+
+    auth = UserAuth.get_by_username(username)
+    if not auth:
+        return False, None
+
+    user = getattr(auth, auth.user_type)
+    if not user:
+        return False, None
+
+    # extract other info from request headers
+
+    # try:
+    #     user_role = info.context['request'].headers.get('x-felicity-role')
+    # except AttributeError:
+    #     user_role = None
+    #
+    # try:
+    #     user_id = info.context['request'].headers.get('x-felicity-user-id')
+    # except AttributeError:
+    #     token = None
+
+    return is_auth, user
+
+
+def verify_user_auth(is_auth: bool = False, user=None, err_msg: str = None) -> None:
+    if not is_auth:
+        raise GraphQLError(f"Please login: {err_msg}")
+
+    if not user:
+        raise GraphQLError(f"Failed to acquire authenticated user")

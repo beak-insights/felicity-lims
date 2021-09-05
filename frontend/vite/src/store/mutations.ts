@@ -66,6 +66,7 @@ export const mutations = <MutationTree<IState>>{
   [MutationTypes.SET_AUDIT_LOGS](state: IState, payload): void {
     let logs = parseEdgeNodeToList(payload) || [];
     logs?.forEach((log: any) => {
+      console.log(log);
       if(typeof(log.stateAfter) === "string"){
         log.stateAfter = JSON.parse(log.stateAfter);
         log.stateBefore = JSON.parse(log.stateBefore);

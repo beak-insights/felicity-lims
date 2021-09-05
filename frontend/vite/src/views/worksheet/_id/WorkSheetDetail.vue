@@ -23,7 +23,11 @@
         <div>
           <tab-worksheet-results v-if="currentTab === 'detail'" />
           <tab-assign-samples v-if="currentTab === 'assign-samples'"/>
-          <tab-logs v-if="currentTab === 'logs'"/>
+          <tab-logs 
+          v-if="currentTab === 'logs'"
+          targetType="worksheet"
+          :targetId="worksheet?.uid"
+          />
         </div>
 
       </section>
@@ -48,8 +52,10 @@
 import tabAssignSamples from './WorkSheetAssign.vue';
 import tabWorksheetResults from './WorkSheetResults.vue';
 import tabLogs from '../../_components/AuditLog.vue';
+import { IWorkSheet } from '../../../store/modules/worksheets'
 
 import { defineComponent, ref, toRefs, computed, PropType } from 'vue';
+import { useStore } from 'vuex';
 
 export default defineComponent({
   name: 'worksheet-detail',
@@ -60,15 +66,19 @@ export default defineComponent({
   },
 
   setup(props) {
+    let store = useStore();
 
     let currentTab = ref('detail');
     const tabs = ['detail', 'assign-samples', 'logs'];
     let currentTabComponent = computed(() => 'tab-' + currentTab.value);
 
+    const worksheet:IWorkSheet = computed(() => store.getters.getWorkSheet)
+
     return {
       tabs,
       currentTab,
       currentTabComponent,
+      worksheet
     };
   },
 });

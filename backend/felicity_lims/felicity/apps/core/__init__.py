@@ -6,5 +6,5 @@ class BaseMPTT(BaseNestedSets):
 
     @classmethod
     def get_pk_name(cls):
-        """override get_pk_name to use uid instead of uid"""
+        """override get_pk_name to use uid instead of id"""
         return getattr(cls, "sqlalchemy_mptt_pk_name", "uid")

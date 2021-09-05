@@ -38,6 +38,7 @@ class AuditableMixin:
         audit.save(connection)
         # audit.save()
 
+
     @classmethod
     def __declare_last__(cls):
         if ACTION_CREATE in PLEASE_AUDIT:
@@ -66,6 +67,7 @@ class AuditableMixin:
         state_after = {}
         inspector = inspect(target)
         attrs = class_mapper(target.__class__).column_attrs
+
         for attr in attrs:
             hist = getattr(inspector.attrs, attr.key).history
             if hist.has_changes():
@@ -80,6 +82,10 @@ class AuditableMixin:
                         state_before[attr.key] = get_history(target, attr.key)[2].pop()
                     except Exception:
                         state_before[attr.key] = getattr(target, attr.key)
+
+        if len(state_after.keys()) == 1:
+            if 'updated_at' in list(state_after.keys()):
+                return
 
         target.create_audit(connection, target.__tablename__, target.uid, ACTION_UPDATE,
                             state_before=json.dumps(state_before, default=custom_serial),

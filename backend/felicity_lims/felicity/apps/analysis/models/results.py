@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import relationship
@@ -55,8 +56,18 @@ class AnalysisResult(Auditable, BaseMPTT):
         self.worksheet_position = None
         self.save()
 
-    def verify(self):
+    def verify(self, verifier):
         self.status = conf.states.result.VERIFIED
+        self.verified_by_uid = verifier.uid
+        self.date_verified = datetime.now()
+        self.updated_by_uid = verifier.uid # noqa
+        self.save()
+
+    def retract(self, retracted_by):
+        self.status = conf.states.result.RETRACTED
+        self.verified_by_uid = retracted_by.uid
+        self.date_verified = datetime.now()
+        self.updated_by_uid = retracted_by.uid # noqa
         self.save()
 
     def change_status(self, status):
