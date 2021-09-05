@@ -1,9 +1,11 @@
-import { createClient, dedupExchange, cacheExchange, fetchExchange, errorExchange } from 'urql';
+import { createClient, defaultExchanges, dedupExchange, cacheExchange, fetchExchange, errorExchange } from 'urql';
 import { makeOperation } from '@urql/core';
+// import { devtoolsExchange } from '@urql/devtools'
 import { authExchange } from '@urql/exchange-auth';
 
 import { graphql_url } from './conf'
 
+// 1. get auth data
 const getAuth = async (authState: any) => {
   if (!authState) {
     const token = localStorage.getItem('fwt');
@@ -18,7 +20,7 @@ const getAuth = async (authState: any) => {
   return null;
 };
 
-
+// 2. add auth to all requests
 const addAuthToOperation = (authState: any, operation: any) => {
   if (!authState || !authState.token) {
     return operation;
@@ -59,6 +61,7 @@ const willAuthError = (authState: any) => {
 // https://github.com/FormidableLabs/urql/tree/main/exchanges/auth#quick-start-guide
 export const urqlClient = createClient({
   url: graphql_url,
+  // ...((process.env.DEV) && { exchanges: [devtoolsExchange, ...defaultExchanges] }),
   // exchanges: [
   //   dedupExchange,
   //   cacheExchange,
@@ -77,11 +80,20 @@ export const urqlClient = createClient({
   //     getAuth,
   //   }),
   //   fetchExchange
-  // ],
-  // fetchOptions: () => {
-  //   const token = localStorage.getItem('fwt');
-  //   return {
-  //     headers: { "Authorization": `Bearer ${token}` }
-  //   }
-  // },
+  // ],  
+  fetchOptions: () => {
+    const token = localStorage.getItem('fwt');
+    return {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Origin, Content-Type, X-Auth-Token',
+        ...(token && {
+          'x-felicity-user-id': "felicity-user",
+          'x-felicity-role': "felicity-administrator",
+          'Authorization': `Bearer ${token}`
+        }),
+      },
+    };
+  }
 });

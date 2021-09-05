@@ -7,7 +7,7 @@ from felicity.apps.worksheet import models
 class WorkSheetPlater:
     """
     Deprecated
-    WorkSheet Plate Populator / WorkSheetTemplate creator
+    WorkSheet Plate Filler / WorkSheetTemplate creator
     100% Grid Compatible
         
        A    B    C

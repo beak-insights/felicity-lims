@@ -116,8 +116,11 @@ class WorkSheet(WSBase):
     assigned_count = Column(Integer, nullable=False, default=0)
 
     def reset_assigned_count(self):
+        # TODO: DO NOT COUNT QC SAMPLES
         count = len(self.analysis_results)
         self.assigned_count = count
+        if count == 0:
+            self.state = conf.worksheet_states.PENDING_ASSIGNMENT
         self.save()
 
     def change_state(self, state):

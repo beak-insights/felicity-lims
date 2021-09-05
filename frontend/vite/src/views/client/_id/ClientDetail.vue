@@ -1,24 +1,30 @@
 <template>
 
-  <nav class="bg-white pt-2 shadow-md mt-2">
-    <div class="-mb-px flex justify-start">
-      <a
-        v-for="tab in tabs"
-        :key="tab"
-        :class="[
-          'no-underline text-gray-500 uppercase tracking-wide font-bold text-xs py-1 mr-8 tab',
-          { 'tab-active': currentTab === tab },
-        ]"
-        @click="currentTab = tab"
-        href="#"
-      >
-        {{ tab }}
-      </a>
-    </div>
-  </nav>
+  <section class="col-span-12" >
 
-  <tab-samples v-if="currentTab === 'samples'" />
-  <tab-contacts v-if="currentTab === 'contacts'" :clientUid="client?.uid" />
+    <nav class="bg-white px-6 pt-2 shadow-md mt-2">
+        <div class="-mb-px flex justify-start">
+        <a
+          v-for="tab in tabs"
+          :key="tab"
+          :class="[
+            'no-underline text-gray-500 uppercase tracking-wide font-bold text-xs py-1 mr-8 tab',
+            { 'tab-active': currentTab === tab },
+          ]"
+          @click="currentTab = tab"
+          href="#"
+        >
+          {{ tab }}
+        </a>
+      </div>
+    </nav>
+
+    <div>
+      <tab-samples v-if="currentTab === 'samples'" />
+      <tab-contacts v-if="currentTab === 'contacts'" :clientUid="client?.uid" />
+    </div>
+
+  </section>
 
 </template>
 

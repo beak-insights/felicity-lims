@@ -86,10 +86,11 @@ if initialize_felicity():
             allow_methods=["*"],
             allow_headers=["*"],
         )
-        flims.add_middleware(
-            AuthenticationMiddleware,
-            backend=FelicityAuthBackend()
-        )
+
+    flims.add_middleware(
+        AuthenticationMiddleware,
+        backend=FelicityAuthBackend()
+    )
 
     flims.include_router(api_router, prefix=settings.API_V1_STR)
     flims.add_route("/felicity-gql", GraphQLApp(schema=gql_schema, executor_class=AsyncioExecutor))

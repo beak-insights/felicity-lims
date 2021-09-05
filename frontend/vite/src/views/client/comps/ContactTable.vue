@@ -1,6 +1,6 @@
 <template>
     <!-- Contacts Table View -->
-    <div class="overflow-x-auto ">
+    <div class="overflow-x-auto mt-4">
         <div class="align-middle inline-block min-w-full shadow overflow-hidden bg-white shadow-dashboard px-2 pt-1 rounded-bl-lg rounded-br-lg">
         <table class="min-w-full">
             <thead>
@@ -118,6 +118,9 @@ export default {
         let createContact = ref(false);
         let store = useStore();
         let contact = ref((new ClientContact()));
+
+        // dispatch get contacts fo slients
+        store.dispatch(ActionTypes.FETCH_CLIENT_CONTACTS, props.clientUid)
 
         const { executeMutation: createClientContact } = useMutation(ADD_CLIENT_CONTACT);
         const { executeMutation: updateClientContact } = useMutation(EDIT_CLIENT_CONTACT);

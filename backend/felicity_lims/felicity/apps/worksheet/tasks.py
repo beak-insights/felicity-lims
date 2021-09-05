@@ -37,46 +37,90 @@ def populate_worksheet_plate(job_uid: int):
         logger.warning(f"Failed to acquire WorkSheet {ws_uid}")
         return
 
+    # Don't handle processed worksheets
     if ws.state in [conf.worksheet_states.TO_BE_VERIFIED, conf.worksheet_states.VERIFIED]:
         job.change_status(new_status=job_states.FAILED, change_reason=f"WorkSheet {ws_uid} - is already processed")
         logger.warning(f"WorkSheet {ws_uid} - is already processed")
         return
 
+    # Enforce WS with at least a processed sample
     if ws.has_processed_samples():
         job.change_status(new_status=job_states.FAILED, change_reason=f"WorkSheet {ws_uid} - contains at least a "
                                                                       f"processed sample")
         logger.warning(f"WorkSheet {ws_uid} - contains at least a processed sample")
         return
 
+    # Enforce WS sample size limit
+    if not ws.assigned_count < ws.ws.number_of_samples:
+        job.change_status(new_status=job_states.FAILED, change_reason=f"WorkSheet {ws_uid} already has "
+                                                                      f"{ws.assigned_count} assigned samples")
+        logger.warning(f"WorkSheet {ws_uid} already has {ws.assigned_count} assigned samples")
+        return
+
     logger.info(f"Filtering samples by template criteria ...")
     # get sample, filtered by analysis_service and Sample Type
     samples = AnalysisResult.smart_query(
         filters={
+            'status__exact': analysis_conf.states.result.PENDING,
             'assigned__exact': False,
-            # 'sample___internal_use__exact': False,  # ?
-            # 'profiles__uid__in': [_p.uid for _p in ws.profiles],
+            # 'profiles__uid__in': [_p.uid for _p in ws.profiles], # ?? re-looking needed for profile based WS's
             'analysis_uid__in': [_a.uid for _a in ws.analyses],
             'sample___sampletype_uid__exact': ws.sample_type_uid,
         },
         sort_attrs=['-sample___priority', '-created_at']
     ).all()
+
     available_samples = len(samples)
     logger.info(f"Done filtering: Got {available_samples} samples available ...")
     if available_samples == 0:
-        job.change_status(new_status=job_states.FAILED, change_reason=f"There are no samples to assign to WorkSheet {ws_uid}")
+        job.change_status(new_status=job_states.FAILED, change_reason=f"There are no samples to assign to WorkSheet "
+                                                                      f"{ws_uid}")
         logger.warning(f"There are no samples to assign to WorkSheet {ws_uid}")
         return
 
-    samples = samples[:ws.number_of_samples]
-    print(ws.reserved)
+    assign_count = ws.number_of_samples
+    if ws.assigned_count > 0:
+        assign_count = ws.number_of_samples = ws.assigned_count
+
+    samples = samples[:assign_count]
     reserved = [int(r) for r in list(ws.reserved.keys())]
 
-    position = 1
-    for key, sample in enumerate(reversed(samples)):
-        while position in reserved:
+    if ws.assigned_count == 0:
+
+        position = 1
+        for key, sample in enumerate(reversed(samples)):
+
+            while position in reserved:
+                # skip reserved ?qc positions
+                position += 1
+
+            sample.assign(ws.uid, position)
             position += 1
-        sample.assign(ws.uid, position)
-        position += 1
+
+    else:  # create worksheet using an empty position filling strategy if not empty
+
+        assigned_positions = []
+        empty_positions = []
+        for assigned_anal in ws.analysis_results:
+            assigned_positions.append(assigned_anal.worksheet_position)
+
+        for pos in list(range(1, ws.number_of_samples + 1)):
+            # skip reserved positions
+            if pos in reserved:
+                continue
+
+            # track empty positions
+            if pos not in assigned_positions:
+                empty_positions.append(pos)
+
+        assert len(samples) <= len(empty_positions)
+
+        # fill in empty positions
+        empty_positions = sorted(empty_positions)
+        samples = reversed(samples)
+
+        for key in list(range(len(samples))):
+            samples[key].assign(ws.uid, empty_positions[key])
 
     time.sleep(1)
 
@@ -84,7 +128,8 @@ def populate_worksheet_plate(job_uid: int):
     if ws.assigned_count > 0:
         ws.change_state(state=conf.worksheet_states.OPEN)
 
-    setup_ws_quality_control(ws)
+    if True:  # ?? maybe allow user to choose whether to add qc samples or not
+        setup_ws_quality_control(ws)
 
     job.change_status(new_status=job_states.FINISHED)
     logger.info(f"Done !! Job {job_uid} was executed successfully :)")
@@ -105,6 +150,7 @@ def get_sample_position(reserved, level_uid) -> int:
                 return int(k)
     except Exception:
         pass
+
     return 0
 
 

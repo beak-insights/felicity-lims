@@ -326,10 +326,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.22.tgz#0d29f382472c4ccf3bd96ff0ce47daf5b7b84b18"
   integrity sha512-g+f/qj/cNcqKkc3tFqlXOYjrmZA+jNBiDzbP3kH+B+otKFqAdPgVTGP1IeKRdMml/aE69as5S4FqtxAbl+LaMw==
 
-"@urql/core@>=1.14.0", "@urql/core@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@urql/core/-/core-2.0.0.tgz#b4936dd51fe84cb570506d9ee2579149689f7535"
-  integrity sha512-Qj24CG8ullqZZsYmjrSH0JhH+nY7kj8GbVbA9si3KUjlYs75A/MBQU3i97j6oWyGldDBapyis2CfaQeXKbv8rA==
+"@urql/core@>=2.2.0", "@urql/core@^2.1.5", "@urql/core@^2.3.1":
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/@urql/core/-/core-2.3.1.tgz#1aa558b5aa6eca785062a3a768e6fec708aab6d2"
+  integrity sha512-M9gGz02+TH7buqkelVg+m0eTkLCKly9ZjuTp6NHMP7hXD/zpImPu/m3YluA+D4HbFqw3kofBtLCuVk67X9dxRw==
   dependencies:
     "@graphql-typed-document-node/core" "^3.1.0"
     wonka "^4.0.14"
@@ -342,20 +342,20 @@
     "@graphql-typed-document-node/core" "^3.1.0"
     wonka "^4.0.14"
 
-"@urql/exchange-auth@^0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@urql/exchange-auth/-/exchange-auth-0.1.2.tgz#67a76ef78ab4ea9dc51c050d1b79362e9abbffc6"
-  integrity sha512-SIrcnbom+nro0pALmqQmcMxUcy8qZUoykoPs5LezYVPmvZXx4ErXwly58g0XoU4eX10U2gakjCFPTyleF8Nt6Q==
+"@urql/exchange-auth@^0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@urql/exchange-auth/-/exchange-auth-0.1.6.tgz#b55c06a05ba0d69660f0fc4b4547f552cc9ac330"
+  integrity sha512-jVyUaV+hHe3p2rIJauh6lgILMAjXOsHQ98xjKhUF3TXYx88TZXuBIl5DPZwnMcGra8YPOSHO/Wsn6NEjO5hQ+Q==
   dependencies:
-    "@urql/core" ">=1.14.0"
+    "@urql/core" ">=2.2.0"
     wonka "^4.0.14"
 
-"@urql/vue@^0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@urql/vue/-/vue-0.2.1.tgz#04cbcc3679cb2856928c30ff0991f583467c2288"
-  integrity sha512-HRJ32gq+oKbmL8AkVer4orTUpfCV3clLwi1bZ0m4nr+Qfvd1JbqD4GcfWowjogM4d0uy1fpNAVTZCln0HhW75w==
+"@urql/vue@^0.4.3":
+  version "0.4.3"
+  resolved "https://registry.yarnpkg.com/@urql/vue/-/vue-0.4.3.tgz#3f97c3a45fef2033d6965c4dde81c00ac75749fd"
+  integrity sha512-r5KPa6kQG2BAWkfXoahUnz3I9F3ShuEyIVCZ3nEjTWn1BsgnYObLOzcGYWgKfzHRVF4XW7KGaBkGnAt9ls8yXg==
   dependencies:
-    "@urql/core" "^1.16.0"
+    "@urql/core" "^2.1.5"
     wonka "^4.0.14"
 
 "@vitejs/plugin-vue-jsx@^1.0.2":
