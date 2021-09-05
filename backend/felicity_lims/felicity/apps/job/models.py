@@ -9,6 +9,7 @@ class Job(DBModel):
     category = Column(String)
     priority = Column(Integer)
     job_id = Column(Integer)
+    creator_uid = Column(Integer)
     status = Column(String)
     reason = Column(String)
 

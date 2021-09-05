@@ -130,8 +130,9 @@ class WorkSheet(Auditable, WSBase):
             self.state = conf.worksheet_states.PENDING_ASSIGNMENT
         self.save()
 
-    def change_state(self, state):
+    def change_state(self, state, updated_by_uid):
         self.state = state
+        self.updated_by_uid = updated_by_uid  # noqa
         self.save()
 
     def has_processed_samples(self):
@@ -141,21 +142,27 @@ class WorkSheet(Auditable, WSBase):
         processed = any([res.status in states for res in self.analysis_results])
         return processed
 
-    def submit(self):
+    def submit(self, submitter):
         if self.state != conf.worksheet_states.TO_BE_VERIFIED:
             states = [
                 analysis_conf.states.result.RESULTED,
                 analysis_conf.states.result.VERIFIED]
 
             if all([res.status in states for res in self.analysis_results]):
-                self.change_state(conf.worksheet_states.TO_BE_VERIFIED)
+                self.state = conf.worksheet_states.TO_BE_VERIFIED
+                self.updated_by_uid = submitter.uid  # noqa
+                self.submitted_by_uid = submitter.uid
+                self.save()
 
-    def verify(self):
+    def verify(self, verified_by):
         if self.state != conf.worksheet_states.VERIFIED:
             states = [analysis_conf.states.result.VERIFIED, analysis_conf.states.result.RETRACTED]
 
             if all([res.status in states for res in self.analysis_results]):
-                self.change_state(conf.worksheet_states.VERIFIED)
+                self.state = conf.worksheet_states.VERIFIED
+                self.updated_by_uid = verified_by.uid  # noqa
+                self.verified_by_uid = verified_by.uid
+                self.save()
 
     def set_plate(self, fill):
         self.plate = fill

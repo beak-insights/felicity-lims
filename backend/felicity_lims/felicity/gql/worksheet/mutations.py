@@ -11,6 +11,7 @@ from felicity.apps.job import (
 )
 from felicity.apps.user import models as user_models
 from felicity.apps.worksheet import models, schemas, tasks, conf
+from felicity.gql import auth_from_info, verify_user_auth
 from felicity.gql.worksheet.types import WorkSheetType, WorkSheetTemplateType
 from felicity.apps.job.conf import actions, categories, priorities, states
 from felicity.apps.analysis.models import analysis as analysis_models
@@ -301,6 +302,9 @@ class UpdateWorkSheetApplyTemplate(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, template_uid, worksheet_uid, **kwargs):
+        is_authenticated, felicity_user = auth_from_info(info)
+        verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update worksheets")
+
         if not template_uid or not worksheet_uid:
             raise GraphQLError("Template and Worksheet are required")
 
@@ -337,6 +341,7 @@ class UpdateWorkSheetApplyTemplate(graphene.Mutation):
             action=actions.WS_ASSIGN,
             category=categories.WORKSHEET,
             priority=priorities.MEDIUM,
+            creator_uid=felicity_user.uid,
             job_id=ws.uid,
             status=states.PENDING
         )

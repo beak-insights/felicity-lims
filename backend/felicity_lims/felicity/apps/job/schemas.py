@@ -15,6 +15,7 @@ class JobBase(BaseModel):
     job_id: Optional[str] = None
     status: Optional[str] = states.PENDING
     reason: Optional[str] = None
+    creator_uid: Optional[int] = None
 
 
 class Job(JobBase):

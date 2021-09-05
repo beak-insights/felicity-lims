@@ -126,7 +126,8 @@ def populate_worksheet_plate(job_uid: int):
 
     ws.reset_assigned_count()
     if ws.assigned_count > 0:
-        ws.change_state(state=conf.worksheet_states.OPEN)
+        if not ws.state == conf.worksheet_states.OPEN:
+            ws.change_state(state=conf.worksheet_states.OPEN, updated_by_uid=job.creator_uid)
 
     if True:  # ?? maybe allow user to choose whether to add qc samples or not
         setup_ws_quality_control(ws)

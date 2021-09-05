@@ -700,7 +700,7 @@ class SubmitAnalysisResults(graphene.Mutation):
 
             # try to submit associated worksheet
             if a_result.worksheet:
-                a_result.worksheet.submit()
+                a_result.worksheet.submit(submitter=felicity_user)
 
             return_results.append(a_result)
 
@@ -748,7 +748,7 @@ class VerifyAnalysisResults(graphene.Mutation):
 
             # try to submit associated worksheet
             if a_result.worksheet:
-                a_result.worksheet.verify()
+                a_result.worksheet.verify(verified_by=felicity_user)
 
             return_results.append(a_result)
 
