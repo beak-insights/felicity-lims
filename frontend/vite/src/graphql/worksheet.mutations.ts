@@ -121,20 +121,32 @@ export const ADD_WORKSHEET = gql`
     {
       worksheet {
         uid
+        worksheetId
         numberOfSamples
-        sampleType {
-          name
-          name
+        assignedCount
+        analyst {
+          uid
+          auth{
+            uid
+            userName
+          }
+          firstName
+          lastName
         }
         instrument {
           uid
           name
         }
-        template {
-          uid
-          name
+        analyses {
+          edges {
+            node {
+              uid
+              name
+            }
+          }
         }
-        plate
+        state
+        createdAt
       }
     }
   }`;

@@ -2,7 +2,15 @@
 
   <div class="flex justify-start">
     <div class="flex-1">
-      <h2 class="h2 font-bold">BOARD: {{ board?.title || 'No title'}}</h2>
+      <div class="flex justify-between">
+        <h2 class="h2 font-bold">BOARD: {{ board?.title || 'No title'}}</h2>
+        <button 
+        v-show="canDeleteBoard(board)"
+        @click="deleteBoard(board)" 
+        class="align-center p-1 text-red-600">
+          <i class="fa fa-trash" aria-hidden="true"></i> Board
+        </button>
+      </div>
       <hr class="my-2">
       <p class="leading tracking-wide italic grey-300">{{ board?.description || "No description"}}</p>
       <hr class="mt-2">
@@ -81,11 +89,12 @@ export default defineComponent({
 
     // Modal Vars
     let showModal = ref(false);
-    let formTitle = ref("")
+    let formTitle = ref("");
     let form = reactive({ ...new Listing() });
 
-    store.dispatch(ActionTypes.FETCH_BOARD_BY_UID, route.params.boardUid)
-    const board = computed(() => store.getters.getBoard )
+    store.dispatch(ActionTypes.RESET_BOARD);
+    store.dispatch(ActionTypes.FETCH_BOARD_BY_UID, route.params.boardUid);
+    const board = computed(() => store.getters.getBoard );
 
     const { executeMutation: createBoardListing } = useMutation(ADD_BOARD_LISTING);
 
@@ -106,6 +115,24 @@ export default defineComponent({
       showModal.value = false;
     }
 
+    // Delete Board
+
+    
+    function canDeleteBoard(board): boolean {
+      if(board?.boardListings?.length === 0) return true;
+      let canDetele = false;
+      board?.boardListings?.forEach(listing => {
+        if(listing?.listingTasks?.length === 0) canDetele = true;
+      })
+      return canDetele
+    }
+
+    function deleteBoard(board): void {
+      // TODO
+      // delete here iff all board listings have no tasks 
+    }
+
+
     return { 
       board,
       showModal,
@@ -113,6 +140,8 @@ export default defineComponent({
       saveForm,
       form,
       formTitle,
+      deleteBoard,
+      canDeleteBoard
     }
   },
 });

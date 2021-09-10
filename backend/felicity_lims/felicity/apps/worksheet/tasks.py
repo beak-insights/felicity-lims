@@ -80,7 +80,7 @@ def populate_worksheet_plate(job_uid: int):
 
     assign_count = ws.number_of_samples
     if ws.assigned_count > 0:
-        assign_count = ws.number_of_samples = ws.assigned_count
+        assign_count = ws.number_of_samples
 
     samples = samples[:assign_count]
     reserved = [int(r) for r in list(ws.reserved.keys())]
@@ -104,6 +104,8 @@ def populate_worksheet_plate(job_uid: int):
         for assigned_anal in ws.analysis_results:
             assigned_positions.append(assigned_anal.worksheet_position)
 
+        logger.info(f"reserved : {reserved}")
+        logger.info(f"pos array : {list(range(1, ws.number_of_samples + 1))}")
         for pos in list(range(1, ws.number_of_samples + 1)):
             # skip reserved positions
             if pos in reserved:
@@ -113,11 +115,15 @@ def populate_worksheet_plate(job_uid: int):
             if pos not in assigned_positions:
                 empty_positions.append(pos)
 
-        assert len(samples) <= len(empty_positions)
+        # assert len(samples) <= len(empty_positions)
 
         # fill in empty positions
         empty_positions = sorted(empty_positions)
-        samples = reversed(samples)
+        samples = list(reversed(samples))
+
+        logger.info(f"samples: {samples}")
+        logger.info(f"assigned_positions: {assigned_positions}")
+        logger.info(f"empty_positions: {empty_positions}")
 
         for key in list(range(len(samples))):
             samples[key].assign(ws.uid, empty_positions[key])

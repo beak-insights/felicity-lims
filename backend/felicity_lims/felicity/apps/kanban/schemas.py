@@ -2,6 +2,8 @@ from typing import Optional, List
 from datetime import datetime
 
 from pydantic import BaseModel
+
+from felicity.apps import BaseAuditModel
 from felicity.apps.setup.schemas import Department
 from felicity.apps.user.schemas import User
 
@@ -9,14 +11,12 @@ from felicity.apps.user.schemas import User
 #
 # Board Schemas
 #
-class BoardBase(BaseModel):
+class BoardBase(BaseAuditModel):
     title: Optional[str] = ""
     description: Optional[str] = ""
     archived: Optional[bool] = False
     department_uid: Optional[str] = None
     department: Optional[Department] = None
-    create_by_uid: Optional[str] = ""
-    create_by: Optional[User] = ""
 
 
 class Board(BoardBase):
@@ -37,7 +37,7 @@ class BoardUpdate(BoardBase):
 #
 # BoardListing Schemas
 #
-class BoardListingBase(BaseModel):
+class BoardListingBase(BaseAuditModel):
     title: Optional[str] = ""
     description: Optional[str] = ""
     board_uid: Optional[str] = ""
@@ -62,7 +62,7 @@ class BoardListingUpdate(BoardListingBase):
 #
 # TaskTag Schemas
 #
-class TaskTagBase(BaseModel):
+class TaskTagBase(BaseAuditModel):
     name: Optional[str] = ""
 
 
@@ -84,7 +84,7 @@ class TaskTagUpdate(TaskTagBase):
 #
 # Listing Task Schemas
 #
-class ListingTaskBase(BaseModel):
+class ListingTaskBase(BaseAuditModel):
     title: Optional[str] = ""
     description: Optional[str] = ""
     listing_uid: Optional[str] = ""
@@ -116,7 +116,7 @@ class ListingTaskUpdate(ListingTaskBase):
 #
 # TaskMilestone Schemas
 #
-class TaskMilestoneBase(BaseModel):
+class TaskMilestoneBase(BaseAuditModel):
     title: Optional[str] = ""
     done: Optional[bool] = False
     task_uid: Optional[str] = ""
@@ -143,13 +143,10 @@ class TaskMilestoneUpdate(TaskMilestoneBase):
 #
 # TaskComment Schemas
 #
-class TaskCommentBase(BaseModel):
-    name: Optional[str] = ""
+class TaskCommentBase(BaseAuditModel):
     comment: Optional[str] = None
     task_uid: Optional[str] = None
     task: Optional[ListingTask] = None
-    commenter_uid: Optional[str] = None
-    commenter: Optional[User] = None
 
 
 class TaskComment(TaskCommentBase):

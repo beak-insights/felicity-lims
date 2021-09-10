@@ -19,8 +19,16 @@ class TrailMixin(object):
         return Column(Integer, ForeignKey('user.uid'), nullable=True)
 
     @declared_attr
+    def created_by(self):
+        return relationship(User, foreign_keys=[self.created_by_uid])
+
+    @declared_attr
     def updated_by_uid(self):
         return Column(Integer, ForeignKey('user.uid'), nullable=True)
+
+    @declared_attr
+    def updated_by(self):
+        return relationship(User, foreign_keys=[self.updated_by_uid])
 
 
 class BaseAuditDBModel(DBModel, TrailMixin):
@@ -36,9 +44,9 @@ class Auditable(BaseAuditDBModel, AuditableMixin):
 # Pydantic
 class BaseAuditModel(BaseModel):
     created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
     created_by_uid: Optional[str] = None
     created_by: Optional[UserSchema] = None
+    updated_at: Optional[datetime] = None
     updated_by_uid: Optional[str] = None
     updated_by: Optional[UserSchema] = None
 

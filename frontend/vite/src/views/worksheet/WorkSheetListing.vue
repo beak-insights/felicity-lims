@@ -189,9 +189,9 @@ export default defineComponent({
     const { executeMutation: createWorkSheet } = useMutation(ADD_WORKSHEET);
 
     function addWorksheet(): void {
-      console.log(form)
       createWorkSheet(form).then((result) => {
-       store.dispatch(ActionTypes.ADD_ANALYSES_CATEGORY, result);
+       store.dispatch(ActionTypes.ADD_WORKSHEET, result);
+       showModal.value = false;
       });
     }
 

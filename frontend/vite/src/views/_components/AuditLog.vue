@@ -83,6 +83,16 @@ export default {
                             valueB = translateUser(valueB)
                             valueA = translateUser(valueA)
                         }
+                        if(keyA && keyA === 'submitted_by_uid'){
+                            keyA = 'submitted_by'
+                            valueB = translateUser(valueB)
+                            valueA = translateUser(valueA)
+                        }
+                        if(keyA && keyA === 'verified_by_uid'){
+                            keyA = 'verified_by'
+                            valueB = translateUser(valueB)
+                            valueA = translateUser(valueA)
+                        }
                         if(keyA && keyA === 'updated_at'){
                             keyA = 'updated_on'
                             valueB = parseDate(valueB)

@@ -6,7 +6,8 @@ import { ActionTree, GetterTree, MutationTree } from 'vuex';
 
 import {
   GET_ALL_BOARDS,
-  GET_BOARD_BY_UID
+  GET_BOARD_BY_UID,
+  GET_LISTING_TASK_BY_UID
 } from '../../graphql/kanban.queries';
 
 
@@ -51,11 +52,12 @@ export interface ITask {
   description?: string;
   listingUid?: string;
   milestones?: IMileStone[];
-  comment?: IComment[];
+  comments?: IComment[];
   status?: string;
   assignee?: string;
   dueDate?: string,
   members?: string[];
+  tags?: string[];
 }
 
 export class Task implements ITask {
@@ -65,10 +67,12 @@ export class Task implements ITask {
     public description?: string,
     public listingUid?: string,
     public milestones?: IMileStone[],
+    public comments?: IMileStone[],
     public status?: string,
     public assignee?: string,
     public dueDate?: string,
     public members?: string[],
+    public tags?: string[],
   ) {
   }
 }
@@ -116,12 +120,14 @@ export class Board implements IBoard {
 export interface IState {
   boards: IBoard[];
   board: IBoard | null;
+  listingTask: ITask | null;
 }
 
 export const initialState = () => {
   return <IState>{
     boards: [],
-    board: null
+    board: null,
+    listingTask: null,
   };
 };
 
@@ -130,6 +136,7 @@ export const state: IState = initialState();
 export enum MutationTypes {
   RESET_STATE = 'RESET_STATE',
 
+  RESET_BOARD = 'RESET_BOARD',
   SET_BOARDS = 'SET_BOARDS',
   SET_BOARD = 'SET_BOARD',
   ADD_BOARD = 'ADD_BOARD',
@@ -137,11 +144,22 @@ export enum MutationTypes {
   ADD_BOARD_LISTING = 'ADD_BOARD_LISTING',
 
   ADD_LISTING_TASK = 'ADD_LISTING_TASK',
+  MOVE_LISTING_TASK = 'MOVE_LISTING_TASK',
+  DELETE_LISTING_TASK = 'DELETE_LISTING_TASK',
+  DUPLICATE_LISTING_TASK = 'DUPLICATE_LISTING_TASK',
+  RESET_LISTING_TASK = 'RESET_LISTING_TASK',
+  FETCH_LISTING_TASK = 'FETCH_LISTING_TASK',
+  SET_LISTING_TASK = 'SET_LISTING_TASK',
+
+  ADD_TASK_COMMENT = 'ADD_TASK_COMMENT',
+
+  ADD_TASK_MILESTONE = 'ADD_TASK_MILESTONE',
 }
 
 export enum ActionTypes {
   RESET_STATE = 'RESET_STATE',
 
+  RESET_BOARD = 'RESET_BOARD',
   FETCH_BOARDS = 'FETCH_BOARDS',
   FETCH_BOARD_BY_UID = 'FETCH_BOARD_BY_UID',
   ADD_BOARD = 'ADD_BOARD',
@@ -149,6 +167,16 @@ export enum ActionTypes {
   ADD_BOARD_LISTING = 'ADD_BOARD_LISTING',
 
   ADD_LISTING_TASK = 'ADD_LISTING_TASK',
+  MOVE_LISTING_TASK = 'MOVE_LISTING_TASK',
+  DELETE_LISTING_TASK = 'DELETE_LISTING_TASK',
+  DUPLICATE_LISTING_TASK = 'DUPLICATE_LISTING_TASK',
+  RESET_LISTING_TASK = 'RESET_LISTING_TASK',
+  FETCH_LISTING_TASK_BY_UID = 'FETCH_LISTING_TASK_BY_UID',
+  SET_LISTING_TASK = 'SET_LISTING_TASK',
+
+  ADD_TASK_COMMENT = 'ADD_TASK_COMMENT',
+
+  ADD_TASK_MILESTONE = 'ADD_TASK_MILESTONE',
   
 }
 
@@ -156,12 +184,17 @@ export enum ActionTypes {
 export const getters = <GetterTree<IState, RootState>>{
   getBoards: (state) => state.boards,
   getBoard: (state) => state.board,
+  getListingTask: (state) => state.listingTask,
 };
 
 // Mutations
 export const mutations = <MutationTree<IState>>{
   [MutationTypes.RESET_STATE](state: IState): void {
     Object.assign(state, initialState());
+  },
+
+  [MutationTypes.RESET_BOARD](state: IState): void {
+    state.board = null;;
   },
 
   [MutationTypes.SET_BOARDS](state: IState, payload: any[]): void {
@@ -190,6 +223,11 @@ export const mutations = <MutationTree<IState>>{
     state.board = board;
   },
 
+  // LISTING TASKS
+  [MutationTypes.RESET_LISTING_TASK](state: IState): void {
+    state.listingTask = null;
+  },
+
   [MutationTypes.ADD_LISTING_TASK](state: IState, payload: any): void {
     let board = state.board;
     board!.boardListings?.forEach((listing: IListing) => {
@@ -204,6 +242,66 @@ export const mutations = <MutationTree<IState>>{
     state.board = board;
   },
 
+  [MutationTypes.SET_LISTING_TASK](state: IState, payload: any): void {
+    let task = payload;
+    task.members = parseEdgeNodeToList(payload?.members)
+    task.tags = parseEdgeNodeToList(payload?.tags)
+    task.milestones = parseEdgeNodeToList(payload?.taskMilestones)
+    task.comments = parseEdgeNodeToList(payload?.taskComments)
+    state.listingTask = task;
+  },
+
+  [MutationTypes.MOVE_LISTING_TASK](state: IState, payload: any): void {
+    let task = payload;
+    task.members = parseEdgeNodeToList(payload?.members)
+    task.tags = parseEdgeNodeToList(payload?.tags)
+    task.milestones = parseEdgeNodeToList(payload?.taskMilestones)
+    task.comments = parseEdgeNodeToList(payload?.taskComments)
+
+    state!.board!.boardListings!.forEach(listing => {
+      // remove old task
+      const index = listing?.listingTasks?.findIndex(x => parseInt(x.uid!) === parseInt(task.uid!));
+      if (index! > -1) {
+        listing!.listingTasks!.splice(index!, 1);
+      }
+      // add task in new position
+      if(parseInt(listing?.uid!) === parseInt(task?.listingUid!)) {
+        listing?.listingTasks?.push(task);
+      }
+    })
+  },
+
+  [MutationTypes.DELETE_LISTING_TASK](state: IState, taskUid: any): void {
+    if(taskUid){
+      state!.board!.boardListings!.forEach(listing => {
+        const index = listing?.listingTasks?.findIndex(x => parseInt(x.uid!) === parseInt(taskUid!));
+        if (index! > -1) {
+          listing!.listingTasks!.splice(index!, 1);
+        }
+      })
+    }
+  },
+
+  [MutationTypes.DUPLICATE_LISTING_TASK](state: IState, payload: any): void {
+    let board = state.board;
+    board!.boardListings?.forEach((listing: IListing) => {
+      if (listing.uid?.toString() === payload.task.listingUid?.toString()) {
+        listing.listingTasks!.push(payload.task)
+      }
+    })
+    state.board = board;
+  },
+
+  //  TASKS COMMENTS
+  [MutationTypes.ADD_TASK_COMMENT](state: IState, payload: IComment): void {
+    state.listingTask?.comments?.push(payload)
+  },
+
+  //  TASKS MILESTONES
+  [MutationTypes.ADD_TASK_MILESTONE](state: IState, payload: IMileStone): void {
+    state.listingTask?.milestones?.push(payload)
+  },
+
 };
 
 // Actions
@@ -212,6 +310,10 @@ export const actions = <ActionTree<IState, RootState>>{
     commit(MutationTypes.RESET_STATE);
   },
   
+  async [ActionTypes.RESET_BOARD]({ commit }) {
+    commit(MutationTypes.RESET_BOARD);
+  },
+
   async [ActionTypes.FETCH_BOARDS]({ commit }, payload){
     await useQuery({ query: GET_ALL_BOARDS })
           .then(payload => commit(MutationTypes.SET_BOARDS, payload.data.value.boardAll));
@@ -232,8 +334,42 @@ export const actions = <ActionTree<IState, RootState>>{
     commit(MutationTypes.ADD_BOARD_LISTING, payload.data.createBoardListing);
   },
   
+  // LISTING TASKS
+  async [ActionTypes.RESET_LISTING_TASK]({ commit }) {
+    commit(MutationTypes.RESET_LISTING_TASK);
+  },
+  
   async [ActionTypes.ADD_LISTING_TASK]({ commit }, payload){
     commit(MutationTypes.ADD_LISTING_TASK, payload.data.createListingTask);
+  },
+
+  async [ActionTypes.FETCH_LISTING_TASK_BY_UID]({ commit }, uid){
+    await urqlClient
+    .query( GET_LISTING_TASK_BY_UID, { uid })
+    .toPromise()
+    .then(result => commit(MutationTypes.SET_LISTING_TASK, result.data.listingTaskByUid))
+  },
+  
+  async [ActionTypes.MOVE_LISTING_TASK]({ commit }, payload){
+    commit(MutationTypes.MOVE_LISTING_TASK, payload.data.updateListingTask.task);
+  },
+  
+  async [ActionTypes.DELETE_LISTING_TASK]({ commit }, payload){
+    commit(MutationTypes.DELETE_LISTING_TASK, payload.data.deleteListingTask.taskUid);
+  },
+  
+  async [ActionTypes.DUPLICATE_LISTING_TASK]({ commit }, payload){
+    commit(MutationTypes.DUPLICATE_LISTING_TASK, payload.data.duplicateListingTask);
+  },
+
+  //  TASKS COMMENTS
+  async [ActionTypes.ADD_TASK_COMMENT]({ commit }, payload){
+    commit(MutationTypes.ADD_TASK_COMMENT, payload.data.createTaskComment.taskComment);
+  },
+
+  //  TASKS MILESTONES
+  async [ActionTypes.ADD_TASK_MILESTONE]({ commit }, payload){
+    commit(MutationTypes.ADD_TASK_MILESTONE, payload.data.createTaskMilestone.taskMilestone);
   },
 
 };

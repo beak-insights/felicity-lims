@@ -126,6 +126,7 @@ export enum MutationTypes {
   SET_WORKSHEETS = 'SET_WORKSHEETS',
   SET_WORKSHEET = 'SET_WORKSHEET',
   REMOVE_WORKSHEET = 'REMOVE_WORKSHEET',
+  ADD_WORKSHEET = 'ADD_WORKSHEET',
 
   SET_WORKSHEET_TEMPLATES = 'SET_WORKSHEET_TEMPLATES',
   ADD_WORKSHEET_TEMPLATE = 'ADD_WORKSHEET_TEMPLATE',
@@ -138,6 +139,7 @@ export enum ActionTypes {
   FETCH_WORKSHEETS = 'FETCH_WORKSHEETS',
   FETCH_WORKSHEET_BY_UID = 'FETCH_WORKSHEET_BY_UID',
   REMOVE_WORKSHEET = 'REMOVE_WORKSHEET',
+  ADD_WORKSHEET = 'ADD_WORKSHEET',
 
   FETCH_WORKSHEET_TEMPLATES = 'FETCH_WORKSHEET_TEMPLATES',
   ADD_WORKSHEET_TEMPLATE = 'ADD_WORKSHEET_TEMPLATE',
@@ -228,6 +230,12 @@ export const mutations = <MutationTree<IState>>{
     state.workSheet = sortAnalysisResults(wst);
   },
 
+  [MutationTypes.ADD_WORKSHEET](state: IState, payload: IWorkSheet): void {
+    let ws = payload;
+    ws.analyses = parseEdgeNodeToList(ws?.analyses) || [];
+    state.workSheets.push(ws);
+  },
+
   [MutationTypes.REMOVE_WORKSHEET](state: IState): void {
     state.workSheet = null;
   },
@@ -265,6 +273,10 @@ export const actions = <ActionTree<IState, RootState>>{
     .query( GET_WORKSHEET_BY_UID, { worksheetUid: uid })
     .toPromise()
     .then(result => commit(MutationTypes.SET_WORKSHEET, result.data.worksheetByUid))
+  },
+
+  async [ActionTypes.ADD_WORKSHEET]({ commit }, payload ){
+    commit(MutationTypes.ADD_WORKSHEET, payload.data.createWorksheet.worksheet);
   },
 
   async [ActionTypes.REMOVE_WORKSHEET]({ commit } ){

@@ -1,20 +1,18 @@
 from sqlalchemy import Column, String, DateTime, Integer, ForeignKey, Boolean
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
-from felicity.database.base_class import DBModel
+from felicity.apps import BaseAuditDBModel, DBModel
 from felicity.apps.setup.models.setup import Department
 from felicity.apps.user.models import User
 from . import schemas
 
 
-class Board(DBModel):
+class Board(BaseAuditDBModel):
     title = Column(String)
     description = Column(String)
     archived = Column(Boolean(), default=False)
     department_uid = Column(Integer, ForeignKey('department.uid'), nullable=True)
     department = relationship(Department, backref="boards")
-    create_by_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
-    create_by = relationship(User, backref="boards")
 
     @classmethod
     def create(cls, obj_in: schemas.BoardCreate) -> schemas.Board:
@@ -26,7 +24,7 @@ class Board(DBModel):
         return super().update(**data)
 
 
-class BoardListing(DBModel):
+class BoardListing(BaseAuditDBModel):
     title = Column(String)
     description = Column(String)
     board_uid = Column(Integer, ForeignKey('board.uid'), nullable=False)
@@ -42,7 +40,7 @@ class BoardListing(DBModel):
         return super().update(**data)
 
 
-class TaskTag(DBModel):
+class TaskTag(BaseAuditDBModel):
     name = Column(String)
 
     @classmethod
@@ -65,13 +63,13 @@ class TaskMember(DBModel):
     user_uid = Column(Integer, ForeignKey('user.uid'), primary_key=True)
 
 
-class ListingTask(DBModel):
+class ListingTask(BaseAuditDBModel):
     title = Column(String)
     description = Column(String)
     listing_uid = Column(Integer, ForeignKey('boardlisting.uid'), nullable=False)
     listing = relationship(BoardListing, backref="listing_tasks")
     assignee_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
-    assignee = relationship(User, backref="listing_tasks")
+    assignee = relationship(User, foreign_keys=[assignee_uid], backref="listing_tasks")
     tags = relationship(TaskTag, secondary="tasktagged", backref="tagged_tasks")
     members = relationship(User, secondary="taskmember", backref="member_tasks")
     status = Column(String)
@@ -88,13 +86,13 @@ class ListingTask(DBModel):
         return super().update(**data)
 
 
-class TaskMilestone(DBModel):
+class TaskMilestone(BaseAuditDBModel):
     title = Column(String)
     done = Column(Boolean(), default=False)
     task_uid = Column(Integer, ForeignKey('listingtask.uid'), primary_key=True)
-    task = relationship(ListingTask, backref="task_milestones")
+    task = relationship(ListingTask, backref=backref("task_milestones", cascade="all, delete-orphan"))  # backref="task_milestones"
     assignee_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
-    assignee = relationship(User, backref="tasks_milestones")
+    assignee = relationship(User, foreign_keys=[assignee_uid], backref="tasks_milestones")
 
     @classmethod
     def create(cls, obj_in: schemas.TaskMilestoneCreate) -> schemas.TaskMilestone:
@@ -106,12 +104,10 @@ class TaskMilestone(DBModel):
         return super().update(**data)
 
 
-class TaskComment(DBModel):
+class TaskComment(BaseAuditDBModel):
     comment = Column(String)
     task_uid = Column(Integer, ForeignKey('listingtask.uid'), primary_key=True)
-    task = relationship(ListingTask, backref="task_comments")
-    commenter_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
-    commenter = relationship(User, backref="task_comments")
+    task = relationship(ListingTask, backref=backref("task_comments", cascade="all, delete-orphan"))  # backref="task_comments"
 
     @classmethod
     def create(cls, obj_in: schemas.TaskCommentCreate) -> schemas.TaskComment:

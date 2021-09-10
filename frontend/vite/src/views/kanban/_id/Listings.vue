@@ -2,7 +2,7 @@
     <div class="flex justify-start">
         <div class="h-tasks flex overflow-x-scroll py-2">
             <div v-for="listing in board?.boardListings" :key="listing?.title" class="bg-gray-100 px-3 py-3 column-width rounded mr-4">
-                <h4 class="h4 text-gray-600 font-bold font-sans tracking-wide text-medium">{{listing?.title}}</h4>
+                <h4 class="h4 text-gray-600 font-bold font-sans tracking-wide text-medium" :data-listing="listing?.uid">{{listing?.title}}</h4>
                 <p class="h4 text-gray-500 font-normal italic font-sans tracking-wide text-small">{{listing?.description}}</p>
                 <draggable 
                 :list="listing?.listingTasks" 
@@ -19,12 +19,18 @@
                         :key="element.id" 
                         :task="element" 
                         class="mt-3 cursor-move" 
-                        @click.prevent="viewTask(element)"/>
+                        @click.prevent="viewTask(element, listing)"/>
                     </template>
                     <template #header>
                       <div class="flex justify-start my-1">
                         <button @click="TaskFormManager(listing)" class="align-center p-1">
                           <i class="fa fa-plus-circle" aria-hidden="true"></i> Task
+                        </button>
+                        <button 
+                        v-show="listing?.listingTasks?.length === 0"
+                        @click="deleteListing(listing)" 
+                        class="align-center p-1 ml-8 text-red-600">
+                          <i class="fa fa-trash" aria-hidden="true"></i> Listing
                         </button>
                       </div>
                     </template>
@@ -39,7 +45,7 @@
     <template v-slot:header>
          <div>
           <span class="italic">in &rarr;</span>  
-          <span class=" ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-gray-100 bg-blue-600 rounded"> Backlog</span>
+          <span class=" ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-gray-100 bg-blue-600 rounded"> {{ selectedTaskListing?.title }}</span>
          </div>
     </template>
     <template v-slot:body>
@@ -52,66 +58,98 @@
             <hr>
             <div class="pr-2 overflow-y-scroll" style="height: 65vh">
               <section>
-                <h3 class="text-lg font-semibold my-4">{{ modalTitle }}</h3>
+                <h3 class="text-lg font-semibold my-4">{{ selectedTask?.title }}</h3>
                 <div class="font-medium my-4 tracking-wide text-gray-500">
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Modi quod, Lorem ipsum dolor sit amet consectetur adipisicing elit. 
-                    Fugiat harum at tenetur eveniet dolore repellat 
-                    voluptatum veritatis dolorum molestias ipsam! Ratione nam ducimus, deserunt optio quidem cum est. Amet, iure!
+                    {{ selectedTask?.description }}
                 </div>
               </section>
               <hr>
               <section class="font-medium my-4">
-                <h4 class="my-4"> 
+                <h4 class="my-4 flex justify-between"> 
                   <span class="text-lg font-semibold">CheckList</span>
+                  <button
+                    type="button"
+                  @click.prevent="showAddMilestone = !showAddMilestone"
+                    class="border border-blue-500 text-blue-500 rounded-md py-1 px-2  transition-colors duration-500 ease select-none hover:bg-blue-500 hover:text-gray-100 focus:outline-none focus:shadow-outline"
+                  >new</button>
                 </h4>
-                <div class="mb-1 tracking-wide text-gray-500">
-                    <span>-</span>
-                    <span class="mx-2">Create BarCodes</span>
-                    <span>@melisa</span>
-                </div>
-                <div class="mb-1 tracking-wide text-gray-500">
-                    <span>-</span>
-                    <span class="mx-2">Write SOP</span>
-                    <span>@melisa</span>
+
+              <form 
+              v-show="showAddMilestone"
+              action="post" 
+              class="border-2 border-gray-200 border-dotted rounded p-1" 
+              autocomplete="off">
+                  <div class="flex justify-between">
+                    <label class="block mb-2 w-3/6">
+                      <span class="text-gray-700">Title</span>
+                      <input class="form-input mt-1 block w-full" v-model="taskMilestone.title" placeholder="Title ..." />
+                    </label>
+                    <label class="block mb-2 w-2/6" >
+                      <span class="text-gray-700">Assignee</span>
+                      <select class="form-select block w-full mt-1" v-model="taskMilestone.assigneeUid">
+                        <option></option>
+                        <option v-for="user in users" :key="user?.uid" :value="user?.uid">{{ user?.auth?.userName }}</option>
+                      </select>
+                    </label>
+                    <label class="inline-flex items-center -mb-6 1/6">
+                      <input type="checkbox" class="form-checkbox text-green-500 mx-4" v-model="taskMilestone.done" />
+                      <span class="ml-2">Done</span>
+                    </label>
+                  </div>
+                  <button
+                    type="button"
+                    @click.prevent="saveTaskMilestone(selectedTask, true)"
+                    class="border border-blue-500 text-blue-500 rounded-md py-1 px-2  transition-colors duration-500 ease select-none hover:bg-blue-500 hover:text-gray-100 focus:outline-none focus:shadow-outline"
+                  >Save</button>
+                </form>
+
+                <div 
+                v-for="milestone in selectedTask?.milestones"
+                :key="milestone?.uid"
+                class="my-1 tracking-wide text-gray-500">
+                    <span class="mr-2 text-green-600">-</span>
+                    <span>{{ milestone?.title }}</span>
+                    <span v-if="milestone?.done" class="mx-2 text-green-600"><i class="fas fa-check"></i></span>
+                    <span v-else="milestone?.done" class="mx-2 text-red-600"><i class="fas fa-times"></i></span>
+                    <span v-if="milestone?.assignee?.auth?.userName">@{{ milestone?.assignee?.auth?.userName }}</span>
                 </div>
               </section>
               <hr>
               <section class="my-4">
-                <h4  class="text-lg font-semibold mb-2">Comments</h4>
-                <div class="mb-2">
+                <h4 class="my-4 flex justify-between"> 
+                  <span class="text-lg font-semibold">Comments</span>
+                  <button
+                    type="button"
+                  @click.prevent="showAddComment = !showAddComment"
+                    class="border border-blue-500 text-blue-500 rounded-md py-1 px-2  transition-colors duration-500 ease select-none hover:bg-blue-500 hover:text-gray-100 focus:outline-none focus:shadow-outline"
+                  >new</button>
+                </h4>
+                <div 
+                v-show="showAddComment"
+                class="mb-2">
                     <label class="block mb-2">
                         <textarea
                         cols="2"
                         class="form-input mt-1 block w-full"
                         placeholder="Description ..."
+                        v-model="taskCommentEntry"
                         />
                     </label>
-                    <button class="border border-blue-500 text-blue-500 rounded-md py-1 px-2  transition-colors duration-500 ease select-none hover:bg-blue-500 hover:text-gray-100 focus:outline-none focus:shadow-outline">Add Comment</button>
+                    <button 
+                    @click="saveTaskComment(selectedTask, true)"
+                    class="border border-blue-500 text-blue-500 rounded-md py-1 px-2  transition-colors duration-500 ease select-none hover:bg-blue-500 hover:text-gray-100 focus:outline-none focus:shadow-outline">Add Comment</button>
                 </div>
                 <div>
-                  <div class="font-small my-2 tracking-wide text-gray-400">
+                  <div 
+                  v-for="comment in selectedTask?.comments"
+                  :key="comment?.uid"
+                  class="font-small my-2 tracking-wide text-gray-400">
                     <hr>
                     <div class="mt-2 flex justify-end">
-                      <span>10/10/2021 12:45 am</span>
-                      <span class="ml-4">@melisa</span>
+                      <span>{{ parseDate(comment?.updatedAt) }}</span>
+                      <span class="ml-4">@{{ comment?.updatedBy?.auth?.userName }}</span>
                     </div>
-                    <span class="">voluptatum veritatis dolorum molestias ipsam! Ratione nam ducimus, deserunt optio quidem cum est. Amet, iure!</span>
-                  </div>
-                  <div class="font-small my-2 tracking-wide text-gray-400">
-                    <hr>
-                    <div class="mt-2 flex justify-end">
-                      <span>10/10/2021 12:45 am</span>
-                      <span class="ml-4">@melisa</span>
-                    </div>
-                    <span class="">voluptatum veritatis dolorum molestias ipsam! Ratione nam ducimus, deserunt optio quidem cum est. Amet, iure!</span>
-                  </div>
-                  <div class="font-small my-2 tracking-wide text-gray-400">
-                    <hr>
-                    <div class="mt-2 flex justify-end">
-                      <span>10/10/2021 12:45 am</span>
-                      <span class="ml-4">@melisa</span>
-                    </div>
-                    <span class="">voluptatum veritatis dolorum molestias ipsam! Ratione nam ducimus, deserunt optio quidem cum est. Amet, iure!</span>
+                    <span v-html="comment?.comment"></span>
                   </div>
                 </div>
               </section>
@@ -121,7 +159,11 @@
               <div class="flex justify-between mb-4">
                 <span class="text-lg font-semibold">Due Date</span>
                 <span>
-                  <input type="date" class="bg-blue-100 rounded-md px-1">
+                  <input 
+                  type="datetime-local" 
+                  class="bg-blue-100 rounded-md px-1" 
+                  @change="updateDueDate(selectedTask,$event)"
+                  :value="selectedTask?.dueDate">
                 </span>
               </div>
               <hr>
@@ -138,34 +180,44 @@
               <div class="flex flex-col my-4">
                 <div class="text-lg font-semibold">Move Task</div>
                 <label class="block mb-2">
-                  <select class="form-select block w-full mt-1">
+                  <select 
+                  @change="moveListingTask(selectedTask, $event)"
+                  class="form-select block w-full mt-1">
                       <option></option>
-                      <option value="1"> Option one</option>
-                      <option value="1"> Option two</option>
-                      <option value="1"> Option three</option>
-                      <option value="1"> Option four</option>
+                      <option 
+                      v-for="listing in board?.boardListings"
+                      :key="listing.uid"
+                      :value="listing.uid"
+                      >{{ listing.title }}</option>
                     </select>
                 </label>
-                <button class="border border-blue-500 text-blue-500 rounded-md py-1 px-2  transition-colors duration-500 ease select-none hover:bg-blue-500 hover:text-gray-100 focus:outline-none focus:shadow-outline">Move</button>
               </div>
               <hr>
               <div class="flex flex-col my-4">
                 <div class="text-lg font-semibold">Duplicate Task</div>
                 <label class="block my-2 w-full" >
-                  <input class="form-input mt-1 block w-full" type="tect" placeholder="Task Title ...." />
+                  <input 
+                  class="form-input mt-1 block w-full" 
+                  type="text" 
+                  placeholder="Task Title ...." 
+                  v-model="dulicateTitle"/>
                 </label>
-                <button class="border border-green-500 text-green-500 rounded-md py-1 px-2  transition-colors duration-500 ease select-none hover:bg-green-500 hover:text-gray-100 focus:outline-none focus:shadow-outline">Duplicate</button>
+                <button 
+                @click="duplicateTask(selectedTask)"
+                class="border border-green-500 text-green-500 rounded-md py-1 px-2  transition-colors duration-500 ease select-none hover:bg-green-500 hover:text-gray-100 focus:outline-none focus:shadow-outline">Duplicate</button>
               </div>
               <hr>
               <div class="flex justify-between my-4">
                 <span class="text-lg font-semibold">Delete Task</span>
-                <button class="border border-red-500 text-red-500 rounded-md py-1 px-2  transition-colors duration-500 ease select-none hover:bg-red-500 hover:text-gray-100 focus:outline-none focus:shadow-outline">Delete</button>
+                <button 
+                @click="deleteTask(selectedTask)"
+                class="border border-red-500 text-red-500 rounded-md py-1 px-2  transition-colors duration-500 ease select-none hover:bg-red-500 hover:text-gray-100 focus:outline-none focus:shadow-outline">Delete</button>
               </div>
               <hr>
-              <div class="flex justify-between my-4">
+              <!-- <div class="flex justify-between my-4">
                 <span class="text-lg font-semibold">Archive Task</span>
                 <button class="border border-gray-500 text-gray-500 rounded-md py-1 px-2  transition-colors duration-500 ease select-none hover:bg-gray-500 hover:text-gray-100 focus:outline-none focus:shadow-outline">Archive</button>
-              </div>
+              </div> -->
           </section>
       </div>
     </template>
@@ -221,9 +273,17 @@ import draggable from "vuedraggable";
 import TaskCard from "../../_components/TaskCard.vue";
 import { useStore } from 'vuex';
 import { useMutation } from '@urql/vue';
-import { ActionTypes, Task, ITask } from '../../../store/modules/kanban';
-import { ADD_LISTING_TASK } from '../../../graphql/kanban.mutations';
+import { ActionTypes as AdminActionTypes } from '../../../store/actions';
+import { ActionTypes, Task, ITask, IMileStone } from '../../../store/modules/kanban';
+import { 
+  ADD_LISTING_TASK, 
+  ADD_TASK_COMMENT, 
+  ADD_TASK_MILESTONE,
+  EDIT_LISTING_TASK,
+  DELETE_LISTING_TASK,
+  DUPLICATE_LISTING_TASK } from '../../../graphql/kanban.mutations';
 import { defineComponent, ref, reactive, computed } from 'vue';
+import { parseDate } from '../../../utils';
 export default defineComponent({
   name: "Kanban-Tasks",
   components: {
@@ -259,32 +319,48 @@ export default defineComponent({
       function movedTo(event) {
           return event.to.parentElement.firstElementChild.innerText;
       }
+      
+      function movedToLIstingUid(event) {
+          return event.to.parentElement.firstElementChild.dataset.listing;
+      }
 
       function checkMove(event) {
-            const to = movedFrom(event)
-            const from = movedTo(event)
+            const from = movedFrom(event)
+            const toUid = movedToLIstingUid(event)
+            const to = movedTo(event)
             const futureIndex = event.draggedContext.futureIndex
             const element = event.draggedContext.element
-            console.log(element)
-            console.log("from : ", from, " -- to: ", to, " -- index: ",futureIndex)
+            // console.log(element)
+            // console.log("from : ", from, " -- to: ", to, "  - ", toUid, " -- index: ",futureIndex)
+            setTimeout(function(){
+              editListingTask('moveTask', {
+                uid: element?.uid,
+                listingUid: toUid,
+              });
+            }, 500)
       }
-
-      function viewTask(element){
-          showModal.value = !showModal.value;
-          modalTitle.value = element.title;
-      }
-
 
       // Task Form
       let showTaskModal = ref(false);
-      let taskFormTitle = ref("")
+      let taskFormTitle = ref("");
       let taskForm = reactive({ ...new Task() });
 
       const { executeMutation: createListingTask } = useMutation(ADD_LISTING_TASK);
+      const { executeMutation: updateListingTask } = useMutation(EDIT_LISTING_TASK);
+      const { executeMutation: deleteListingTask } = useMutation(DELETE_LISTING_TASK);
+      const { executeMutation: duplicateListingTask } = useMutation(DUPLICATE_LISTING_TASK);
 
       function addListingTask(): void {
         createListingTask({ title: taskForm.title, description: taskForm.description, listingUid: taskForm.listingUid }).then((result) => {
           store.dispatch(ActionTypes.ADD_LISTING_TASK, result);
+        });
+      }
+
+      function editListingTask(updateType, updateData): void {
+        // updateData only contains vars to be updated
+        updateListingTask({ ...updateData }).then((result) => {
+          if(updateType === 'moveTask') store.dispatch(ActionTypes.MOVE_LISTING_TASK, result);
+          if(updateType === 'updateDueDate') console.log(result); // store.dispatch(ActionTypes.UPDATE_LISTING_TASK, result);
         });
       }
 
@@ -300,8 +376,102 @@ export default defineComponent({
         addListingTask();
         showTaskModal.value = false;
       }
+      
+      // Delete Listing
+      function deleteListing(listing): void {
+        // TODO
+        // delete here iff listing has no tasks 
+      }
+
+      // Move Task
+      function moveListingTask(task, event): void {
+        showModal.value = !showModal.value;
+        editListingTask('moveTask', {
+          uid: task?.uid,
+          listingUid: event?.target?.value
+        });
+      }
+
+      // update due dateOfBirth
+      function updateDueDate(task, event): void {
+        editListingTask('updateDueDate', {
+          uid: task?.uid,
+          dueDate: event?.target?.value
+        });
+      }
+
+      // Delete Task
+      function deleteTask(task): void {
+        showModal.value = !showModal.value;
+        deleteListingTask({ uid: task.uid }).then(result => {
+          store.dispatch(ActionTypes.DELETE_LISTING_TASK, result);
+        });
+      }
+
+      // Duplicate Task
+      let dulicateTitle = ref('');
+      function duplicateTask(task): void {
+        showModal.value = !showModal.value;
+        duplicateListingTask({ uid: task.uid, title: dulicateTitle?.value }).then(result => {
+          store.dispatch(ActionTypes.DUPLICATE_LISTING_TASK, result);
+        });        
+      }
+
+      // View Task and Related Actions
+      store.dispatch(AdminActionTypes.FETCH_USERS)
+      let selectedTask = reactive({}) as ITask;
+      let selectedTaskListing = reactive({}) as ITaskListing;
+
+      function viewTask(element, listing){
+          Object.assign(selectedTaskListing, listing);
+          showModal.value = !showModal.value;
+          store.dispatch(ActionTypes.RESET_LISTING_TASK)
+          store.dispatch(ActionTypes.FETCH_LISTING_TASK_BY_UID, element.uid)
+      }
+
+      // Task Comments
+      let taskCommentEntry = ref('');
+      let showAddComment = ref(false);
+      const { executeMutation: createTaskComment } = useMutation(ADD_TASK_COMMENT);
+
+      function addTaskComment(task): void {
+        createTaskComment({ taskUid: task?.uid, comment: taskCommentEntry?.value }).then((result) => {
+          store.dispatch(ActionTypes.ADD_TASK_COMMENT, result);
+          taskCommentEntry.value = '';
+        });
+      }
+
+      function saveTaskComment(task: any, create:boolean): void {
+        if(create) addTaskComment(task)
+      }
+
+      // Task Milestome
+      let showAddMilestone = ref(false);
+      let taskMilestone = reactive({}) as IMileStone;
+
+      const { executeMutation: createTaskMilestone } = useMutation(ADD_TASK_MILESTONE);
+
+      function addTaskMilestone(task): void {
+        createTaskMilestone({ 
+          taskUid: task?.uid, 
+          title: taskMilestone?.title,
+          assigneeUid: taskMilestone?.assigneeUid,
+          done: taskMilestone?.done,
+        }).then((result) => {
+          store.dispatch(ActionTypes.ADD_TASK_MILESTONE, result);
+          taskMilestone.title = ""
+          taskMilestone.assigneeUid = undefined
+          taskMilestone.done = false
+        })
+      }
+
+      function saveTaskMilestone(task: any, create:boolean): void {
+        if(create) addTaskMilestone(task)
+      }
 
       return { 
+          parseDate,
+          users: computed(() => store.getters.getUsers),
           board: computed(() => store.getters.getBoard ),
           log, 
           checkMove,
@@ -313,6 +483,20 @@ export default defineComponent({
           taskFormTitle,
           TaskFormManager,
           saveTaskForm,
+          selectedTask: computed(() => store.getters.getListingTask),
+          selectedTaskListing,
+          showAddComment,
+          taskCommentEntry,
+          saveTaskComment,
+          showAddMilestone,
+          taskMilestone,
+          saveTaskMilestone,
+          moveListingTask,
+          updateDueDate,
+          deleteTask,
+          dulicateTitle,
+          duplicateTask,
+          deleteListing
       }
   },
 });

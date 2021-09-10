@@ -22,6 +22,7 @@ class WorkSheetBase(BaseModel):
     cols: Optional[int] = None
     row_wise: Optional[bool] = True
     template: Optional[Dict] = {}
+    state: Optional[str] = None
 
 
 class WorkSheetBaseInDB(WorkSheetBase):

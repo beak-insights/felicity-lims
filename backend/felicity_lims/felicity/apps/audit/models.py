@@ -60,6 +60,10 @@ class AuditLog(DBModel):
             del state_after[_key]
             del state_before[_key]
 
+        if len(state_after.keys()) == 1:
+            if list(state_after.keys())[0] == 'updated_at':
+                return
+
         state_after = json.dumps(state_after)
         state_before = json.dumps(state_before)
 

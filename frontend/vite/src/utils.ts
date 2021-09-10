@@ -11,7 +11,7 @@ export const parseDate = function(str: string) {
 
 export const parseEdgeNodeToList = (payload: any) => {
     const list: any[] = [];
-    if(!payload || !payload?.edges ) return payload;
+    if(!payload || !payload?.edges) return payload;
     payload?.edges.forEach((item: any) => list.push(item?.node));
     return list
 }
