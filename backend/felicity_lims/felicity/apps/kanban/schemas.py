@@ -93,8 +93,8 @@ class ListingTaskBase(BaseAuditModel):
     assignee: Optional[User] = None
     tags: Optional[List[TaskTag]] = []
     members: Optional[List[User]] = []
-    status: Optional[str] = ""
     due_date: Optional[datetime] = ""
+    complete: Optional[bool] = False
     archived: Optional[bool] = False
 
 

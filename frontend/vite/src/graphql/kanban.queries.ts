@@ -131,6 +131,6 @@ export const GET_LISTING_TASK_BY_UID = gql`
           }
         }
       }
-      status
+      complete
     }
 }`;

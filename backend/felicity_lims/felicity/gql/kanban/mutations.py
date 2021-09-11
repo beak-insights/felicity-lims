@@ -5,6 +5,7 @@ from graphql import GraphQLError
 from fastapi.encoders import jsonable_encoder
 
 from felicity.apps.kanban import schemas, models
+from felicity.apps.user import models as user_models
 from felicity.gql import auth_from_info, verify_user_auth
 from felicity.gql.kanban import types
 
@@ -124,6 +125,7 @@ class DeleteBoard(graphene.Mutation):
         ok = True
         return DeleteBoard(ok=ok, board_uid=board_uid)
 
+
 #
 # Create BoardListing Mutations
 #
@@ -232,6 +234,7 @@ class DeleteBoardListing(graphene.Mutation):
         ok = True
         return DeleteBoardListing(ok=ok, listing_uid=listing_uid)
 
+
 #
 # Create ListingTask Mutations
 #
@@ -254,6 +257,7 @@ class CreateListingTask(graphene.Mutation):
 
         incoming = {
             "title": title,
+            "assignee_uid": felicity_user.uid,
             "created_by_uid": felicity_user.uid,
             "updated_by_uid": felicity_user.uid,
         }
@@ -262,6 +266,9 @@ class CreateListingTask(graphene.Mutation):
 
         obj_in = schemas.ListingTaskCreate(**incoming)
         task = models.ListingTask.create(obj_in)
+        task.members.append(felicity_user)
+        task.save()
+
         ok = True
         return CreateListingTask(task=task, ok=ok)
 
@@ -274,9 +281,9 @@ class UpdateListingTask(graphene.Mutation):
         listing_uid = graphene.String(required=False)
         due_date = graphene.String(required=False)
         assignee_uid = graphene.String(required=False)
-        members = graphene.List(graphene.String)
+        member_uids = graphene.List(graphene.String)
         tags = graphene.List(graphene.String)
-        status = graphene.String(required=False)
+        complete = graphene.Boolean(required=False)
         archived = graphene.Boolean(required=False)
 
     ok = graphene.Boolean()
@@ -298,21 +305,31 @@ class UpdateListingTask(graphene.Mutation):
         obj_data = task.to_dict()
         for field in obj_data:
             if field in kwargs:
-                if kwargs[field]:
+                if kwargs[field] or kwargs[field] is False:
                     try:
                         setattr(task, field, kwargs[field])
                     except Exception as e:
                         logger.warning(f"failed to set attribute {field}: {e}")
-
-        # TODO: Handle members and tags updating here
 
         try:
             setattr(task, 'updated_by_uid', felicity_user.uid)
         except Exception as e:
             logger.warning(f"failed to set attribute {'updated_by_uid'}: {e}")
 
+        logger.warning(f"  kwargs: {kwargs}\n task.to_dict(): {task.to_dict()} ")
         obj_in = schemas.ListingTaskUpdate(**task.to_dict())
         task = task.update(obj_in)
+
+        member_uids = kwargs.get('member_uids', None)
+        if member_uids:
+            task.members = []
+            if len(member_uids) > 0:
+                for member_uid in member_uids:
+                    member = user_models.User.get(uid=int(member_uid))
+                    task.members.append(member)
+
+        task.save()
+
         ok = True
         return UpdateListingTask(ok=ok, task=task)
 
@@ -469,7 +486,7 @@ class KanBanMutations(graphene.ObjectType):
     delete_board_listing = DeleteBoardListing.Field()
     create_listing_task = CreateListingTask.Field()
     update_listing_task = UpdateListingTask.Field()
-    delete_listing_task  = DeleteListingTask.Field()
-    duplicate_listing_task  = DuplicateListingTask.Field()
+    delete_listing_task = DeleteListingTask.Field()
+    duplicate_listing_task = DuplicateListingTask.Field()
     create_task_comment = CreateTaskComment.Field()
     create_task_milestone = CreateTaskMilestone.Field()

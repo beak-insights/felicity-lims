@@ -28,7 +28,7 @@ class BoardListing(BaseAuditDBModel):
     title = Column(String)
     description = Column(String)
     board_uid = Column(Integer, ForeignKey('board.uid'), nullable=False)
-    board = relationship(Board, backref="board_listings")
+    board = relationship(Board, backref=backref("board_listings", cascade="all, delete, delete-orphan"))
 
     @classmethod
     def create(cls, obj_in: schemas.BoardListingCreate) -> schemas.BoardListing:
@@ -72,8 +72,8 @@ class ListingTask(BaseAuditDBModel):
     assignee = relationship(User, foreign_keys=[assignee_uid], backref="listing_tasks")
     tags = relationship(TaskTag, secondary="tasktagged", backref="tagged_tasks")
     members = relationship(User, secondary="taskmember", backref="member_tasks")
-    status = Column(String)
     due_date = Column(DateTime, nullable=True)
+    complete = Column(Boolean(), default=False)
     archived = Column(Boolean(), default=False)
 
     @classmethod

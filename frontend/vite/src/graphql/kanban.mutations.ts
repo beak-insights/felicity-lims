@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
 
+// Board
 export const ADD_BOARD = gql`
   mutation AddBoard($title: String!, $departmentUid: String, $description: String) {
     createBoard(title: $title, departmentUid: $departmentUid, description: $description){
@@ -34,6 +35,14 @@ export const EDIT_BOARD = gql`
   }
 `;
 
+export const DELETE_BOARD = gql`
+  mutation deleteBoard($uid: String!) {
+    deleteBoard(uid: $uid){
+      boardUid
+      ok
+    }
+  }
+`;
 
 // board listing
 export const ADD_BOARD_LISTING = gql`
@@ -49,7 +58,17 @@ export const ADD_BOARD_LISTING = gql`
   }
 `;
 
+export const DELETE_BOARD_LISTING = gql`
+  mutation deleteListing($uid: String!) {
+    deleteBoardListing(uid: $uid){
+      listingUid
+      ok
+    }
+  }
+`;
 
+
+// listing tasks
 export const ADD_LISTING_TASK = gql`
   mutation addListingTask($title: String!, $listingUid: String!, $description: String) {
     createListingTask(title: $title, listingUid: $listingUid, description: $description){
@@ -66,9 +85,9 @@ export const ADD_LISTING_TASK = gql`
 
 export const EDIT_LISTING_TASK = gql`
   mutation editListingTask($uid: String!, $title: String, $description: String, $listingUid: String, $dueDate: String, 
-    $assigneeUid: String, $members: [String], $tags: [String], $status: String, $archived: Boolean) {
+    $assigneeUid: String, $memberUids: [String], $tags: [String], $complete: Boolean, $archived: Boolean) {
     updateListingTask(uid: $uid, title: $title, description: $description, listingUid: $listingUid, dueDate: $dueDate, 
-    assigneeUid: $assigneeUid, members: $members, tags: $tags, status: $status, archived: $archived){
+    assigneeUid: $assigneeUid, memberUids: $memberUids, tags: $tags, complete: $complete, archived: $archived){
       task {
       uid
       listingUid
@@ -147,7 +166,7 @@ export const EDIT_LISTING_TASK = gql`
           }
         }
       }
-      status
+      complete
       }
     }
   }

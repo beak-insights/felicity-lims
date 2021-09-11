@@ -32,6 +32,7 @@ class Settings(BaseSettings):
         'http://192.168.137.97:3000',
         'http://192.168.0.196:3000',
         'http://192.168.0.195:3000',
+        'http://192.168.137.227:3000',
     ]
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)

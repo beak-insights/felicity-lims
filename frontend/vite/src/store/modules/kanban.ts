@@ -140,11 +140,14 @@ export enum MutationTypes {
   SET_BOARDS = 'SET_BOARDS',
   SET_BOARD = 'SET_BOARD',
   ADD_BOARD = 'ADD_BOARD',
+  DELETE_BOARD = 'DELETE_BOARD',
 
   ADD_BOARD_LISTING = 'ADD_BOARD_LISTING',
+  DELETE_BOARD_LISTING = 'DELETE_BOARD_LISTING',
 
   ADD_LISTING_TASK = 'ADD_LISTING_TASK',
   MOVE_LISTING_TASK = 'MOVE_LISTING_TASK',
+  UPDATE_LISTING_TASK = 'UPDATE_LISTING_TASK',
   DELETE_LISTING_TASK = 'DELETE_LISTING_TASK',
   DUPLICATE_LISTING_TASK = 'DUPLICATE_LISTING_TASK',
   RESET_LISTING_TASK = 'RESET_LISTING_TASK',
@@ -163,11 +166,14 @@ export enum ActionTypes {
   FETCH_BOARDS = 'FETCH_BOARDS',
   FETCH_BOARD_BY_UID = 'FETCH_BOARD_BY_UID',
   ADD_BOARD = 'ADD_BOARD',
+  DELETE_BOARD = 'DELETE_BOARD',
 
   ADD_BOARD_LISTING = 'ADD_BOARD_LISTING',
+  DELETE_BOARD_LISTING = 'DELETE_BOARD_LISTING',
 
   ADD_LISTING_TASK = 'ADD_LISTING_TASK',
   MOVE_LISTING_TASK = 'MOVE_LISTING_TASK',
+  UPDATE_LISTING_TASK = 'UPDATE_LISTING_TASK',
   DELETE_LISTING_TASK = 'DELETE_LISTING_TASK',
   DUPLICATE_LISTING_TASK = 'DUPLICATE_LISTING_TASK',
   RESET_LISTING_TASK = 'RESET_LISTING_TASK',
@@ -217,10 +223,31 @@ export const mutations = <MutationTree<IState>>{
     state.board = payload;
   },
 
+
+  [MutationTypes.DELETE_BOARD](state: IState, boardUid: any): void {
+    if(boardUid){
+      const index = state!.boards?.findIndex(x => parseInt(x.uid!) === parseInt(boardUid!));
+      if (index! > -1) {
+        state!.boards!.splice(index!, 1);
+      }
+    }
+    state.board = null;
+  },
+
+  // listing
   [MutationTypes.ADD_BOARD_LISTING](state: IState, payload: any): void {
     let board = state.board;
     if(board) board.boardListings!.push(payload.listing)
     state.board = board;
+  },
+
+  [MutationTypes.DELETE_BOARD_LISTING](state: IState, listingUid: any): void {
+    if(listingUid){
+      const index = state!.board!.boardListings?.findIndex(x => parseInt(x.uid!) === parseInt(listingUid!));
+      if (index! > -1) {
+        state!.board!.boardListings!.splice(index!, 1);
+      }
+    }
   },
 
   // LISTING TASKS
@@ -292,6 +319,15 @@ export const mutations = <MutationTree<IState>>{
     state.board = board;
   },
 
+  [MutationTypes.UPDATE_LISTING_TASK](state: IState, payload: any): void {
+    let task = payload.task;
+    task.members = parseEdgeNodeToList(task?.members)
+    task.tags = parseEdgeNodeToList(task?.tags)
+    task.milestones = parseEdgeNodeToList(task?.taskMilestones)
+    task.comments = parseEdgeNodeToList(task?.taskComments)
+    state.listingTask = task;
+  },
+
   //  TASKS COMMENTS
   [MutationTypes.ADD_TASK_COMMENT](state: IState, payload: IComment): void {
     state.listingTask?.comments?.push(payload)
@@ -330,9 +366,19 @@ export const actions = <ActionTree<IState, RootState>>{
     .then(result => commit(MutationTypes.SET_BOARD, result.data.boardByUid))
   },
   
+  async [ActionTypes.DELETE_BOARD]({ commit }, payload){
+    commit(MutationTypes.DELETE_BOARD, payload.data.deleteBoard.boardUid);
+  },
+  
+  // listings
   async [ActionTypes.ADD_BOARD_LISTING]({ commit }, payload){
     commit(MutationTypes.ADD_BOARD_LISTING, payload.data.createBoardListing);
   },
+  
+  async [ActionTypes.DELETE_BOARD_LISTING]({ commit }, payload){
+    commit(MutationTypes.DELETE_BOARD_LISTING, payload.data.deleteBoardListing.listingUid);
+  },
+  
   
   // LISTING TASKS
   async [ActionTypes.RESET_LISTING_TASK]({ commit }) {
@@ -360,6 +406,10 @@ export const actions = <ActionTree<IState, RootState>>{
   
   async [ActionTypes.DUPLICATE_LISTING_TASK]({ commit }, payload){
     commit(MutationTypes.DUPLICATE_LISTING_TASK, payload.data.duplicateListingTask);
+  },
+  
+  async [ActionTypes.UPDATE_LISTING_TASK]({ commit }, payload){
+    commit(MutationTypes.UPDATE_LISTING_TASK, payload.data.updateListingTask);
   },
 
   //  TASKS COMMENTS

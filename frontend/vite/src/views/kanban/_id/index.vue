@@ -6,7 +6,7 @@
         <h2 class="h2 font-bold">BOARD: {{ board?.title || 'No title'}}</h2>
         <button 
         v-show="canDeleteBoard(board)"
-        @click="deleteBoard(board)" 
+        @click="deletekanBanBoard(board)" 
         class="align-center p-1 text-red-600">
           <i class="fa fa-trash" aria-hidden="true"></i> Board
         </button>
@@ -72,11 +72,11 @@
 <script lang="ts">
 import modal from '../../_components/SimpleModal.vue';
 import { defineComponent, reactive, computed, onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { useMutation } from '@urql/vue';
 import { ActionTypes, Listing, IListing } from '../../../store/modules/kanban';
-import { ADD_BOARD_LISTING } from '../../../graphql/kanban.mutations';
+import { ADD_BOARD_LISTING, DELETE_BOARD } from '../../../graphql/kanban.mutations';
 
 export default defineComponent({
   name: "kanaban-single",
@@ -85,6 +85,7 @@ export default defineComponent({
   },
   setup() {
     const route = useRoute();
+    const router = useRouter();
     const store = useStore();
 
     // Modal Vars
@@ -116,20 +117,22 @@ export default defineComponent({
     }
 
     // Delete Board
+    const { executeMutation: deleteBoard } = useMutation(DELETE_BOARD);
 
-    
     function canDeleteBoard(board): boolean {
       if(board?.boardListings?.length === 0) return true;
-      let canDetele = false;
+      let canDetele = true;
       board?.boardListings?.forEach(listing => {
-        if(listing?.listingTasks?.length === 0) canDetele = true;
+        if(listing?.listingTasks?.length > 0) canDetele = false;
       })
       return canDetele
     }
 
-    function deleteBoard(board): void {
-      // TODO
-      // delete here iff all board listings have no tasks 
+    function deletekanBanBoard(board): void {
+      deleteBoard({ uid: board?.uid }).then(result => {
+        store.dispatch(ActionTypes.DELETE_BOARD, result);
+      })
+      router.push({ name: "kanban-boards"});
     }
 
 
@@ -140,7 +143,7 @@ export default defineComponent({
       saveForm,
       form,
       formTitle,
-      deleteBoard,
+      deletekanBanBoard,
       canDeleteBoard
     }
   },
