@@ -17,8 +17,6 @@ if initialize_felicity():
     import base64
     import binascii
 
-    from felicity.database.session import database # noqa
-
     from felicity.api.api_v1.api import api_router # noqa
     from felicity.core.config import settings # noqa
 
@@ -69,13 +67,11 @@ if initialize_felicity():
 
     @flims.on_event("startup")
     async def startup():
-        await database.connect()
         felicity_workforce_init()
 
     @flims.on_event("shutdown")
     async def shutdown():
         felicity_halt_workforce()
-        await database.disconnect()
         
     # Set all CORS enabled origins
     if settings.BACKEND_CORS_ORIGINS:

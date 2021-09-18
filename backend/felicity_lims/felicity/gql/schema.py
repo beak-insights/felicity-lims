@@ -1,7 +1,5 @@
 import graphene
 import asyncio
-from graphene import String
-from graphql import GraphQLError
 
 from felicity.gql.setup.query import SetupQuery
 from felicity.gql.audit.query import AuditLogQuery
