@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Table
 from sqlalchemy.orm import relationship
 
 from felicity.apps.analysis import schemas
@@ -19,7 +19,7 @@ class QCSet(DBModel):
     note = Column(String, nullable=True)
 
     @classmethod
-    def create(cls, obj_in:schemas.QCSetCreate) -> schemas.QCSet:
+    def create(cls, obj_in: schemas.QCSetCreate) -> schemas.QCSet:
         data = cls._import(obj_in)
         return super().create(**data)
 
@@ -39,7 +39,7 @@ class QCLevel(DBModel):
     level = Column(String, nullable=False)
 
     @classmethod
-    def create(cls, obj_in:schemas.QCLevelCreate) -> schemas.QCLevel:
+    def create(cls, obj_in: schemas.QCLevelCreate) -> schemas.QCLevel:
         data = cls._import(obj_in)
         return super().create(**data)
 
@@ -48,18 +48,21 @@ class QCLevel(DBModel):
         return super().update(**data)
 
 
-class QCTDLink(DBModel):
-    """Many to Many Link between QCTemplate and Department
-    """
-    department_uid = Column(Integer, ForeignKey('department.uid'), primary_key=True)
-    qc_template_uid = Column(Integer, ForeignKey('qctemplate.uid'), primary_key=True)
+"""
+Many to Many Link between QCTemplate and Department
+"""
+qctdlink = Table('qctdlink', DBModel.metadata,
+                 Column("department_uid", ForeignKey('department.uid'), primary_key=True),
+                 Column("qc_template_uid", ForeignKey('qctemplate.uid'), primary_key=True)
+                 )
 
-
-class QCTQCLLink(DBModel):
-    """Many to Many Link between QCTemplate and  QCLevel
-    """
-    qc_level_uid = Column(Integer, ForeignKey('qclevel.uid'), primary_key=True)
-    qc_template_uid = Column(Integer, ForeignKey('qctemplate.uid'), primary_key=True)
+"""
+Many to Many Link between QCTemplate and  QCLevel
+"""
+qctqcllink = Table('qctqcllink', DBModel.metadata,
+                   Column("qc_level_uid", ForeignKey('qclevel.uid'), primary_key=True),
+                   Column("qc_template_uid", ForeignKey('qctemplate.uid'), primary_key=True)
+                   )
 
 
 class QCTemplate(DBModel):
@@ -75,8 +78,8 @@ class QCTemplate(DBModel):
     """
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
-    departments = relationship(Department, secondary="qctdlink", backref="qc_templates")
-    qc_levels = relationship(QCLevel, secondary="qctqcllink",  backref="qc_templates")
+    departments = relationship(Department, secondary=qctdlink, backref="qc_templates")
+    qc_levels = relationship(QCLevel, secondary=qctqcllink, backref="qc_templates")
 
     @classmethod
     def create(cls, obj_in: schemas.QCTemplateCreate) -> schemas.QCTemplate:

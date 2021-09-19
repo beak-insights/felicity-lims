@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, String, Integer, ForeignKey, Boolean, DateTime
+from sqlalchemy import Column, String, Integer, ForeignKey, Boolean, DateTime, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -37,25 +37,29 @@ class WSBase(DBModel):
         return data
 
 
-class WSTPLink(DBModel):
-    """Many to Many Link between WorkSheetTemplate and Profile
-    """
-    ws_template_uid = Column(Integer, ForeignKey('worksheettemplate.uid'), primary_key=True)
-    profile_uid = Column(Integer, ForeignKey('profile.uid'), primary_key=True)
+"""
+Many to Many Link between WorkSheetTemplate and Profile
+"""
+wstplink = Table('wstplink', DBModel.metadata,
+                 Column("ws_template_uid", ForeignKey('worksheettemplate.uid'), primary_key=True),
+                 Column("profile_uid", ForeignKey('profile.uid'), primary_key=True)
+                 )
 
+"""
+any to Many Link between WorkSheetTemplate and Analysis
+"""
+wstalink = Table('wstalink', DBModel.metadata,
+                 Column("ws_template_uid", ForeignKey('worksheettemplate.uid'), primary_key=True),
+                 Column("analysis_uid", ForeignKey('analysis.uid'), primary_key=True)
+                 )
 
-class WSTALink(DBModel):
-    """Many to Many Link between WorkSheetTemplate and Analysis
-    """
-    ws_template_uid = Column(Integer, ForeignKey('worksheettemplate.uid'), primary_key=True)
-    analysis_uid = Column(Integer, ForeignKey('analysis.uid'), primary_key=True)
-
-
-class WSTQCLLink(DBModel):
-    """Many to Many Link between WorkSheetTemplate and QCLevel
-    """
-    ws_template_uid = Column(Integer, ForeignKey('worksheettemplate.uid'), primary_key=True)
-    qc_level_uid = Column(Integer, ForeignKey('qclevel.uid'), primary_key=True)
+"""
+Many to Many Link between WorkSheetTemplate and QCLevel
+"""
+wstqcllink = Table('wstqcllink', DBModel.metadata,
+                   Column("ws_template_uid", ForeignKey('worksheettemplate.uid'), primary_key=True),
+                   Column("qc_level_uid", ForeignKey('qclevel.uid'), primary_key=True)
+                   )
 
 
 class WorkSheetTemplate(WSBase):
@@ -66,12 +70,12 @@ class WorkSheetTemplate(WSBase):
     """
     name = Column(String, unique=True, nullable=False)
     description = Column(String)
-    profiles = relationship(analysis_models.Profile, secondary="wstplink", backref="worksheet_templates")
-    analyses = relationship(analysis_models.Analysis, secondary="wstalink", backref="worksheet_templates")
+    profiles = relationship(analysis_models.Profile, secondary=wstplink, backref="worksheet_templates")
+    analyses = relationship(analysis_models.Analysis, secondary=wstalink, backref="worksheet_templates")
     qc_template_uid = Column(Integer, ForeignKey('qctemplate.uid'), nullable=True)
     qc_template = relationship(qc_models.QCTemplate, backref='worksheet_templates')
     # to help cater for those created without template we also keep the qc_levels
-    qc_levels = relationship(qc_models.QCLevel, secondary="wstqcllink")
+    qc_levels = relationship(qc_models.QCLevel, secondary=wstqcllink)
     instrument_uid = Column(Integer, ForeignKey('instrument.uid'), nullable=True)
     instrument = relationship(Instrument, backref='worksheet_templates')
     sample_type_uid = Column(Integer, ForeignKey('sampletype.uid'), nullable=False)
@@ -87,18 +91,21 @@ class WorkSheetTemplate(WSBase):
         return super().update(**data)
 
 
-class WSPLink(DBModel):
-    """Many to Many Link between WorkSheet and Profile
-    """
-    worksheet_uid = Column(Integer, ForeignKey('worksheet.uid'), primary_key=True)
-    profile_uid = Column(Integer, ForeignKey('profile.uid'), primary_key=True)
+"""
+Many to Many Link between WorkSheet and Profile
+"""
+wsplink = Table('wsplink', DBModel.metadata,
+                Column("worksheet_uid", ForeignKey('worksheet.uid'), primary_key=True),
+                Column("profile_uid", ForeignKey('profile.uid'), primary_key=True)
+                )
 
-
-class WSALink(DBModel):
-    """Many to Many Link between WorkSheet and Analysis
-    """
-    worksheet_uid = Column(Integer, ForeignKey('worksheet.uid'), primary_key=True)
-    analysis_uid = Column(Integer, ForeignKey('analysis.uid'), primary_key=True)
+"""
+Many to Many Link between WorkSheet and Analysis
+"""
+wsalink = Table('wsalink', DBModel.metadata,
+                Column("worksheet_uid", ForeignKey('worksheet.uid'), primary_key=True),
+                Column("analysis_uid", ForeignKey('analysis.uid'), primary_key=True)
+                )
 
 
 class WorkSheet(Auditable, WSBase):
@@ -107,8 +114,8 @@ class WorkSheet(Auditable, WSBase):
     analyst_uid = Column(Integer, ForeignKey('user.uid'), nullable=False)
     analyst = relationship(User, foreign_keys=[analyst_uid], backref="analysed_worksheets")
     worksheet_id = Column(String, index=True, unique=True, nullable=False)
-    profiles = relationship(analysis_models.Profile, secondary="wsplink", backref="worksheets")
-    analyses = relationship(analysis_models.Analysis, secondary="wsalink", backref="worksheets")
+    profiles = relationship(analysis_models.Profile, secondary=wsplink, backref="worksheets")
+    analyses = relationship(analysis_models.Analysis, secondary=wsalink, backref="worksheets")
     instrument_uid = Column(Integer, ForeignKey('instrument.uid'), nullable=True)
     instrument = relationship(Instrument, backref='worksheets')
     sample_type_uid = Column(Integer, ForeignKey('sampletype.uid'), nullable=False)

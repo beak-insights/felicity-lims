@@ -3,7 +3,7 @@ import logging
 from pydantic import BaseModel as PydanticBaseModel
 from sqlalchemy import Column, Integer
 from sqlalchemy.sql import func
-from sqlalchemy.ext.declarative import as_declarative, declared_attr
+from sqlalchemy.orm import as_declarative, declared_attr  # .ext.declarative
 from sqlalchemy_mixins import AllFeaturesMixin, TimestampsMixin
 
 from felicity.database.session import SessionScoped

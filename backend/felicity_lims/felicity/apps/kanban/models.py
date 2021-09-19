@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, Integer, ForeignKey, Boolean
+from sqlalchemy import Column, String, DateTime, Integer, ForeignKey, Boolean, Table
 from sqlalchemy.orm import relationship, backref
 
 from felicity.apps import BaseAuditDBModel, DBModel
@@ -53,14 +53,15 @@ class TaskTag(BaseAuditDBModel):
         return super().update(**data)
 
 
-class TaskTagged(DBModel):
-    task_uid = Column(Integer, ForeignKey('listingtask.uid'), primary_key=True)
-    tag_uid = Column(Integer, ForeignKey('tasktag.uid'), primary_key=True)
+tasktagged = Table("tasktagged", DBModel.metadata,
+                   Column("task_uid", ForeignKey('listingtask.uid'), primary_key=True),
+                   Column("tag_uid", ForeignKey('tasktag.uid'), primary_key=True),
+                   )
 
-
-class TaskMember(DBModel):
-    task_uid = Column(Integer, ForeignKey('listingtask.uid'), primary_key=True)
-    user_uid = Column(Integer, ForeignKey('user.uid'), primary_key=True)
+taskmember = Table("taskmember", DBModel.metadata,
+                   Column("task_uid", ForeignKey('listingtask.uid'), primary_key=True),
+                   Column("user_uid", ForeignKey('user.uid'), primary_key=True),
+                   )
 
 
 class ListingTask(BaseAuditDBModel):
@@ -70,8 +71,8 @@ class ListingTask(BaseAuditDBModel):
     listing = relationship(BoardListing, backref="listing_tasks")
     assignee_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
     assignee = relationship(User, foreign_keys=[assignee_uid], backref="listing_tasks")
-    tags = relationship(TaskTag, secondary="tasktagged", backref="tagged_tasks")
-    members = relationship(User, secondary="taskmember", backref="member_tasks")
+    tags = relationship(TaskTag, secondary=tasktagged, backref="tagged_tasks")
+    members = relationship(User, secondary=taskmember, backref="member_tasks")
     due_date = Column(DateTime, nullable=True)
     complete = Column(Boolean(), default=False)
     archived = Column(Boolean(), default=False)
@@ -90,7 +91,8 @@ class TaskMilestone(BaseAuditDBModel):
     title = Column(String)
     done = Column(Boolean(), default=False)
     task_uid = Column(Integer, ForeignKey('listingtask.uid'), primary_key=True)
-    task = relationship(ListingTask, backref=backref("task_milestones", cascade="all, delete-orphan"))  # backref="task_milestones"
+    task = relationship(ListingTask,
+                        backref=backref("task_milestones", cascade="all, delete-orphan"))  # backref="task_milestones"
     assignee_uid = Column(Integer, ForeignKey('user.uid'), nullable=True)
     assignee = relationship(User, foreign_keys=[assignee_uid], backref="tasks_milestones")
 
@@ -107,7 +109,8 @@ class TaskMilestone(BaseAuditDBModel):
 class TaskComment(BaseAuditDBModel):
     comment = Column(String)
     task_uid = Column(Integer, ForeignKey('listingtask.uid'), primary_key=True)
-    task = relationship(ListingTask, backref=backref("task_comments", cascade="all, delete-orphan"))  # backref="task_comments"
+    task = relationship(ListingTask,
+                        backref=backref("task_comments", cascade="all, delete-orphan"))  # backref="task_comments"
 
     @classmethod
     def create(cls, obj_in: schemas.TaskCommentCreate) -> schemas.TaskComment:

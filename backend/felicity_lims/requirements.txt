@@ -12,3 +12,4 @@ sqlalchemy_mptt==0.2.5
 tenacity==8.0.1
 pydantic[email]==1.8.2
 python-multipart==0.0.5
+alembic==1.7.3

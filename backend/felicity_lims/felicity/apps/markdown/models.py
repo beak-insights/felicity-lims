@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, Integer, ForeignKey
+from sqlalchemy import Column, String, DateTime, Integer, ForeignKey, Table
 from sqlalchemy.orm import relationship, backref
 
 from felicity.database.base_class import DBModel
@@ -33,19 +33,20 @@ class DocumentTag(DBModel):
         return super().update(**data)
 
 
-class DocTags(DBModel):
-    document_uid = Column(Integer, ForeignKey('document.uid'), primary_key=True)
-    tag_uid = Column(Integer, ForeignKey('documenttag.uid'), primary_key=True)
+doctags = Table("doctags", DBModel.metadata,
+                Column("document_uid", ForeignKey('document.uid'), primary_key=True),
+                Column("tag_uid", ForeignKey('documenttag.uid'), primary_key=True),
+                )
 
+docauthors = Table("docauthors", DBModel.metadata,
+                   Column("document_uid", ForeignKey('document.uid'), primary_key=True),
+                   Column("user_uid", ForeignKey('user.uid'), primary_key=True),
+                   )
 
-class DocAuthors(DBModel):
-    document_uid = Column(Integer, ForeignKey('document.uid'), primary_key=True)
-    user_uid = Column(Integer, ForeignKey('user.uid'), primary_key=True)
-
-
-class DocReaders(DBModel):
-    document_uid = Column(Integer, ForeignKey('document.uid'), primary_key=True)
-    user_uid = Column(Integer, ForeignKey('user.uid'), primary_key=True)
+docreaders = Table("docreaders", DBModel.metadata,
+                   Column("document_uid", ForeignKey('document.uid'), primary_key=True),
+                   Column("user_uid", ForeignKey('user.uid'), primary_key=True),
+                   )
 
 
 class Document(DBModel):
@@ -54,9 +55,9 @@ class Document(DBModel):
     document_id = Column(String)
     content = Column(String)
     version = Column(String)
-    tags = relationship(DocumentTag, secondary="doctags", backref="tagged_documents")
-    authors = relationship(User, secondary="docauthors", backref="authored_markdowns")
-    readers = relationship(User, secondary="docreaders", backref="read_markdowns")
+    tags = relationship(DocumentTag, secondary=doctags, backref="tagged_documents")
+    authors = relationship(User, secondary=docauthors, backref="authored_markdowns")
+    readers = relationship(User, secondary=docreaders, backref="read_markdowns")
     department_uid = Column(Integer, ForeignKey('department.uid'), nullable=True)
     department = relationship(Department)
     category_uid = Column(Integer, ForeignKey('documentcategory.uid'), nullable=True)

@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean,Table
 from sqlalchemy.orm import relationship, backref
 
 from felicity.apps.core.utils import is_valid_email
@@ -121,24 +121,27 @@ class Permission(DBModel):
         return super().update(**data)
 
 
-class GULink(DBModel):
-    """Many to Many Link between Group and User
-    """
-    user_uid = Column(Integer, ForeignKey('user.uid'), primary_key=True)
-    group_uid = Column(Integer, ForeignKey('group.uid'), primary_key=True)
+"""
+Many to Many Link between Group and User
+"""
+gulink = Table('gulink', DBModel.metadata,
+               Column('user_uid', ForeignKey('user.uid'), primary_key=True),
+               Column('group_uid', ForeignKey('group.uid'), primary_key=True)
+               )
 
-
-class GPLink(DBModel):
-    """Many to Many Link between Group and Permission
-    """
-    permission_uid = Column(Integer, ForeignKey('permission.uid'), primary_key=True)
-    group_uid = Column(Integer, ForeignKey('group.uid'), primary_key=True)
+"""
+Many to Many Link between Group and Permission
+"""
+gplink = Table('gplink', DBModel.metadata,
+               Column('permission_uid', ForeignKey('permission.uid'), primary_key=True),
+               Column('group_uid', ForeignKey('group.uid'), primary_key=True)
+               )
 
 
 class Group(DBModel):
     name = Column(String, unique=True, index=True, nullable=False)
-    members = relationship(User, secondary="gulink", backref="groups")
-    permissions = relationship(Permission, secondary="gplink", backref="groups")
+    members = relationship("User", secondary=gulink, backref="groups")
+    permissions = relationship("Permission", secondary=gplink, backref="groups")
     active = Column(Boolean(), default=True)
 
     @classmethod
