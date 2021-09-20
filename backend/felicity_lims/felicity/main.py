@@ -1,10 +1,10 @@
-from felicity.init import initialize_felicity
+import base64
+import binascii
 import logging
 from typing import List
+
 from fastapi import FastAPI, WebSocket
 from starlette.middleware.cors import CORSMiddleware
-from graphql.execution.executors.asyncio import AsyncioExecutor
-
 from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.authentication import (
     AuthenticationBackend,
@@ -13,17 +13,16 @@ from starlette.authentication import (
     # UnauthenticatedUser,
     AuthCredentials
 )
-import base64
-import binascii
+
+from strawberry.asgi import GraphQL
 
 from felicity.api.api_v1.api import api_router  # noqa
 from felicity.core.config import settings  # noqa
-
-from starlette.graphql import GraphQLApp
 from felicity.gql.schema import gql_schema  # noqa
 from felicity.gql.deps import get_current_active_user
-
-from felicity.apps.job.sched import felicity_workforce_init, felicity_halt_workforce
+from felicity.apps.job.sched import felicity_halt_workforce
+from felicity.apps.job.sched import felicity_workforce_init
+from felicity.init import initialize_felicity
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -88,8 +87,11 @@ flims.add_middleware(
     backend=FelicityAuthBackend()
 )
 
+graphql_app = GraphQL(gql_schema)
+
 flims.include_router(api_router, prefix=settings.API_V1_STR)
-flims.add_route("/felicity-gql", GraphQLApp(schema=gql_schema, executor_class=AsyncioExecutor))
+flims.add_route("/felicity-gql", graphql_app)
+flims.add_websocket_route("/felicity-ws", graphql_app)
 
 
 class ConnectionManager:
@@ -106,7 +108,6 @@ class ConnectionManager:
 
 
 manager = ConnectionManager()
-
 
 @flims.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):

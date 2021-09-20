@@ -1,4 +1,4 @@
-import graphene
+import strawberry
 import asyncio
 
 from felicity.gql.setup.query import SetupQuery
@@ -29,24 +29,24 @@ class Query(
     pass
 
 
-class Mutation(
-    SetupMutations, UserMutations, ClientMutations,
-    PatientMutations, AnalysisMutations, WorkSheetMutations,
-    MarkdownMutations, KanBanMutations,
-    graphene.ObjectType
-):
-    pass
+# class Mutation(
+#     SetupMutations, UserMutations, ClientMutations,
+#     PatientMutations, AnalysisMutations, WorkSheetMutations,
+#     MarkdownMutations, KanBanMutations,
+#     graphene.ObjectType
+# ):
+#     pass
 
 
-class Subscription(graphene.ObjectType):
-    count_seconds = graphene.Float(up_to=graphene.Int())
+# class Subscription(graphene.ObjectType):
+#     count_seconds = graphene.Float(up_to=graphene.Int())
+#
+#     @staticmethod
+#     async def resolve_count_seconds(root, info, up_to):
+#         for i in range(up_to):
+#             yield i
+#             await asyncio.sleep(1.)
+#         yield up_to
+#
 
-    @staticmethod
-    async def resolve_count_seconds(root, info, up_to):
-        for i in range(up_to):
-            yield i
-            await asyncio.sleep(1.)
-        yield up_to
-
-
-gql_schema = graphene.Schema(query=Query, mutation=Mutation, subscription=Subscription)
+gql_schema = strawberry.Schema(query=Query)
