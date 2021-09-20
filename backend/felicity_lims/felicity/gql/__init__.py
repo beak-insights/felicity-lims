@@ -124,3 +124,14 @@ def verify_user_auth(is_auth: bool = False, user=None, err_msg: str = None) -> N
 
     if not user:
         raise GraphQLError(f"Failed to acquire authenticated user")
+
+#
+#
+# async def get_all_laboratories(root, info) -> List[LaboratoryType]:
+#     req = info.context.get('request')
+#     print(f"\n App {req.app.state.__dict__}")
+#     print(f"\n Auth {req.auth.__dict__}")
+#     print(f"\n Auth {dir(req.auth)}")
+#     print(f"\n User {dir(req.user)}")
+#     print(f"\n User {req.user.is_authenticated} \n")
+#     return await models.Laboratory.all()

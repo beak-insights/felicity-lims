@@ -1,39 +1,42 @@
-import logging
+from typing import List, Optional
+import strawberry
 
-import graphene
-from graphene import (
-    relay,
-    String,
+from felicity.gql.user.types import (
+    UserType,
+    PermissionType,
+    GroupType,
 )
-from graphene_sqlalchemy import SQLAlchemyConnectionField
-
-from felicity.gql.user.types import UserType, PermissionType, GroupType
 from felicity.apps.user import models as user_models
 from felicity.gql import deps
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
+@strawberry.type
+class UserQuery:
+    @strawberry.field
+    async def user_all(self, info) -> List[UserType]:
+        return await user_models.User.all()
 
-class UserQuery(graphene.ObjectType):
-    node = relay.Node.Field()
-    # User Queries
-    user_all = SQLAlchemyConnectionField(UserType.connection)
-    user_me = graphene.Field(lambda: UserType, token=graphene.String(default_value=""))
-    user_by_email = graphene.Field(lambda: UserType, email=graphene.String(default_value=""))
-    # Groups Queries
-    group_all = SQLAlchemyConnectionField(GroupType.connection)
-    group_by_uid = graphene.Field(lambda: GroupType, uid=graphene.String(default_value=""))
-    # Permission Queries
-    permission_all = SQLAlchemyConnectionField(PermissionType.connection)
-    permission_by_uid = graphene.Field(lambda: PermissionType, uid=graphene.String(default_value=""))
-    
-    @staticmethod
-    def resolve_user_me(self, info, token):
+    @strawberry.field
+    async def user_me(self, info, token: str) -> Optional[UserType]:
         """ Get current active user"""
-        current_active_user = deps.get_current_active_user(token=token)
-        return current_active_user
+        return await deps.get_current_active_user(token=token)
 
-    @staticmethod
-    def resolve_user_by_email(self, info, email):
-        return user_models.User.get_by_email(email=email)
+    @strawberry.field
+    async def user_by_email(self, info, email: str) -> Optional[UserType]:
+        return await user_models.User.get_by_email(email=email)
+
+    @strawberry.field
+    async def group_all(self, info) -> List[GroupType]:
+        return await user_models.Group.all()
+
+    @strawberry.field
+    async def group_by_uid(self, info, uid: int) -> Optional[GroupType]:
+        return await user_models.Group.get(uid=uid)
+
+    @strawberry.field
+    async def permission_all(self, info) -> List[PermissionType]:
+        return await user_models.Permission.all()
+
+    @strawberry.field
+    async def permission_by_uid(self, info, uid: int) -> Optional[PermissionType]:
+        return await user_models.Permission.get(uid=uid)

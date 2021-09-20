@@ -3,7 +3,9 @@ import strawberry
 from felicity.gql.setup.query import SetupQuery
 # from felicity.gql.audit.query import AuditLogQuery
 # from felicity.gql.setup.mutations import SetupMutations
-# from felicity.gql.user.query import UserQuery
+from felicity.gql.user.query import UserQuery
+
+
 # from felicity.gql.user.mutations import UserMutations
 # from felicity.gql.client.query import ClientQuery
 # from felicity.gql.client.mutations import ClientMutations
@@ -22,6 +24,7 @@ from felicity.gql.setup.query import SetupQuery
 @strawberry.type
 class Query(
     SetupQuery,
+    UserQuery,
 ):
     pass
 
