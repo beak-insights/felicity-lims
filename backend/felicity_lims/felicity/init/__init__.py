@@ -10,18 +10,18 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def initialize_felicity() -> bool:
+async def initialize_felicity() -> bool:
     logger.info("Initializing Felicity LIMS ...")
     # Felicity Health Status Checks
-    check_db_conn_status()
+    await check_db_conn_status()
     
     # Felicity LIMS Setup
-    create_laboratory()
-    create_super_user()
-    create_groups()
-    create_permissions()
-    create_categories()
-    create_qc_levels()
+    await create_laboratory()
+    await create_super_user()
+    await create_groups()
+    await create_permissions()
+    await create_categories()
+    await create_qc_levels()
     
     logger.info("Felicity LIMS Initialisation completed.")
     return True

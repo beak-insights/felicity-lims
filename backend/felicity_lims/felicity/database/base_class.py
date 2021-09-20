@@ -1,17 +1,20 @@
-from typing import Dict, TypeVar
+from typing import Dict, TypeVar, AsyncIterator, List, Any
 import logging
 from pydantic import BaseModel as PydanticBaseModel
+from sqlalchemy.future import select
 from sqlalchemy import Column, Integer
 from sqlalchemy.sql import func
-from sqlalchemy.orm import as_declarative, declared_attr  # .ext.declarative
-from sqlalchemy_mixins import AllFeaturesMixin, TimestampsMixin
+from sqlalchemy.orm import as_declarative, declared_attr
+# from sqlalchemy_mixins import AllFeaturesMixin, TimestampsMixin
+from felicity.database.async_mixins import AllFeaturesMixin, TimestampsMixin
 
-from felicity.database.session import SessionScoped
+from felicity.database.session import AsyncSessionLocal, AsyncSessionScoped
 
 InDBSchemaType = TypeVar("InDBSchemaType", bound=PydanticBaseModel)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 # noinspection PyPep8Naming
 class classproperty(object):
@@ -43,18 +46,27 @@ class DBModel(AllFeaturesMixin, TimestampsMixin):
         return cls.__name__.lower()
 
     @classmethod
-    def all_by_page(cls, page: int = 1, limit: int = 20, **kwargs) -> Dict:
+    async def all_by_page(cls, page: int = 1, limit: int = 20, **kwargs) -> Dict:
         start = (page - 1) * limit
         end = start + limit
-        return cls.query.slice(start, end).all()
+
+        stmt = cls.where(**kwargs).limit(limit).offset(start)
+        results = await cls.session.execute(stmt)
+        found = results.scalars().all()
+
+        return found  # cls.query.slice(start, end).all()
 
     @classmethod
-    def get(cls, **kwargs):
+    async def get(cls, **kwargs):
         """Return the the first value in database based on given args.
         Example:
             User.get(id=5)
         """
-        return cls.where(**kwargs).first()
+        # stmt = select(cls).where(**kwargs)
+        stmt = cls.where(**kwargs)
+        results = await cls.session.execute(stmt)
+        found = results.scalars().first()
+        return found
 
     @classmethod
     def _import(cls, schema_in: InDBSchemaType):
@@ -64,42 +76,59 @@ class DBModel(AllFeaturesMixin, TimestampsMixin):
         data = schema_in.dict(exclude_unset=True)
         return data
 
-    def save(self):
+    async def save(self):
         """Saves the updated model to the current entity db.
         """
         try:
             self.session.add(self)
-            self.session.flush()
-            self.session.commit()
+            await self.session.flush()
+            await self.session.commit()
         except Exception as e:
-            self.session.rollback()
+            await self.session.rollback()
             logger.info(f"Session Save Error: {e}")
             raise
         return self
 
     @classmethod
-    def get_one(cls, **kwargs):
-        return cls.query.filter_by(**kwargs).first()
+    async def get_one(cls, **kwargs):
+        stmt = cls.where(**kwargs)
+        results = await cls.session.execute(stmt)
+        found = results.scalars().first()
+        return found
 
     @classmethod
-    def fulltext_search(cls, search_string, field):
+    async def fulltext_search(cls, search_string, field):
         """Full-text Search with PostgreSQL"""
-        return cls.query.filter(
-            func.to_tsvector('english', getattr(cls, field)).match(search_string, postgresql_regconfig='english')).all()
+        stmt = select(cls).filter(
+            func.to_tsvector('english', getattr(cls, field)).match(search_string, postgresql_regconfig='english')
+        )
+        results = await cls.session.execute(stmt)
+        search = results.scalars().all()
+        return search
 
+    @classmethod
+    async def get_by_uids(cls,  uids: List[Any]) -> AsyncIterator[Any]:
+        stmt = (
+            select(cls)
+            .where(cls.uid.in_(uids))  # type: ignore
+        )
+        stream = await cls.session.stream(stmt.order_by(cls.uid))
+        async for row in stream:
+            yield row
+
+    @classmethod
+    async def stream_all(cls) -> AsyncIterator[Any]:
+        stmt = select(cls)
+        stream = await cls.session.stream(stmt.order_by(cls.uid))
+        async for row in stream:
+            yield row
+
+    @staticmethod
     def psql_records_to_dict(self, records, many=False):
         # records._row: asyncpg.Record / databases.backends.postgres.Record
         if not many and records:
             return dict(records)
         return [dict(record) for record in records]
 
-    @classmethod
-    def scalar(cls, filters):
-        cls.query.scalar()
 
-    # def get_multi(cls, *, skip: int = 0, limit: int = 100):
-    #     return cls.objects.offset(skip).limit(limit).all()
-
-
-DBModel.query = SessionScoped.query_property()
-DBModel.set_session(SessionScoped())
+DBModel.set_session(AsyncSessionScoped())

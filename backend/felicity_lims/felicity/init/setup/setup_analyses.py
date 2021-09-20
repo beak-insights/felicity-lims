@@ -14,7 +14,7 @@ from felicity.apps.analysis.schemas import (
 )
 
 
-def create_categories():
+async def create_categories():
     categories = [
         AnalysisCategoryCreate(
             name="Quality Control",
@@ -28,12 +28,12 @@ def create_categories():
         ),
     ]
     for category in categories:
-        cat = AnalysisCategory.get(name=category.name)
+        cat = await AnalysisCategory.get(name=category.name)
         if not cat:
-            AnalysisCategory.create(category)
+            await AnalysisCategory.create(category)
 
 
-def create_qc_levels() -> None:
+async def create_qc_levels() -> None:
     qc_levels = [
         QCLevelCreate(level='Blank'),
         QCLevelCreate(level='Negative Control'),
@@ -43,6 +43,6 @@ def create_qc_levels() -> None:
     ]
 
     for level_in in qc_levels:
-        qc_level: Optional[QCLevel] = QCLevel.get(level=level_in.level)
+        qc_level: Optional[QCLevel] = await QCLevel.get(level=level_in.level)
         if not qc_level:
-            QCLevel.create(level_in)
+            await QCLevel.create(level_in)

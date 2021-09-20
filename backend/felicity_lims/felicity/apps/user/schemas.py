@@ -25,7 +25,7 @@ class UserCreate(UserBase):
 
 # Properties to receive via API on update
 class UserUpdate(UserBase):
-    auth_uid: Optional[str] = None
+    auth_uid: Optional[int] = None
 
 
 class UserInDBBase(UserBase):

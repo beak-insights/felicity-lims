@@ -239,15 +239,18 @@ class AuthenticateUser(graphene.Mutation):
     user = graphene.Field(lambda: UserType)
 
     @staticmethod
-    def mutate(root, info, username, password, db: Session = None, ):
-        auth = user_models.UserAuth.get_by_username(username=username)
+    async def mutate(root, info, username, password, db: Session = None, ):
+        auth = await user_models.UserAuth.get_by_username(username=username)
         if not auth:
             raise GraphQLError("Incorrect username")
-        if not auth.has_access(password):
+
+        has_access = await auth.has_access(password)
+        if not has_access:
             raise GraphQLError("Failed to log you in")  # Weird it should not reach here
 
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-        _user = getattr(auth, auth.user_type)
+        # _user = getattr(auth, auth.user_type)
+        _user = await user_models.User.get(auth_uid=auth.uid)
         access_token = security.create_access_token(_user.uid, expires_delta=access_token_expires),
         token_type = "bearer"
         ok = True
