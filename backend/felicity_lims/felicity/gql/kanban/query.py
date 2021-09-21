@@ -1,10 +1,7 @@
-import graphene
-from graphene import (
-    relay,
-)
-from graphene_sqlalchemy import SQLAlchemyConnectionField
+from typing import List, Optional
+import strawberry
+
 from felicity.apps.kanban import models
-from felicity.gql import FilterableConnectionField
 from felicity.gql.kanban.types import (
     BoardType,
     BoardListingType,
@@ -14,32 +11,42 @@ from felicity.gql.kanban.types import (
 )
 
 
-class FilterableAuditField(FilterableConnectionField):
-    pass
+@strawberry.type
+class KanBanQuery:
+    @strawberry.field
+    async def board_all(self, info) -> List[BoardType]:
+        return await models.Board.all()
 
+    @strawberry.field
+    async def board_listing_all(self, info) -> List[BoardListingType]:
+        return await models.BoardListing.all()
 
-class KanBanQuery(graphene.ObjectType):
-    node = relay.Node.Field()
-    board_all = SQLAlchemyConnectionField(BoardType.connection)
-    board_listing_all = SQLAlchemyConnectionField(BoardListingType.connection)
-    listing_task_all = SQLAlchemyConnectionField(ListingTaskType.connection)
-    task_milestone_all = SQLAlchemyConnectionField(TaskMilestoneType.connection)
-    task_comment_all = SQLAlchemyConnectionField(TaskCommentType.connection)
+    @strawberry.field
+    async def listing_task_all(self, info) -> List[ListingTaskType]:
+        return await models.ListingTask.all()
 
-    board_by_uid = graphene.Field(lambda: BoardType, uid=graphene.String(default_value=""))
-    board_listing_by_board_uid = graphene.Field(lambda: BoardListingType, uid=graphene.String(default_value=""))
-    listing_task_by_uid = graphene.Field(lambda: ListingTaskType, uid=graphene.String(default_value=""))
+    @strawberry.field
+    async def task_milestone_all(self, info) -> List[TaskMilestoneType]:
+        return await models.TaskMilestone.all()
 
-    def resolve_board_by_uid(self, info, uid):
-        board = models.Board.get(uid=uid)
-        return board
+    @strawberry.field
+    async def task_comment_all(self, info, task_uid: int) -> List[TaskCommentType]:
+        return await models.TaskComment.where(task_uid=task_uid)
 
-    def resolve_board_listing_by_board_uid(self, info, uid):
-        document = models.BoardListing.get(uid=uid)
-        return document
+    @strawberry.field
+    async def board_by_uid(self, info, uid: int) -> Optional[BoardType]:
+        return await models.Board.get(uid=uid)
 
-    @staticmethod
-    def resolve_listing_task_by_uid(self, info, uid):
-        task = models.ListingTask.get(uid=uid)
-        return task
+    @strawberry.field
+    async def board_listing_by_uid(self, info, uid: int) -> BoardListingType:
+        return await models.BoardListing.get(uid=uid)
+
+    @strawberry.field
+    async def board_listing_by_board_uid(self, info, board_uid: int) -> List[BoardListingType]:
+        return await models.BoardListing.where(board_uid=board_uid)
+
+    @strawberry.field
+    async def listing_task_by_uid(self, info, uid: int) -> ListingTaskType:
+        return await models.ListingTask.get(uid=uid)
+
 

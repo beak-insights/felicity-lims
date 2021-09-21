@@ -1,13 +1,28 @@
-from graphene_sqlalchemy import SQLAlchemyObjectType
-from graphene import relay
+from datetime import datetime
+from typing import Optional
 
-from felicity.apps.patient.models import (
-    Patient
-)
+import strawberry
 
-# Graphene Patient Type
-class PatientType(SQLAlchemyObjectType):
-    class Meta:
-        model = Patient
-        interfaces = (relay.Node, )
+from felicity.gql.client.types import ClientType
+
+@strawberry.type
+class PatientType:
+    uid: int
+    client_patient_id: str
+    patient_id: str
+    client_uid: int
+    client: Optional[ClientType]
+    first_name: Optional[str]
+    middle_name: Optional[str]
+    last_name: Optional[str]
+    gender: Optional[int]
+    age: Optional[int]
+    date_of_birth: Optional[datetime]
+    age_dob_estimated: bool
+    phone_mobile: Optional[str]
+    phone_home: Optional[str]
+    consent_sms: bool
+    email: Optional[str]
+    internal_use: bool
+    active: bool
         

@@ -18,7 +18,6 @@ class UserQuery:
 
     @strawberry.field
     async def user_me(self, info, token: str) -> Optional[UserType]:
-        """ Get current active user"""
         return await deps.get_current_active_user(token=token)
 
     @strawberry.field
