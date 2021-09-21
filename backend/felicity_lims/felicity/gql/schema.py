@@ -4,7 +4,7 @@ from felicity.gql.setup.query import SetupQuery
 from felicity.gql.audit.query import AuditLogQuery
 # from felicity.gql.setup.mutations import SetupMutations
 from felicity.gql.user.query import UserQuery
-# from felicity.gql.user.mutations import UserMutations
+from felicity.gql.user.mutations import UserMutations
 from felicity.gql.client.query import ClientQuery
 # from felicity.gql.client.mutations import ClientMutations
 from felicity.gql.patient.query import PatientQuery
@@ -34,4 +34,11 @@ class Query(
     pass
 
 
-gql_schema = strawberry.Schema(query=Query)
+@strawberry.type
+class Mutation(
+    UserMutations,
+):
+    pass
+
+
+gql_schema = strawberry.Schema(query=Query, mutation=Mutation)

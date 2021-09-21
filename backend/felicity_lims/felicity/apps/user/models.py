@@ -102,8 +102,11 @@ class User(AbstractBaseUser):
         """sets the user_type field in auth"""
         if self.auth:
             await self.auth.acquire_user_type(conf.LABORATORY_CONTACT)
+        elif self.auth_uid:
+            auth = await UserAuth.get(uid=self.auth_uid)
+            await auth.acquire_user_type(conf.LABORATORY_CONTACT)
         else:
-            raise Exception("auth obj is None")
+            raise Exception(f"auth obj is None")
 
     async def unlink_auth(self):
         auth = self.auth

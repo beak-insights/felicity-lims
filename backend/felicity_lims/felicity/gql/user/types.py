@@ -8,7 +8,7 @@ class UserAuthType:
     user_name: str
     login_retry: int
     is_blocked: bool
-    user_type: str
+    user_type: Optional[str]
 
 
 @strawberry.type
@@ -40,3 +40,16 @@ class GroupType:
     members: Optional[UserType]
     permissions: Optional[PermissionType]
     active: Optional[bool]
+
+
+@strawberry.type
+class AuthenticatedData:
+    user: UserType
+    token: str
+    token_type: str
+
+
+@strawberry.type
+class UpdatedGroupPerms:
+    group: GroupType
+    permission: PermissionType
