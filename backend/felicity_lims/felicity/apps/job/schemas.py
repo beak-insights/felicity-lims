@@ -19,7 +19,7 @@ class JobBase(BaseModel):
 
 
 class Job(JobBase):
-    uid: Optional[str] = None
+    uid: Optional[int] = None
 
     class Config:
         orm_mode = True

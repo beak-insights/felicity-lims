@@ -44,45 +44,45 @@ class AnalysisResult(Auditable, BaseMPTT):
     reportable = Column(Boolean(), default=True)  # for retests or reflex
     status = Column(String, nullable=False)
 
-    def assign(self, ws_uid, position):
+    async def assign(self, ws_uid, position):
         self.worksheet_uid = ws_uid
         self.assigned = True
         self.worksheet_position = position
-        self.save()
+        await self.save()
 
-    def un_assign(self):
+    async def un_assign(self):
         self.worksheet_uid = None
         self.assigned = False
         self.worksheet_position = None
-        self.save()
+        await self.save()
 
-    def verify(self, verifier):
+    async def verify(self, verifier):
         self.status = conf.states.result.VERIFIED
         self.verified_by_uid = verifier.uid
         self.date_verified = datetime.now()
         self.updated_by_uid = verifier.uid # noqa
-        self.save()
+        await self.save()
 
-    def retract(self, retracted_by):
+    async def retract(self, retracted_by):
         self.status = conf.states.result.RETRACTED
         self.verified_by_uid = retracted_by.uid
         self.date_verified = datetime.now()
         self.updated_by_uid = retracted_by.uid # noqa
-        self.save()
+        await self.save()
 
-    def change_status(self, status):
+    async def change_status(self, status):
         self.status = status
-        self.save()
+        await self.save()
 
-    def hide_report(self):
+    async def hide_report(self):
         self.reportable = False
-        self.save()
+        await self.save()
 
     @classmethod
-    def create(cls, obj_in: schemas.AnalysisResultCreate) -> schemas.AnalysisResult:
+    async def create(cls, obj_in: schemas.AnalysisResultCreate) -> schemas.AnalysisResult:
         data = cls._import(obj_in)
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.AnalysisResultUpdate) -> schemas.AnalysisResult:
+    async def update(self, obj_in: schemas.AnalysisResultUpdate) -> schemas.AnalysisResult:
         data = self._import(obj_in)
-        return super().update(**data)
+        return await super().update(**data)

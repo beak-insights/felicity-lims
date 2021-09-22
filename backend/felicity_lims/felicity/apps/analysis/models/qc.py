@@ -19,13 +19,13 @@ class QCSet(DBModel):
     note = Column(String, nullable=True)
 
     @classmethod
-    def create(cls, obj_in: schemas.QCSetCreate) -> schemas.QCSet:
+    async def create(cls, obj_in: schemas.QCSetCreate) -> schemas.QCSet:
         data = cls._import(obj_in)
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.QCSetUpdate) -> schemas.QCSet:
+    async def update(self, obj_in: schemas.QCSetUpdate) -> schemas.QCSet:
         data = self._import(obj_in)
-        return super().update(**data)
+        return await super().update(**data)
 
 
 class QCLevel(DBModel):
@@ -39,13 +39,13 @@ class QCLevel(DBModel):
     level = Column(String, nullable=False)
 
     @classmethod
-    def create(cls, obj_in: schemas.QCLevelCreate) -> schemas.QCLevel:
+    async def create(cls, obj_in: schemas.QCLevelCreate) -> schemas.QCLevel:
         data = cls._import(obj_in)
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.QCLevelUpdate) -> schemas.QCLevel:
+    async def update(self, obj_in: schemas.QCLevelUpdate) -> schemas.QCLevel:
         data = self._import(obj_in)
-        return super().update(**data)
+        return await super().update(**data)
 
 
 """
@@ -82,10 +82,10 @@ class QCTemplate(DBModel):
     qc_levels = relationship(QCLevel, secondary=qctqcllink, backref="qc_templates")
 
     @classmethod
-    def create(cls, obj_in: schemas.QCTemplateCreate) -> schemas.QCTemplate:
+    async def create(cls, obj_in: schemas.QCTemplateCreate) -> schemas.QCTemplate:
         data = cls._import(obj_in)
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.QCTemplateUpdate) -> schemas.QCTemplate:
+    async def update(self, obj_in: schemas.QCTemplateUpdate) -> schemas.QCTemplate:
         data = self._import(obj_in)
-        return super().update(**data)
+        return await super().update(**data)

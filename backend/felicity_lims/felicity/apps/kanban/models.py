@@ -15,13 +15,13 @@ class Board(BaseAuditDBModel):
     department = relationship(Department, backref="boards")
 
     @classmethod
-    def create(cls, obj_in: schemas.BoardCreate) -> schemas.Board:
+    async def create(cls, obj_in: schemas.BoardCreate) -> schemas.Board:
         data = cls._import(obj_in)
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.BoardUpdate) -> schemas.Board:
+    async def update(self, obj_in: schemas.BoardUpdate) -> schemas.Board:
         data = self._import(obj_in)
-        return super().update(**data)
+        return await super().update(**data)
 
 
 class BoardListing(BaseAuditDBModel):
@@ -31,26 +31,26 @@ class BoardListing(BaseAuditDBModel):
     board = relationship(Board, backref=backref("board_listings", cascade="all, delete, delete-orphan"))
 
     @classmethod
-    def create(cls, obj_in: schemas.BoardListingCreate) -> schemas.BoardListing:
+    async def create(cls, obj_in: schemas.BoardListingCreate) -> schemas.BoardListing:
         data = cls._import(obj_in)
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.BoardListingUpdate) -> schemas.BoardListing:
+    async def update(self, obj_in: schemas.BoardListingUpdate) -> schemas.BoardListing:
         data = self._import(obj_in)
-        return super().update(**data)
+        return await super().update(**data)
 
 
 class TaskTag(BaseAuditDBModel):
     name = Column(String)
 
     @classmethod
-    def create(cls, obj_in: schemas.TaskTagCreate) -> schemas.TaskTag:
+    async def create(cls, obj_in: schemas.TaskTagCreate) -> schemas.TaskTag:
         data = cls._import(obj_in)
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.TaskTagUpdate) -> schemas.TaskTag:
+    async def update(self, obj_in: schemas.TaskTagUpdate) -> schemas.TaskTag:
         data = self._import(obj_in)
-        return super().update(**data)
+        return await super().update(**data)
 
 
 tasktagged = Table("tasktagged", DBModel.metadata,
@@ -78,13 +78,13 @@ class ListingTask(BaseAuditDBModel):
     archived = Column(Boolean(), default=False)
 
     @classmethod
-    def create(cls, obj_in: schemas.ListingTaskCreate) -> schemas.ListingTask:
+    async def create(cls, obj_in: schemas.ListingTaskCreate) -> schemas.ListingTask:
         data = cls._import(obj_in)
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.ListingTaskUpdate) -> schemas.ListingTask:
+    async def update(self, obj_in: schemas.ListingTaskUpdate) -> schemas.ListingTask:
         data = self._import(obj_in)
-        return super().update(**data)
+        return await super().update(**data)
 
 
 class TaskMilestone(BaseAuditDBModel):
@@ -97,13 +97,13 @@ class TaskMilestone(BaseAuditDBModel):
     assignee = relationship(User, foreign_keys=[assignee_uid], backref="tasks_milestones")
 
     @classmethod
-    def create(cls, obj_in: schemas.TaskMilestoneCreate) -> schemas.TaskMilestone:
+    async def create(cls, obj_in: schemas.TaskMilestoneCreate) -> schemas.TaskMilestone:
         data = cls._import(obj_in)
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.TaskMilestoneUpdate) -> schemas.TaskMilestone:
+    async def update(self, obj_in: schemas.TaskMilestoneUpdate) -> schemas.TaskMilestone:
         data = self._import(obj_in)
-        return super().update(**data)
+        return await super().update(**data)
 
 
 class TaskComment(BaseAuditDBModel):
@@ -113,10 +113,10 @@ class TaskComment(BaseAuditDBModel):
                         backref=backref("task_comments", cascade="all, delete-orphan"))  # backref="task_comments"
 
     @classmethod
-    def create(cls, obj_in: schemas.TaskCommentCreate) -> schemas.TaskComment:
+    async def create(cls, obj_in: schemas.TaskCommentCreate) -> schemas.TaskComment:
         data = cls._import(obj_in)
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.TaskCommentUpdate) -> schemas.TaskComment:
+    async def update(self, obj_in: schemas.TaskCommentUpdate) -> schemas.TaskComment:
         data = self._import(obj_in)
-        return super().update(**data)
+        return await super().update(**data)

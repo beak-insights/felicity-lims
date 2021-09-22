@@ -82,13 +82,13 @@ class WorkSheetTemplate(WSBase):
     sample_type = relationship(analysis_models.SampleType, backref='worksheet_templates')
 
     @classmethod
-    def create(cls, obj_in: schemas.WSTemplateCreate) -> schemas.WSTemplate:
+    async def create(cls, obj_in: schemas.WSTemplateCreate) -> schemas.WSTemplate:
         data = cls._import(obj_in)
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.WSTemplateUpdate) -> schemas.WSTemplate:
+    async def update(self, obj_in: schemas.WSTemplateUpdate) -> schemas.WSTemplate:
         data = self._import(obj_in)
-        return super().update(**data)
+        return await super().update(**data)
 
 
 """
@@ -129,18 +129,18 @@ class WorkSheet(Auditable, WSBase):
     verified_by = relationship(User, foreign_keys=[verified_by_uid], backref="verified_worksheets")
     date_verified = Column(DateTime, nullable=True)
 
-    def reset_assigned_count(self):
+    async def reset_assigned_count(self):
         # TODO: DO NOT COUNT QC SAMPLES
         count = len(self.analysis_results)
         self.assigned_count = count
         if count == 0:
             self.state = conf.worksheet_states.PENDING_ASSIGNMENT
-        self.save()
+        await self.save()
 
-    def change_state(self, state, updated_by_uid):
+    async def change_state(self, state, updated_by_uid):
         self.state = state
         self.updated_by_uid = updated_by_uid  # noqa
-        self.save()
+        await self.save()
 
     def has_processed_samples(self):
         states = [
@@ -149,7 +149,7 @@ class WorkSheet(Auditable, WSBase):
         processed = any([res.status in states for res in self.analysis_results])
         return processed
 
-    def submit(self, submitter):
+    async def submit(self, submitter):
         if self.state != conf.worksheet_states.TO_BE_VERIFIED:
             states = [
                 analysis_conf.states.result.RESULTED,
@@ -159,9 +159,9 @@ class WorkSheet(Auditable, WSBase):
                 self.state = conf.worksheet_states.TO_BE_VERIFIED
                 self.updated_by_uid = submitter.uid  # noqa
                 self.submitted_by_uid = submitter.uid
-                self.save()
+                await self.save()
 
-    def verify(self, verified_by):
+    async def verify(self, verified_by):
         if self.state != conf.worksheet_states.VERIFIED:
             states = [analysis_conf.states.result.VERIFIED, analysis_conf.states.result.RETRACTED]
 
@@ -169,11 +169,11 @@ class WorkSheet(Auditable, WSBase):
                 self.state = conf.worksheet_states.VERIFIED
                 self.updated_by_uid = verified_by.uid  # noqa
                 self.verified_by_uid = verified_by.uid
-                self.save()
+                await self.save()
 
-    def set_plate(self, fill):
+    async def set_plate(self, fill):
         self.plate = fill
-        self.save()
+        await self.save()
 
     @classmethod
     def create_worksheet_id(cls):
@@ -186,11 +186,11 @@ class WorkSheet(Auditable, WSBase):
         return f"{prefix}-{sequencer(count + 1, 5)}"
 
     @classmethod
-    def create(cls, obj_in: schemas.WorkSheetCreate) -> schemas.WorkSheet:
+    async def create(cls, obj_in: schemas.WorkSheetCreate) -> schemas.WorkSheet:
         data = cls._import(obj_in)
         data['worksheet_id'] = cls.create_worksheet_id()
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.WorkSheetUpdate) -> schemas.WorkSheet:
+    async def update(self, obj_in: schemas.WorkSheetUpdate) -> schemas.WorkSheet:
         data = self._import(obj_in)
-        return super().update(**data)
+        return await super().update(**data)

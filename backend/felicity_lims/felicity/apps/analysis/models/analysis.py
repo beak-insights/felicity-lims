@@ -27,13 +27,13 @@ class SampleType(BaseAuditDBModel):
     abbr = Column(String, nullable=False)
 
     @classmethod
-    def create(cls, obj_in: schemas.SampleTypeCreate) -> schemas.SampleType:
+    async def create(cls, obj_in: schemas.SampleTypeCreate) -> schemas.SampleType:
         data = cls._import(obj_in)
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.SampleTypeUpdate) -> schemas.SampleType:
+    async def update(self, obj_in: schemas.SampleTypeUpdate) -> schemas.SampleType:
         data = self._import(obj_in)
-        return super().update(**data)
+        return await super().update(**data)
 
 
 """
@@ -54,13 +54,13 @@ class Profile(DBModel):
     active = Column(Boolean(), default=False)
 
     @classmethod
-    def create(cls, obj_in: schemas.ProfileCreate) -> schemas.Profile:
+    async def create(cls, obj_in: schemas.ProfileCreate) -> schemas.Profile:
         data = cls._import(obj_in)
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.ProfileUpdate) -> schemas.Profile:
+    async def update(self, obj_in: schemas.ProfileUpdate) -> schemas.Profile:
         data = self._import(obj_in)
-        return super().update(**data)
+        return await super().update(**data)
 
 
 """
@@ -81,13 +81,13 @@ class AnalysisCategory(BaseAuditDBModel):
     active = Column(Boolean(), default=False)
 
     @classmethod
-    def create(cls, obj_in: schemas.AnalysisCategoryCreate) -> schemas.AnalysisCategory:
+    async def create(cls, obj_in: schemas.AnalysisCategoryCreate) -> schemas.AnalysisCategory:
         data = cls._import(obj_in)
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.AnalysisCategoryUpdate) -> schemas.AnalysisCategory:
+    async def update(self, obj_in: schemas.AnalysisCategoryUpdate) -> schemas.AnalysisCategory:
         data = self._import(obj_in)
-        return super().update(**data)
+        return await super().update(**data)
 
 
 class Analysis(BaseAuditDBModel):
@@ -106,13 +106,13 @@ class Analysis(BaseAuditDBModel):
     active = Column(Boolean(), default=False)
 
     @classmethod
-    def create(cls, obj_in: schemas.AnalysisCreate) -> schemas.Analysis:
+    async def create(cls, obj_in: schemas.AnalysisCreate) -> schemas.Analysis:
         data = cls._import(obj_in)
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.AnalysisUpdate) -> schemas.Analysis:
+    async def update(self, obj_in: schemas.AnalysisUpdate) -> schemas.Analysis:
         data = self._import(obj_in)
-        return super().update(**data)
+        return await super().update(**data)
 
 
 class ResultOption(BaseAuditDBModel):
@@ -123,13 +123,13 @@ class ResultOption(BaseAuditDBModel):
     analysis = relationship(Analysis, backref="resultoptions")
 
     @classmethod
-    def create(cls, obj_in: schemas.ResultOptionCreate) -> schemas.ResultOption:
+    async def create(cls, obj_in: schemas.ResultOptionCreate) -> schemas.ResultOption:
         data = cls._import(obj_in)
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.ResultOptionUpdate) -> schemas.ResultOption:
+    async def update(self, obj_in: schemas.ResultOptionUpdate) -> schemas.ResultOption:
         data = self._import(obj_in)
-        return super().update(**data)
+        return await super().update(**data)
 
 
 class AnalysisRequest(BaseAuditDBModel):
@@ -153,15 +153,14 @@ class AnalysisRequest(BaseAuditDBModel):
         return f"{prefix}-{sequencer(count + 1, 5)}"
 
     @classmethod
-    def create(cls, obj_in: schemas.AnalysisRequestCreate) -> schemas.SampleType:
+    async def create(cls, obj_in: schemas.AnalysisRequestCreate) -> schemas.AnalysisRequest:
         data = cls._import(obj_in)
         data['request_id'] = cls.create_request_id()
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.SampleTypeUpdate) -> schemas.SampleType:
+    async def update(self, obj_in: schemas.SampleTypeUpdate) -> schemas.AnalysisRequest:
         data = self._import(obj_in)
-        return super().update(**data)
-
+        return await super().update(**data)
 
 
 """
@@ -195,13 +194,13 @@ class RejectionReason(BaseAuditDBModel):
     reason = Column(String, nullable=False)
 
     @classmethod
-    def create(cls, obj_in: schemas.RejectionReasonCreate) -> schemas.RejectionReason:
+    async def create(cls, obj_in: schemas.RejectionReasonCreate) -> schemas.RejectionReason:
         data = cls._import(obj_in)
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.RejectionReasonUpdate) -> schemas.RejectionReason:
+    async def update(self, obj_in: schemas.RejectionReasonUpdate) -> schemas.RejectionReason:
         data = self._import(obj_in)
-        return super().update(**data)
+        return await super().update(**data)
 
 
 class Sample(Auditable, BaseMPTT):
@@ -243,39 +242,39 @@ class Sample(Auditable, BaseMPTT):
             count = 0
         return f"{prefix}-{sequencer(count + 1, 5)}"
 
-    def cancel(self):
+    async def cancel(self):
         self.status = states.sample.CANCELLED
-        self.save()
+        await self.save()
 
-    def submit(self, submitted_by):
+    async def submit(self, submitted_by):
         self.status = states.sample.TO_BE_VERIFIED
         self.updated_by_uid = submitted_by.uid  # noqa
-        self.save()
+        await self.save()
 
-    def assign(self):
+    async def assign(self):
         self.assigned = True
-        self.save()
+        await self.save()
 
-    def un_assign(self):
+    async def un_assign(self):
         self.assigned = False
-        self.save()
+        await self.save()
 
-    def verify(self, verified_by):
+    async def verify(self, verified_by):
         self.status = states.sample.VERIFIED
         self.updated_by_uid = verified_by.uid  # noqa
-        self.save()
+        await self.save()
 
         # DO REFLEX HERE
 
     @classmethod
-    def create(cls, obj_in: schemas.SampleCreate) -> schemas.Sample:
+    async def create(cls, obj_in: schemas.SampleCreate) -> schemas.Sample:
         data = cls._import(obj_in)
         sampletype_uid = data['sampletype_uid']
-        sample_type = SampleType.find(sampletype_uid)  # get(uid=sampletype_uid)
+        sample_type = await SampleType.find(sampletype_uid)  # get(uid=sampletype_uid)
         data['sample_id'] = cls.create_sample_id(sample_type)
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.SampleUpdate) -> schemas.Sample:
+    async def update(self, obj_in: schemas.SampleUpdate) -> schemas.Sample:
         data = self._import(obj_in)
-        return super().update(**data)
+        return await super().update(**data)
 
