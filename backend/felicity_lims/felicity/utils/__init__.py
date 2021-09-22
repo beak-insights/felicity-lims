@@ -1,4 +1,10 @@
 def get_passed_args(inspection):
+    """
+    Retrieve user passed function arguments from the current frame from inspect
+
+    :param inspection: current frame arguments
+    :return: dict of arguments passed into function
+    """
     _args = inspection.args
     _locals = inspection.locals
 

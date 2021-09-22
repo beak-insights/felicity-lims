@@ -51,14 +51,14 @@ class Patient(DBModel):
             return f"{self.first_name} {self.last_name}"
 
     @classmethod
-    def create(cls, obj_in: schemas.PatientCreate) -> schemas.Patient:
+    async def create(cls, obj_in: schemas.PatientCreate) -> schemas.Patient:
         data = cls._import(obj_in)
         data['patient_id'] = cls.create_patient_id()
-        return super().create(**data)
+        return await super().create(**data)
 
-    def update(self, obj_in: schemas.PatientUpdate) -> schemas.Patient:
+    async def update(self, obj_in: schemas.PatientUpdate) -> schemas.Patient:
         data = self._import(obj_in)
-        return super().update(**data) 
+        return await super().update(**data)
         
     @classmethod
     def create_patient_id(cls):
@@ -67,7 +67,9 @@ class Patient(DBModel):
         prefix = f"{prefix_key}{prefix_year}"
         count = cls.where(patient_id__startswith=f'%{prefix}%').count()
         # Find a way to use the line below: its faster
-        # scalar = cls.query(func.count(Patient.uid)).filter(Patient.patient_id.like(prefix)).scalar()
+        # stmt = select(func.count(Patient.uid)).filter(Patient.patient_id.like(prefix))
+        # res = await cls.session.execute(stmt)
+        # scalar = res.scalar().count()
         if isinstance(count, type(None)):
             count = 0
         return f"{prefix}-{sequencer(count + 5, 5)}"
