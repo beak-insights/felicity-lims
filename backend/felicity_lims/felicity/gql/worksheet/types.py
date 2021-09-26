@@ -3,6 +3,7 @@ from typing import Optional, List
 
 import strawberry
 
+from felicity.gql import PageInfo
 from felicity.gql.analysis.types.analysis import ProfileType, AnalysisType, QCTemplateType, QCLevelType, SampleTypeTyp
 from felicity.gql.setup.types import InstrumentType
 from felicity.gql.user.types import UserType
@@ -65,3 +66,18 @@ class WorkSheetType:
     created_by: Optional[UserType]
     updated_by_uid: Optional[int]
     updated_by: Optional[UserType]
+
+
+#  relay paginations
+@strawberry.type
+class WorkSheetEdge:
+    cursor: str
+    node: WorkSheetType
+
+
+@strawberry.type
+class WorkSheetCursorPage:
+    page_info: PageInfo
+    edges: Optional[List[WorkSheetEdge]]
+    items: Optional[List[WorkSheetType]]
+    total_count: int

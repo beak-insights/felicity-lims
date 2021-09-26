@@ -1,14 +1,18 @@
 from typing import Dict, TypeVar, AsyncIterator, List, Any
+from base64 import b64decode, b64encode
 import logging
 from pydantic import BaseModel as PydanticBaseModel
 from sqlalchemy.future import select
 from sqlalchemy import Column, Integer
 from sqlalchemy.sql import func
+from sqlalchemy.orm import lazyload
 from sqlalchemy.orm import as_declarative, declared_attr
-# from sqlalchemy_mixins import AllFeaturesMixin, TimestampsMixin
-from felicity.database.async_mixins import AllFeaturesMixin, TimestampsMixin
+from sqlalchemy import or_ as sa_or_
+from felicity.database.async_mixins import AllFeaturesMixin, TimestampsMixin, smart_query
+from felicity.database.paginator.cursor import PageCursor, EdgeNode, PageInfo
 
-from felicity.database.session import AsyncSessionLocal, AsyncSessionScoped
+from felicity.database.session import AsyncSessionScoped
+from felicity.utils import has_value_or_is_truthy
 
 InDBSchemaType = TypeVar("InDBSchemaType", bound=PydanticBaseModel)
 
@@ -97,6 +101,19 @@ class DBModel(AllFeaturesMixin, TimestampsMixin):
         return found
 
     @classmethod
+    async def count_where(cls, filters):
+        # stmt = select(func.count(cls.uid))
+        # stmt = select(func.count('*')).select_from(cls)
+        # stmt = select(cls, func.count(cls.uid))
+        # stmt = select(cls).with_only_columns([func.count(cls.uid)]).order_by(None)
+        # stmt = select(func.count(cls.uid)).select_from(cls)
+        # stmt = smart_query(query=stmt, filters=filters)
+        stmt = smart_query(select(cls), filters=filters)
+        res = await cls.session.execute(stmt)
+        count = res.scalar()
+        return count
+
+    @classmethod
     async def fulltext_search(cls, search_string, field):
         """Full-text Search with PostgreSQL"""
         stmt = select(cls).filter(
@@ -107,10 +124,10 @@ class DBModel(AllFeaturesMixin, TimestampsMixin):
         return search
 
     @classmethod
-    async def get_by_uids(cls,  uids: List[Any]) -> AsyncIterator[Any]:
+    async def get_by_uids(cls, uids: List[Any]) -> AsyncIterator[Any]:
         stmt = (
             select(cls)
-            .where(cls.uid.in_(uids))  # type: ignore
+                .where(cls.uid.in_(uids))  # type: ignore
         )
         stream = await cls.session.stream(stmt.order_by(cls.uid))
         async for row in stream:
@@ -129,6 +146,93 @@ class DBModel(AllFeaturesMixin, TimestampsMixin):
         if not many and records:
             return dict(records)
         return [dict(record) for record in records]
+
+    @classmethod
+    async def paginate_with_cursors(cls, page_size: [int] = None, after_cursor: Any = None, before_cursor: Any = None,
+                                    filters: Dict = None, sort_by: List[str] = None) -> PageCursor:
+        if not filters:
+            filters = {}
+
+        # get total count without paging filters from cursors
+        total_count: int = await cls.count_where(filters=filters)
+        total_count = total_count if total_count else 0
+
+        cursor_limit = {}
+        if has_value_or_is_truthy(after_cursor):
+            cursor_limit = {'uid__gt': cls.decode_cursor(after_cursor)}
+
+        if has_value_or_is_truthy(before_cursor):
+            cursor_limit = {'uid__lt': cls.decode_cursor(before_cursor)}
+
+        # add paging filters
+        if isinstance(filters, dict):
+            _filters = [
+                {sa_or_: cursor_limit},
+                filters
+            ] if cursor_limit else filters
+        elif isinstance(filters, list):
+            _filters = filters.extend({sa_or_: cursor_limit})
+
+        stmt = cls.smart_query(filters=_filters, sort_attrs=sort_by)
+        qs = (await cls.session.execute(stmt)).scalars().all()
+
+        if qs is not None:
+            items = qs[:page_size]
+        else:
+            qs = []
+            items = []
+
+        has_additional = len(qs) > len(items)
+        page_info = {
+            'start_cursor': cls.encode_cursor(items[0].uid) if items else None,
+            'end_cursor': cls.encode_cursor(items[-1].uid) if items else None,
+        }
+        if page_size is not None:
+            page_info['has_next_page'] = has_additional
+            page_info['has_previous_page'] = bool(after_cursor)
+
+        return PageCursor(**{
+            'total_count': total_count,
+            'edges': cls.build_edges(items=items),
+            'items': items,
+            'page_info': cls.build_page_info(**page_info)
+        })
+
+    @classmethod
+    def build_edges(cls, items: List[Any]) -> List[EdgeNode]:
+        if not items:
+            return []
+        return [cls.build_node(item) for item in items]
+
+    @classmethod
+    def build_node(cls, item: Any) -> EdgeNode:
+        return EdgeNode(**{
+            'cursor': cls.encode_cursor(item.uid),
+            'node': item
+        })
+
+    @classmethod
+    def build_page_info(cls, start_cursor: str = None, end_cursor: str = None,
+                        has_next_page: bool = False, has_previous_page: bool = False) -> PageInfo:
+        return PageInfo(**{
+            'start_cursor': start_cursor,
+            'end_cursor': end_cursor,
+            'has_next_page': has_next_page,
+            'has_previous_page': has_previous_page
+        })
+
+    @classmethod
+    def decode_cursor(cls, cursor):
+        decoded = b64decode(cursor.encode('ascii')).decode('utf8')
+        try:
+            return int(decoded)
+        except Exception as e:
+            logger.warning(e)
+            return decoded
+
+    @classmethod
+    def encode_cursor(cls, identifier: Any):
+        return b64encode(str(identifier).encode('utf8')).decode('ascii')
 
 
 DBModel.set_session(AsyncSessionScoped())

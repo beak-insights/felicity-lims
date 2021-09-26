@@ -1,5 +1,7 @@
-from typing import Optional
+from typing import Optional, List
 import strawberry
+
+from felicity.gql import PageInfo
 
 
 @strawberry.type
@@ -53,3 +55,18 @@ class AuthenticatedData:
 class UpdatedGroupPerms:
     group: GroupType
     permission: PermissionType
+
+
+#  relay paginations
+@strawberry.type
+class UserEdge:
+    cursor: str
+    node: UserType
+
+
+@strawberry.type
+class UserCursorPage:
+    page_info: PageInfo
+    edges: Optional[List[UserEdge]]
+    items: Optional[List[UserType]]
+    total_count: int

@@ -1,17 +1,61 @@
 from typing import List, Optional
 import strawberry
-
+import sqlalchemy as sa
 from felicity.apps.patient import models
+from felicity.gql import PageInfo
 from felicity.gql.patient.types import (
     PatientType,
+    PatientCursorPage, PatientEdge
 )
+from felicity.utils import has_value_or_is_truthy
 
 
 @strawberry.type
 class PatientQuery:
     @strawberry.field
-    async def patient_all(self, info) -> List[PatientType]:
-        return await models.Patient.all()
+    async def patient_all(self, info, page_size: Optional[int] = None,
+                          after_cursor: Optional[str] = None, before_cursor: Optional[str] = None,
+                          text: Optional[str] = None, sort_by: Optional[List[str]] = None) -> PatientCursorPage:
+        filters = {}
+
+        _or_ = dict()
+        if has_value_or_is_truthy(text):
+            arg_list = [
+                'first_name__ilike',
+                'last_name__ilike',
+                'middle_name__ilike',
+                'client_patient_id__ilike',
+                'patient_id__ilike',
+                'client___name__ilike',
+                'patient_id__ilike',
+                'email__ilike',
+                'phone_mobile__ilike',
+                'phone_home__ilike',
+            ]
+            for _arg in arg_list:
+                _or_[_arg] = f"%{text}%"
+
+            filters = {sa.or_: _or_}
+
+        page = await models.Patient.paginate_with_cursors(
+            page_size=page_size,
+            after_cursor=after_cursor,
+            before_cursor=before_cursor,
+            filters=filters,
+            sort_by=sort_by
+        )
+
+        total_count: int = page.total_count
+        edges: List[PatientEdge[PatientType]] = page.edges
+        items: List[PatientType] = page.items
+        page_info: PageInfo = page.page_info
+
+        return PatientCursorPage(
+            total_count=total_count,
+            edges=edges,
+            items=items,
+            page_info=page_info,
+        )
 
     @strawberry.field
     async def patient_by_uid(self, info, uid: int) -> Optional[PatientType]:

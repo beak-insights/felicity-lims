@@ -3,6 +3,7 @@ from datetime import datetime
 
 import strawberry
 
+from felicity.gql import PageInfo
 from felicity.gql.setup.types import DepartmentType
 from felicity.gql.user.types import UserType
 
@@ -19,6 +20,21 @@ class BoardType:
     created_by: Optional[UserType]
     updated_by_uid: Optional[int]
     updated_by: Optional[UserType]
+
+
+#  relay paginations
+@strawberry.type
+class BoardEdge:
+    cursor: str
+    node: BoardType
+
+
+@strawberry.type
+class BoardCursorPage:
+    page_info: PageInfo
+    edges: Optional[List[BoardEdge]]
+    items: Optional[List[BoardType]]
+    total_count: int
 
 
 @strawberry.type

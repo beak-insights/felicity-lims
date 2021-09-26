@@ -1,17 +1,20 @@
 import strawberry
 from typing import List, Optional
+import sqlalchemy as sa
 
 from felicity.apps.setup import models
+from felicity.gql import PageInfo
 from felicity.gql.setup.types import (
     LaboratoryType,
     SupplierType,
     DepartmentType,
-    InstrumentType,
-    MethodType,
+    InstrumentType, InstrumentEdge, InstrumentCursorPage,
+    MethodType, MethodEdge, MethodCursorPage,
     CountryType,
-    ProvinceType,
-    DistrictType,
+    ProvinceType, ProvinceEdge, ProvinceCursorPage,
+    DistrictType, DistrictEdge, DistrictCursorPage,
 )
+from felicity.utils import has_value_or_is_truthy
 
 
 async def get_all_laboratories() -> List[LaboratoryType]:
@@ -26,20 +29,168 @@ async def get_all_departments() -> List[DepartmentType]:
     return await models.Department.all()
 
 
-async def get_all_instruments() -> List[InstrumentType]:
-    return await models.Instrument.all()
+async def get_all_instruments(self, info, page_size: Optional[int] = None,
+                              after_cursor: Optional[str] = None, before_cursor: Optional[str] = None,
+                              text: Optional[str] = None, sort_by: Optional[List[str]] = None) -> InstrumentCursorPage:
+    filters = {}
+
+    _or_ = dict()
+    if has_value_or_is_truthy(text):
+        arg_list = [
+            'name__ilike',
+            'code__ilike',
+            'email__ilike',
+            'email_cc__ilike',
+            'mobile_phone__ilike',
+            'business_phone__ilike',
+            'province___name__ilike',
+            'province___code__ilike',
+        ]
+        for _arg in arg_list:
+            _or_[_arg] = f"%{text}%"
+
+        filters = {sa.or_: _or_}
+
+    page = await models.Instrument.paginate_with_cursors(
+        page_size=page_size,
+        after_cursor=after_cursor,
+        before_cursor=before_cursor,
+        filters=filters,
+        sort_by=sort_by
+    )
+
+    total_count: int = page.total_count
+    edges: List[InstrumentEdge[InstrumentType]] = page.edges
+    items: List[InstrumentType] = page.items
+    page_info: PageInfo = page.page_info
+
+    return InstrumentCursorPage(
+        total_count=total_count,
+        edges=edges,
+        items=items,
+        page_info=page_info,
+    )
 
 
-async def get_all_methods() -> List[MethodType]:
-    return await models.Method.all()
+async def get_all_methods(self, info, page_size: Optional[int] = None,
+                          after_cursor: Optional[str] = None, before_cursor: Optional[str] = None,
+                          text: Optional[str] = None, sort_by: Optional[List[str]] = None) -> MethodCursorPage:
+    filters = {}
+
+    _or_ = dict()
+    if has_value_or_is_truthy(text):
+        arg_list = [
+            'name__ilike',
+            'keywork__ilike',
+        ]
+        for _arg in arg_list:
+            _or_[_arg] = f"%{text}%"
+
+        filters = {sa.or_: _or_}
+
+    page = await models.Method.paginate_with_cursors(
+        page_size=page_size,
+        after_cursor=after_cursor,
+        before_cursor=before_cursor,
+        filters=filters,
+        sort_by=sort_by
+    )
+
+    total_count: int = page.total_count
+    edges: List[MethodEdge[MethodType]] = page.edges
+    items: List[MethodType] = page.items
+    page_info: PageInfo = page.page_info
+
+    return MethodCursorPage(
+        total_count=total_count,
+        edges=edges,
+        items=items,
+        page_info=page_info,
+    )
 
 
-async def get_all_districts() -> List[DistrictType]:
-    return await models.District.all()
+async def get_all_districts(self, info, page_size: Optional[int] = None,
+                            after_cursor: Optional[str] = None, before_cursor: Optional[str] = None,
+                            text: Optional[str] = None, sort_by: Optional[List[str]] = None) -> DistrictCursorPage:
+    filters = {}
+
+    _or_ = dict()
+    if has_value_or_is_truthy(text):
+        arg_list = [
+            'name__ilike',
+            'code__ilike',
+            'email__ilike',
+            'email_cc__ilike',
+            'mobile_phone__ilike',
+            'business_phone__ilike',
+            'province___name__ilike',
+            'province___code__ilike',
+        ]
+        for _arg in arg_list:
+            _or_[_arg] = f"%{text}%"
+
+        filters = {sa.or_: _or_}
+
+    page = await models.District.paginate_with_cursors(
+        page_size=page_size,
+        after_cursor=after_cursor,
+        before_cursor=before_cursor,
+        filters=filters,
+        sort_by=sort_by
+    )
+
+    total_count: int = page.total_count
+    edges: List[DistrictEdge[DistrictType]] = page.edges
+    items: List[DistrictType] = page.items
+    page_info: PageInfo = page.page_info
+
+    return DistrictCursorPage(
+        total_count=total_count,
+        edges=edges,
+        items=items,
+        page_info=page_info,
+    )
 
 
-async def get_all_provinces() -> List[ProvinceType]:
-    return await models.Province.all()
+async def get_all_provinces(self, info, page_size: Optional[int] = None,
+                            after_cursor: Optional[str] = None, before_cursor: Optional[str] = None,
+                            text: Optional[str] = None, sort_by: Optional[List[str]] = None) -> ProvinceCursorPage:
+    filters = {}
+
+    _or_ = dict()
+    if has_value_or_is_truthy(text):
+        arg_list = [
+            'name__ilike',
+            'code__ilike',
+            'email__ilike',
+            'email_cc__ilike',
+            'mobile_phone__ilike',
+            'business_phone__ilike',
+        ]
+        for _arg in arg_list:
+            _or_[_arg] = f"%{text}%"
+
+        filters = {sa.or_: _or_}
+
+    page = await models.Province.paginate_with_cursors(
+        page_size=page_size,
+        after_cursor=after_cursor,
+        before_cursor=before_cursor,
+        filters=filters,
+        sort_by=sort_by
+    )
+
+    total_count: int = page.total_count
+    edges: List[ProvinceEdge[ProvinceType]] = page.edges
+    items: List[ProvinceType] = page.items
+    page_info: PageInfo = page.page_info
+
+    return ProvinceCursorPage(
+        total_count=total_count,
+        edges=edges,
+        items=items,
+        page_info=page_info,
+    )
 
 
 async def get_all_countries() -> List[CountryType]:
@@ -69,21 +220,21 @@ class SetupQuery:
         query = await models.Department.get(uid=uid)
         return query
 
-    instrument_all: List[InstrumentType] = strawberry.field(resolver=get_all_instruments)
+    instrument_all: InstrumentCursorPage = strawberry.field(resolver=get_all_instruments)
 
     @strawberry.field
     async def resolve_instrument_by_uid(self, info, uid: int) -> InstrumentType:
         query = await models.Instrument.get(uid=uid)
         return query
 
-    method_all: List[MethodType] = strawberry.field(resolver=get_all_methods)
+    method_all: MethodCursorPage = strawberry.field(resolver=get_all_methods)
 
     @strawberry.field
     async def resolve_method_by_uid(self, info, uid: int) -> MethodType:
         query = await models.Method.get(uid=uid)
         return query
 
-    district_all: List[DistrictType] = strawberry.field(resolver=get_all_districts)
+    district_all: DistrictCursorPage = strawberry.field(resolver=get_all_districts)
 
     @strawberry.field
     async def resolve_district_by_uid(self, info, uid: int) -> DistrictType:
@@ -95,7 +246,7 @@ class SetupQuery:
         districts = await models.District.where(province_uid__exact=uid).all()
         return districts
 
-    province_all: List[ProvinceType] = strawberry.field(resolver=get_all_provinces)
+    province_all: ProvinceCursorPage = strawberry.field(resolver=get_all_provinces)
 
     @strawberry.field
     async def resolve_province_by_uid(self, info, uid: int) -> ProvinceType:

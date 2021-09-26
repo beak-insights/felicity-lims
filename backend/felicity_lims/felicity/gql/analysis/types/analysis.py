@@ -3,6 +3,7 @@ from datetime import datetime
 
 import strawberry
 
+from felicity.gql import PageInfo
 from felicity.gql.client.types import ClientType
 from felicity.gql.patient.types import PatientType
 from felicity.gql.setup.types import DepartmentType
@@ -65,6 +66,20 @@ class AnalysisRequestType:
 
 
 @strawberry.type
+class AnalysisRequestEdge:
+    cursor: str
+    node: AnalysisRequestType
+
+
+@strawberry.type
+class AnalysisRequestCursorPage:
+    page_info: PageInfo
+    edges: Optional[List[AnalysisRequestEdge]]
+    items: Optional[List[AnalysisRequestType]]
+    total_count: int
+
+
+@strawberry.type
 class SampleType:  # for Sample
     uid: int
     analysisrequest_uid: int
@@ -93,6 +108,20 @@ class SampleType:  # for Sample
     qc_set: Optional[QCSetType]
     qc_level_uid: Optional[int]
     qc_level: Optional[QCLevelType]
+
+
+@strawberry.type
+class SampleEdge:
+    cursor: str
+    node: SampleType
+
+
+@strawberry.type
+class SampleCursorPage:
+    page_info: PageInfo
+    edges: Optional[List[SampleEdge]]
+    items: Optional[List[SampleType]]
+    total_count: int
 
 
 @strawberry.type

@@ -1,20 +1,58 @@
 from typing import List, Optional
+import sqlalchemy as sa
 import strawberry
 
 from felicity.gql.user.types import (
-    UserType,
+    UserType, UserEdge, UserCursorPage,
     PermissionType,
     GroupType,
 )
 from felicity.apps.user import models as user_models
-from felicity.gql import deps
+from felicity.gql import deps, PageInfo
+from felicity.utils import has_value_or_is_truthy
 
 
 @strawberry.type
 class UserQuery:
     @strawberry.field
-    async def user_all(self, info) -> List[UserType]:
-        return await user_models.User.all()
+    async def user_all(self, info, page_size: Optional[int] = None,
+                       after_cursor: Optional[str] = None, before_cursor: Optional[str] = None,
+                       text: Optional[str] = None, sort_by: Optional[List[str]] = None) -> UserCursorPage:
+        filters = {}
+
+        _or_ = dict()
+        if has_value_or_is_truthy(text):
+            arg_list = [
+                'first_name__ilike',
+                'last_name__ilike',
+                'email__ilike',
+                'mobile_phone__ilike',
+                'business_phone__ilike',
+            ]
+            for _arg in arg_list:
+                _or_[_arg] = f"%{text}%"
+
+            filters = {sa.or_: _or_}
+
+        page = await user_models.User.paginate_with_cursors(
+            page_size=page_size,
+            after_cursor=after_cursor,
+            before_cursor=before_cursor,
+            filters=filters,
+            sort_by=sort_by
+        )
+
+        total_count: int = page.total_count
+        edges: List[UserEdge[UserType]] = page.edges
+        items: List[UserType] = page.items
+        page_info: PageInfo = page.page_info
+
+        return UserCursorPage(
+            total_count=total_count,
+            edges=edges,
+            items=items,
+            page_info=page_info,
+        )
 
     @strawberry.field
     async def user_me(self, info, token: str) -> Optional[UserType]:

@@ -1,8 +1,9 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 import strawberry
 
+from felicity.gql import PageInfo
 from felicity.gql.client.types import ClientType
 
 @strawberry.type
@@ -26,3 +27,17 @@ class PatientType:
     internal_use: bool
     active: bool
         
+
+#  relay paginations
+@strawberry.type
+class PatientEdge:
+    cursor: str
+    node: PatientType
+
+
+@strawberry.type
+class PatientCursorPage:
+    page_info: PageInfo
+    edges: Optional[List[PatientEdge]]
+    items: Optional[List[PatientType]]
+    total_count: int

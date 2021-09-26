@@ -1,6 +1,7 @@
-from typing import Optional
+from typing import Optional, List
 import strawberry
 
+from felicity.gql import PageInfo
 from felicity.gql.setup.types import DistrictType, ProvinceType
 from felicity.gql.user.types import UserAuthType
 
@@ -34,3 +35,18 @@ class ClientContactType:
     consent_sms: bool
     client_uid: int
     client: Optional[ClientType]
+
+
+#  relay paginations
+@strawberry.type
+class ClientEdge:
+    cursor: str
+    node: ClientType
+
+
+@strawberry.type
+class ClientCursorPage:
+    page_info: PageInfo
+    edges: Optional[List[ClientEdge]]
+    items: Optional[List[ClientType]]
+    total_count: int

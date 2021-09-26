@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_scop
 from felicity.core.config import settings
 
 
-async_engine = create_async_engine(settings.SQLALCHEMY_ASYNC_DATABASE_URI, pool_pre_ping=True, echo=False, future=True)
+async_engine = create_async_engine(settings.SQLALCHEMY_ASYNC_DATABASE_URI, pool_pre_ping=True, echo=True, future=True)
 AsyncSessionLocal = sessionmaker(
     bind=async_engine,
     expire_on_commit=False,

@@ -1,5 +1,7 @@
 import strawberry
-from typing import Optional
+from typing import Optional, List
+
+from felicity.gql import PageInfo
 
 
 @strawberry.type
@@ -32,6 +34,21 @@ class InstrumentType:
     supplier: Optional[SupplierType]
 
 
+#  relay paginations
+@strawberry.type
+class InstrumentEdge:
+    cursor: str
+    node: InstrumentType
+
+
+@strawberry.type
+class InstrumentCursorPage:
+    page_info: PageInfo
+    edges: Optional[List[InstrumentEdge]]
+    items: Optional[List[InstrumentType]]
+    total_count: int
+
+
 @strawberry.type
 class DepartmentType:
     uid: int
@@ -46,6 +63,21 @@ class MethodType:
     name: Optional[str]
     description: Optional[str]
     keyword: Optional[str]
+
+
+#  relay paginations
+@strawberry.type
+class MethodEdge:
+    cursor: str
+    node: MethodType
+
+
+@strawberry.type
+class MethodCursorPage:
+    page_info: PageInfo
+    edges: Optional[List[MethodEdge]]
+    items: Optional[List[MethodType]]
+    total_count: int
 
 
 @strawberry.type
@@ -70,6 +102,21 @@ class ProvinceType:
     country: Optional[CountryType]
 
 
+#  relay paginations
+@strawberry.type
+class ProvinceEdge:
+    cursor: str
+    node: ProvinceType
+
+
+@strawberry.type
+class ProvinceCursorPage:
+    page_info: PageInfo
+    edges: Optional[List[ProvinceEdge]]
+    items: Optional[List[ProvinceType]]
+    total_count: int
+
+
 @strawberry.type
 class DistrictType:
     uid: int
@@ -82,3 +129,18 @@ class DistrictType:
     active: Optional[bool]
     province_uid: Optional[int]
     province: Optional[ProvinceType]
+
+
+#  relay paginations
+@strawberry.type
+class DistrictEdge:
+    cursor: str
+    node: DistrictType
+
+
+@strawberry.type
+class DistrictCursorPage:
+    page_info: PageInfo
+    edges: Optional[List[DistrictEdge]]
+    items: Optional[List[DistrictType]]
+    total_count: int

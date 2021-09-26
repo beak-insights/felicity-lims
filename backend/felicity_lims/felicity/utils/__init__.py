@@ -23,3 +23,12 @@ def get_passed_args(inspection):
     # [(arg,args.locals[arg]) for arg in args.args]
     print(f"Func Inspector: {final}")
     return final
+
+
+def has_value_or_is_truthy(val) -> bool:  # noqa
+    if not val:
+        return False
+    if isinstance(val, str):
+        if not val.strip():
+            return False
+    return True

@@ -1,14 +1,60 @@
 from typing import List, Optional
 import strawberry
+import sqlalchemy as sa
+
 from felicity.apps.client import models
-from felicity.gql.client.types import ClientType, ClientContactType
+from felicity.gql import PageInfo
+from felicity.gql.client.types import (
+    ClientType, ClientContactType,
+    ClientCursorPage, ClientEdge
+)
+from felicity.utils import has_value_or_is_truthy
 
 
 @strawberry.type
 class ClientQuery:
     @strawberry.field
-    async def client_all(self, info) -> List[ClientType]:
-        return await models.Client.all()
+    async def client_all(self, info, page_size: Optional[int] = None,
+                         after_cursor: Optional[str] = None, before_cursor: Optional[str] = None,
+                         text: Optional[str] = None, sort_by: Optional[List[str]] = None) -> ClientCursorPage:
+        filters = {}
+
+        _or_ = dict()
+        if has_value_or_is_truthy(text):
+            arg_list = [
+                'name__ilike',
+                'code__ilike',
+                'email__ilike',
+                'email_cc__ilike',
+                'province___name__ilike',
+                'district___name__ilike',
+                'mobile_phone__ilike',
+                'business_phone__ilike',
+            ]
+            for _arg in arg_list:
+                _or_[_arg] = f"%{text}%"
+
+            filters = {sa.or_: _or_}
+
+        page = await models.Client.paginate_with_cursors(
+            page_size=page_size,
+            after_cursor=after_cursor,
+            before_cursor=before_cursor,
+            filters=filters,
+            sort_by=sort_by
+        )
+
+        total_count: int = page.total_count
+        edges: List[ClientEdge[ClientType]] = page.edges
+        items: List[ClientType] = page.items
+        page_info: PageInfo = page.page_info
+
+        return ClientCursorPage(
+            total_count=total_count,
+            edges=edges,
+            items=items,
+            page_info=page_info,
+        )
 
     @strawberry.field
     async def client_by_uid(self, info, uid: int) -> ClientType:
@@ -35,10 +81,6 @@ class ClientQuery:
             for item in query:
                 combined.add(item)
         return list(combined)
-
-    @strawberry.field
-    async def client_contact_all(self, info) -> List[ClientContactType]:
-        return await models.ClientContact.all()
 
     @strawberry.field
     async def client_contact_uid(self, info, uid: int) -> ClientContactType:

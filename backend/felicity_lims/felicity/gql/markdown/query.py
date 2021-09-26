@@ -4,6 +4,9 @@ from felicity.apps.markdown import models
 from felicity.gql.markdown.types import DocumentTagType, DocumentCategoryType, DocumentType
 
 
+## deprecated soon
+
+
 @strawberry.type
 class MarkDownQuery:
     @strawberry.field
