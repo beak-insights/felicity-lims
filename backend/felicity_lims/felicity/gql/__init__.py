@@ -65,3 +65,7 @@ class PageInfo:
     start_cursor: Optional[str]
     end_cursor: Optional[str]
 
+@strawberry.type
+class DeletedItem:
+    uid: int
+

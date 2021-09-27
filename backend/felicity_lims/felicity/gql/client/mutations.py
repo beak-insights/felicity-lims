@@ -15,9 +15,10 @@ logger = logging.getLogger(__name__)
 @strawberry.type
 class ClientMutations:
     @strawberry.mutation
-    async def create_client(self, info: Info, name: str, code: str, district_uid: Optional[int], email: Optional[str],
-                            email_cc: Optional[str], consent_email: Optional[bool], mobile_phone: Optional[str],
-                            business_phone: Optional[str], consent_sms: Optional[bool],
+    async def create_client(self, info: Info, name: str, code: str, district_uid: Optional[int] = None,
+                            email: Optional[str] = None, email_cc: Optional[str] = None,
+                            consent_email: Optional[bool] = False, phone_mobile: Optional[str] = None,
+                            phone_business: Optional[str] = None, consent_sms: Optional[bool] = False,
                             internal_use: Optional[bool] = False, active: Optional[bool] = True) -> ClientType:
 
         inspector = inspect.getargvalues(inspect.currentframe())
@@ -105,7 +106,7 @@ class ClientMutations:
         return client_contact
 
     @strawberry.mutation
-    async def update_client_contact(self, info, uid: int, first_name: str, client_uid: str, last_name: Optional[str],
+    async def update_client_contact(self, info, uid: int, first_name: str, last_name: Optional[str],
                                     email: Optional[str], email_cc: Optional[str], mobile_phone: Optional[str],
                                     consent_sms: Optional[bool] = False, is_active: bool = True) -> ClientContactType:
 

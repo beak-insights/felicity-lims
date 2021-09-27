@@ -6,7 +6,7 @@ import strawberry
 
 from felicity.apps.kanban import schemas, models
 from felicity.apps.user import models as user_models
-from felicity.gql import auth_from_info, verify_user_auth
+from felicity.gql import auth_from_info, verify_user_auth, DeletedItem
 from felicity.gql.kanban import types
 from felicity.utils import get_passed_args
 
@@ -79,7 +79,7 @@ class KanBanMutations:
         return board
 
     @strawberry.mutation
-    async def delete_board(self, info, uid: int) -> int:
+    async def delete_board(self, info, uid: int) -> DeletedItem:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -164,7 +164,7 @@ class KanBanMutations:
         return listing
 
     @strawberry.mutation
-    async def delete_board_listing(self, info, uid: int) -> int:
+    async def delete_board_listing(self, info, uid: int) -> DeletedItem:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -215,7 +215,7 @@ class KanBanMutations:
 
     @strawberry.mutation
     async def update_listing_task(self, info, uid: int, title: Optional[str], description: Optional[str],
-                                  listing_uid: Optional[int], due_date: Optional[str], assigned_uid: Optional[int],
+                                  listing_uid: Optional[int], due_date: Optional[str], assignee_uid: Optional[int],
                                   member_uids: List[int], tags: List[str], complete: Optional[bool],
                                   archived: Optional[bool]) -> types.ListingTaskType:
 
@@ -261,7 +261,7 @@ class KanBanMutations:
         return task
 
     @strawberry.mutation
-    async def delete_listing_task(self, info, uid: int) -> int:
+    async def delete_listing_task(self, info, uid: int) -> DeletedItem:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -344,7 +344,7 @@ class KanBanMutations:
 
     @strawberry.mutation
     async def create_task_milestone(self, info, title: str, task_uid: int, assignee_uid: Optional[int],
-                                    done: Optional[int]) -> types.TaskMilestoneType:
+                                    done: Optional[bool]) -> types.TaskMilestoneType:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)

@@ -28,6 +28,12 @@ class ClientType:
 @strawberry.type
 class ClientContactType:
     uid: int
+    first_name: Optional[str]
+    last_name: Optional[str]
+    email: Optional[str]
+    mobile_phone: Optional[str]
+    business_phone: Optional[str]
+    is_active: Optional[bool]
     auth_uid: Optional[int]
     auth: Optional[UserAuthType]
     email: Optional[str]

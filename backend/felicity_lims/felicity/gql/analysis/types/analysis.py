@@ -21,16 +21,6 @@ class SampleTypeTyp:
 
 
 @strawberry.type
-class ProfileType:
-    uid: int
-    name: str
-    description: Optional[str]
-    keyword: Optional[str]
-    tat_length_minutes: Optional[int]
-    active: bool
-
-
-@strawberry.type
 class QCLevelType:
     uid: int
     level: str
@@ -41,6 +31,12 @@ class QCSetType:
     uid: int
     name: str
     note: str
+    created_by_uid: Optional[int]
+    created_by: Optional[UserType]
+    created_at: Optional[datetime]
+    updated_by_uid: Optional[int]
+    updated_by: Optional[UserType]
+    updated_at: Optional[datetime]
 
 
 @strawberry.type
@@ -61,21 +57,79 @@ class AnalysisRequestType:
     internal_use: bool
     created_by_uid: Optional[int]
     created_by: Optional[UserType]
+    created_at: Optional[datetime]
     updated_by_uid: Optional[int]
     updated_by: Optional[UserType]
+    updated_at: Optional[datetime]
 
 
 @strawberry.type
-class AnalysisRequestEdge:
+class AnalysisCategoryType:
+    uid: int
+    name: str
+    description: Optional[str]
+    active: bool
+
+
+@strawberry.type
+class ResultOptionType:
+    uid: int
+    option_key: int
+    value: str
+    analysis_uid: int
+    # analysis: AnalysisType
+
+
+@strawberry.type
+class AnalysisType:
+    uid: int
+    name: str
+    description: Optional[str]
+    keyword: Optional[str]
+    unit: Optional[str]
+    sampletypes: Optional[List[SampleTypeTyp]]
+    category_uid: Optional[int]
+    category: Optional[AnalysisCategoryType]
+    resultoptions: Optional[List[ResultOptionType]]
+    tat_length_minutes: int
+    sort_key: int
+    internal_use: bool
+    active: bool
+    created_by_uid: Optional[int]
+    created_by: Optional[UserType]
+    created_at: Optional[datetime]
+    updated_by_uid: Optional[int]
+    updated_by: Optional[UserType]
+    updated_at: Optional[datetime]
+
+
+@strawberry.type
+class ProfileType:
+    uid: int
+    name: str
+    description: Optional[str]
+    keyword: Optional[str]
+    tat_length_minutes: Optional[int]
+    analyses: Optional[List[AnalysisType]]
+    active: bool
+
+
+@strawberry.type
+class AnalysisWithProfiles(AnalysisType):
+    profiles: Optional[List[ProfileType]]
+
+
+@strawberry.type
+class AnalysisEdge:
     cursor: str
-    node: AnalysisRequestType
+    node: AnalysisWithProfiles
 
 
 @strawberry.type
-class AnalysisRequestCursorPage:
+class AnalysisCursorPage:
     page_info: PageInfo
-    edges: Optional[List[AnalysisRequestEdge]]
-    items: Optional[List[AnalysisRequestType]]
+    edges: Optional[List[AnalysisEdge]]
+    items: Optional[List[AnalysisWithProfiles]]
     total_count: int
 
 
@@ -88,7 +142,7 @@ class SampleType:  # for Sample
     sampletype: Optional[SampleTypeTyp]
     sample_id: str
     profiles: Optional[List[ProfileType]]
-    analyses: Optional[List[ProfileType]]
+    analyses: Optional[List[AnalysisType]]
     priority: int
     status: str
     assigned: bool
@@ -108,58 +162,32 @@ class SampleType:  # for Sample
     qc_set: Optional[QCSetType]
     qc_level_uid: Optional[int]
     qc_level: Optional[QCLevelType]
-
-
-@strawberry.type
-class SampleEdge:
-    cursor: str
-    node: SampleType
-
-
-@strawberry.type
-class SampleCursorPage:
-    page_info: PageInfo
-    edges: Optional[List[SampleEdge]]
-    items: Optional[List[SampleType]]
-    total_count: int
-
-
-@strawberry.type
-class AnalysisCategoryType:
-    uid: int
-    name: str
-    description: Optional[str]
-    active: bool
-
-
-@strawberry.type
-class AnalysisType:
-    uid: int
-    name: str
-    description: Optional[str]
-    keyword: Optional[str]
-    unit: Optional[str]
-    profiles: Optional[List[ProfileType]]
-    sampletypes: Optional[List[SampleTypeTyp]]
-    category_uid: Optional[int]
-    category: Optional[AnalysisCategoryType]
-    tat_length_minutes: int
-    sort_key: int
-    internal_use: bool
-    active: bool
+    #
     created_by_uid: Optional[int]
     created_by: Optional[UserType]
+    created_at: Optional[datetime]
     updated_by_uid: Optional[int]
     updated_by: Optional[UserType]
+    updated_at: Optional[datetime]
 
 
 @strawberry.type
-class ResultOptionType:
-    uid: int
-    option_key: int
-    value: str
-    analysis_uid: int
-    analysis: AnalysisType
+class AnalysisRequestWithSamples(AnalysisRequestType):
+    samples: Optional[List[SampleType]]
+
+
+@strawberry.type
+class AnalysisRequestEdge:
+    cursor: str
+    node: AnalysisRequestWithSamples
+
+
+@strawberry.type
+class AnalysisRequestCursorPage:
+    page_info: PageInfo
+    edges: Optional[List[AnalysisRequestEdge]]
+    items: Optional[List[AnalysisRequestWithSamples]]
+    total_count: int
 
 
 @strawberry.type
@@ -169,9 +197,3 @@ class QCTemplateType:
     description: Optional[str]
     departments: List[DepartmentType]
     qc_levels: List[QCLevelType]
-
-
-
-
-
-

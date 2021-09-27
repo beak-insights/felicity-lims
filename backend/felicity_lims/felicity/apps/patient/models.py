@@ -1,7 +1,8 @@
 import logging
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, func
+from sqlalchemy.future import select
 from sqlalchemy.orm import relationship
 
 from felicity.apps.client.models import Client
@@ -18,7 +19,7 @@ class Patient(DBModel):
     client_patient_id = Column(String, index=True, unique=True, nullable=False)
     patient_id = Column(String, index=True, unique=True, nullable=True)
     client_uid = Column(Integer, ForeignKey('client.uid'), nullable=True)
-    client = relationship(Client, backref="patients")
+    client = relationship(Client, backref="patients", lazy="selectin")
     # Details
     first_name = Column(String, nullable=False)
     middle_name = Column(String, nullable=True)
@@ -53,7 +54,7 @@ class Patient(DBModel):
     @classmethod
     async def create(cls, obj_in: schemas.PatientCreate) -> schemas.Patient:
         data = cls._import(obj_in)
-        data['patient_id'] = cls.create_patient_id()
+        data['patient_id'] = await cls.create_patient_id()
         return await super().create(**data)
 
     async def update(self, obj_in: schemas.PatientUpdate) -> schemas.Patient:
@@ -61,15 +62,13 @@ class Patient(DBModel):
         return await super().update(**data)
         
     @classmethod
-    def create_patient_id(cls):
+    async def create_patient_id(cls):
         prefix_key = "P"
         prefix_year = str(datetime.now().year)[2:]
         prefix = f"{prefix_key}{prefix_year}"
-        count = cls.where(patient_id__startswith=f'%{prefix}%').count()
-        # Find a way to use the line below: its faster
-        # stmt = select(func.count(Patient.uid)).filter(Patient.patient_id.like(prefix))
-        # res = await cls.session.execute(stmt)
-        # scalar = res.scalar().count()
+        stmt = cls.where(patient_id__startswith=f'%{prefix}%')
+        res = await cls.session.execute(stmt)
+        count = len(res.scalars().all())
         if isinstance(count, type(None)):
             count = 0
         return f"{prefix}-{sequencer(count + 5, 5)}"

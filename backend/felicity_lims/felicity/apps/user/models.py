@@ -74,11 +74,29 @@ class UserAuth(AbstractAuth):
         return has_access
 
 
+"""
+Many to Many Link between Group and User
+"""
+gulink = Table('gulink', DBModel.metadata,
+               Column('user_uid', ForeignKey('user.uid'), primary_key=True),
+               Column('group_uid', ForeignKey('group.uid'), primary_key=True)
+               )
+
+"""
+Many to Many Link between Group and Permission
+"""
+gplink = Table('gplink', DBModel.metadata,
+               Column('permission_uid', ForeignKey('permission.uid'), primary_key=True),
+               Column('group_uid', ForeignKey('group.uid'), primary_key=True)
+               )
+
+
 class User(AbstractBaseUser):
     auth_uid = Column(Integer, ForeignKey('userauth.uid'))
     auth = relationship("UserAuth", backref=backref(conf.LABORATORY_CONTACT, uselist=False), lazy='joined')
+    groups = relationship("Group", secondary=gulink, back_populates="members", lazy='selectin')
 
-    # required in order to acess columns with server defaults
+    # required in order to access columns with server defaults
     # or SQL expression defaults, subsequent to a flush, without
     # triggering an expired load
     __mapper_args__ = {"eager_defaults": True}
@@ -137,26 +155,9 @@ class Permission(DBModel):
         return super().update(**data)
 
 
-"""
-Many to Many Link between Group and User
-"""
-gulink = Table('gulink', DBModel.metadata,
-               Column('user_uid', ForeignKey('user.uid'), primary_key=True),
-               Column('group_uid', ForeignKey('group.uid'), primary_key=True)
-               )
-
-"""
-Many to Many Link between Group and Permission
-"""
-gplink = Table('gplink', DBModel.metadata,
-               Column('permission_uid', ForeignKey('permission.uid'), primary_key=True),
-               Column('group_uid', ForeignKey('group.uid'), primary_key=True)
-               )
-
-
 class Group(DBModel):
     name = Column(String, unique=True, index=True, nullable=False)
-    members = relationship("User", secondary=gulink, backref="groups")
+    members = relationship("User", secondary=gulink, back_populates="groups")
     permissions = relationship("Permission", secondary=gplink, backref="groups")
     active = Column(Boolean(), default=True)
 

@@ -360,7 +360,7 @@ class SetupMutations:
         return province
 
     @strawberry.mutation
-    async def mutate(self, info, uid: int, name: Optional[str], code: Optional[str], country_uid: Optional[int],  # noqa
+    async def update_province(self, info, uid: int, name: Optional[str], code: Optional[str], country_uid: Optional[int],  # noqa
                      email: Optional[str], email_cc: Optional[str], consent_email: Optional[bool],  # noqa
                      mobile_phone: Optional[str], business_phone: Optional[str], consent_sms: Optional[str],  # noqa
                      active: Optional[bool] = True) -> ProvinceType:  # noqa

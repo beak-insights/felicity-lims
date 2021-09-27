@@ -107,7 +107,7 @@ class UserMutations:
 
     @strawberry.mutation
     async def update_user_auth(self, info, user_uid: int, username: Optional[str],
-                               password: Optional[str], passwordc: Optional[str]) -> UserAuthType:
+                               password: Optional[str], passwordc: Optional[str]) -> UserType:
         if not username or not password:
             raise Exception("Provide username and password to update")
 
@@ -137,8 +137,8 @@ class UserMutations:
 
             auth_in.password = password
 
-        auth = await auth.update(auth_in)
-        return auth
+        await auth.update(auth_in)
+        return user
 
     @strawberry.mutation
     async def authenticate_user(self, info, username: str, password: str) -> AuthenticatedData:

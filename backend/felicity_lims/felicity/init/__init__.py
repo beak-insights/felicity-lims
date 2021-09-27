@@ -22,6 +22,6 @@ async def initialize_felicity() -> bool:
     await create_permissions()
     await create_categories()
     await create_qc_levels()
-    
+
     logger.info("Felicity LIMS Initialisation completed.")
     return True

@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from felicity.apps.user import crud, models, schemas
 from felicity.core import security
 from felicity.core.config import settings
-from felicity.database.session import AsyncSessionLocal
+from felicity.database.session import async_session_factory
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"
@@ -17,11 +17,11 @@ reusable_oauth2 = OAuth2PasswordBearer(
 
 
 async def get_db() -> AsyncGenerator:
-    session = AsyncSessionLocal()
+    session = async_session_factory()
     try:
         yield session
         await session.commit()
-    except AsyncSessionLocal as ex:
+    except async_session_factory as ex:
         await session.rollback()
         raise ex
     finally:

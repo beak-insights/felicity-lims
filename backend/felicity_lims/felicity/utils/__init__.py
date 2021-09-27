@@ -8,7 +8,7 @@ def get_passed_args(inspection):
     _args = inspection.args
     _locals = inspection.locals
 
-    kwargs = None
+    kwargs = {}
     if 'kwargs' in _locals.keys():
         kwargs = _locals.get('kwargs')
         del _locals['kwargs']

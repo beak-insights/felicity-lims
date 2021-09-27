@@ -5,6 +5,7 @@ import strawberry
 
 from felicity.gql import PageInfo
 from felicity.gql.analysis.types.analysis import ProfileType, AnalysisType, QCTemplateType, QCLevelType, SampleTypeTyp
+from felicity.gql.analysis.types.results import AnalysisResultType
 from felicity.gql.setup.types import InstrumentType
 from felicity.gql.user.types import UserType
 
@@ -56,6 +57,7 @@ class WorkSheetType:
     sample_type_uid: Optional[int]
     sample_type: Optional[SampleTypeTyp]
     assigned_count: int
+    analysis_results: Optional[List[AnalysisResultType]]
     submitted_by_uid: Optional[int]
     submitted_by: Optional[UserType]
     date_submitted: Optional[datetime]
@@ -64,8 +66,10 @@ class WorkSheetType:
     date_verified: Optional[datetime]
     created_by_uid: Optional[int]
     created_by: Optional[UserType]
+    created_at: Optional[datetime]
     updated_by_uid: Optional[int]
     updated_by: Optional[UserType]
+    updated_at: Optional[datetime]
 
 
 #  relay paginations

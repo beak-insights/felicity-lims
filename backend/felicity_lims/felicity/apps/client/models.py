@@ -30,7 +30,8 @@ class Client(DBModel):
 
     @classmethod
     async def create(cls, obj_in: schemas.ClientCreate) -> schemas.Client:
-        if cls.get(code=obj_in.code):
+        exist = await cls.get(code=obj_in.code)
+        if exist:
             raise Exception(f"Client with code {obj_in.code} already Exists")
 
         data = cls._import(obj_in)

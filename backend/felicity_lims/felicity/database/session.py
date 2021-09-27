@@ -5,29 +5,29 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_scop
 from felicity.core.config import settings
 
 
-async_engine = create_async_engine(settings.SQLALCHEMY_ASYNC_DATABASE_URI, pool_pre_ping=True, echo=True, future=True)
-AsyncSessionLocal = sessionmaker(
+async_engine = create_async_engine(settings.SQLALCHEMY_ASYNC_DATABASE_URI, pool_pre_ping=True, echo=False, future=True)
+async_session_factory = sessionmaker(
     bind=async_engine,
     expire_on_commit=False,
     autoflush=False,
     class_=AsyncSession,
 )
-AsyncSessionScoped = async_scoped_session(AsyncSessionLocal, scopefunc=current_task)
+AsyncSessionScoped = async_scoped_session(async_session_factory, scopefunc=current_task)
 
 
 #  Async Dependency
 async def get_session() -> AsyncSession:
-    async with AsyncSessionLocal() as session:
+    async with async_session_factory() as session:
         yield session
 
 
 # or Async Dependency 2
 async def get_db() -> AsyncGenerator:
-    session = AsyncSessionLocal()
+    session = async_session_factory()
     try:
         yield session
         await session.commit()
-    except AsyncSessionLocal as ex:
+    except async_session_factory as ex:
         await session.rollback()
         raise ex
     finally:

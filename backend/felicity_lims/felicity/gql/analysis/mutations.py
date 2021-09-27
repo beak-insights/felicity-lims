@@ -235,7 +235,7 @@ class AnalysisMutations:
 
     @strawberry.mutation
     async def update_profile(self, info, uid: int, name: Optional[str], description: Optional[str],
-                             keyword: Optional[str], active: Optional[bool] = True) -> a_types.ProfileType:
+                             keyword: Optional[str], services: Optional[List[int]], active: Optional[bool] = True) -> a_types.ProfileType:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -272,7 +272,7 @@ class AnalysisMutations:
     @strawberry.mutation
     async def create_analysis(self, info, name: str, description: str, keyword: str, sort_key: int,
                               sample_types: List[str], category_uid: Optional[int], internal_use: Optional[bool] = False,
-                              active: Optional[bool] = True) -> a_types.AnalysisType:
+                              active: Optional[bool] = True) -> a_types.AnalysisWithProfiles:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -310,7 +310,7 @@ class AnalysisMutations:
     @strawberry.mutation
     async def update_analysis(self, info, uid: int, name: str, description: str, keyword: str, sort_key: int,
                               sample_types: List[str], category_uid: Optional[int], internal_use: Optional[bool] = False,
-                              active: Optional[bool] = True) -> a_types.AnalysisType:
+                              active: Optional[bool] = True) -> a_types.AnalysisWithProfiles:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -345,7 +345,7 @@ class AnalysisMutations:
     @strawberry.mutation
     async def create_analysis_request(self, info, patient_uid: int, client_uid: int, samples: List[ARSampleInputType],
                      client_request_id: Optional[str], internal_use: Optional[bool] = False,
-                     priority: int = priorities.sample.NORMAL) -> a_types.AnalysisRequestType:
+                     priority: int = priorities.sample.NORMAL) -> a_types.AnalysisRequestWithSamples:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -434,7 +434,7 @@ class AnalysisMutations:
 
     @strawberry.mutation
     async def update_analysis_request(self, info, uid: int, patient_uid: Optional[int], client_uid: Optional[int],
-                                      client_request_id: Optional[str], internal_use: Optional[bool] = False) -> a_types.AnalysisRequestType:
+                                      client_request_id: Optional[str], internal_use: Optional[bool] = False) -> a_types.AnalysisRequestWithSamples:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)

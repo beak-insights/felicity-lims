@@ -141,10 +141,10 @@ class MarkdownMutations:
         document: models.Document = await models.Document.create(obj_in)
         return document
 
-    @staticmethod
+    @strawberry.mutation
     async def update_document(root, info, uid: int, name: Optional[str], subtitle: Optional[str], document_id: Optional[str],  # noqa
                         version: Optional[str], department_uid: Optional[int], category_uid: Optional[int],  # noqa
-                        tags_uids: Optional[List[int]]) -> types.DocumentType:  # noqa
+                        tags_uids: Optional[List[int]], content: Optional[str]) -> types.DocumentType:  # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)

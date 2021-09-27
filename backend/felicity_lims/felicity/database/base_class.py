@@ -5,7 +5,6 @@ from pydantic import BaseModel as PydanticBaseModel
 from sqlalchemy.future import select
 from sqlalchemy import Column, Integer
 from sqlalchemy.sql import func
-from sqlalchemy.orm import lazyload
 from sqlalchemy.orm import as_declarative, declared_attr
 from sqlalchemy import or_ as sa_or_
 from felicity.database.async_mixins import AllFeaturesMixin, TimestampsMixin, smart_query
@@ -88,8 +87,8 @@ class DBModel(AllFeaturesMixin, TimestampsMixin):
             await self.session.flush()
             await self.session.commit()
         except Exception as e:
+            logger.info(f"Rolling Back -> Session Save Error: {e}")
             await self.session.rollback()
-            logger.info(f"Session Save Error: {e}")
             raise
         return self
 
@@ -110,7 +109,7 @@ class DBModel(AllFeaturesMixin, TimestampsMixin):
         # stmt = smart_query(query=stmt, filters=filters)
         stmt = smart_query(select(cls), filters=filters)
         res = await cls.session.execute(stmt)
-        count = res.scalar()
+        count = len(res.scalars().all())
         return count
 
     @classmethod
@@ -149,7 +148,7 @@ class DBModel(AllFeaturesMixin, TimestampsMixin):
 
     @classmethod
     async def paginate_with_cursors(cls, page_size: [int] = None, after_cursor: Any = None, before_cursor: Any = None,
-                                    filters: Dict = None, sort_by: List[str] = None) -> PageCursor:
+                                    filters: Any = None, sort_by: List[str] = None) -> PageCursor:
         if not filters:
             filters = {}
 

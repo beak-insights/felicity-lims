@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 @strawberry.type
 class PatientMutations:
     @strawberry.mutation
-    async def create_patient(self, info, client_patient_id: str, first_name: str, last_name: str, client_uid: str,
+    async def create_patient(self, info, client_patient_id: str, first_name: str, last_name: str, client_uid: int,
                              middle_name: Optional[str], gender: Optional[int], age: Optional[int],
                              date_of_birth: Optional[datetime], age_dob_estimated: Optional[bool],
                              phone_mobile: Optional[str], phone_home: Optional[str], consent_sms: Optional[bool],

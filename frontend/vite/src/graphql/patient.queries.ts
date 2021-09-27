@@ -4,8 +4,14 @@ import gql from 'graphql-tag';
 export const GET_ALL_PATIENTS = gql`
   query getAllPatients {
     patientAll {
-      edges {
-        node {
+      totalCount
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      items {
         uid
         clientPatientId
         patientId
@@ -30,7 +36,6 @@ export const GET_ALL_PATIENTS = gql`
         consentSms
         }
       }
-    }
   }`;
 
 

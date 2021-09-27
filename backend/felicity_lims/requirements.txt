@@ -1,6 +1,6 @@
 fastapi==0.68.1
 uvicorn[standard]==0.15.0
-SQLAlchemy==1.4.23
+SQLAlchemy==1.4.25
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 emails==0.6

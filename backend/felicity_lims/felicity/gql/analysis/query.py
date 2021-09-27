@@ -30,7 +30,7 @@ class AnalysisQuery:
     async def sample_all(self, info, page_size: Optional[int] = None,
                          after_cursor: Optional[str] = None, before_cursor: Optional[str] = None,
                          text: Optional[str] = None, status: Optional[str] = None, client_uid: Optional[int] = None,
-                         sort_by: Optional[List[str]] = None) -> a_types.SampleCursorPage:
+                         sort_by: Optional[List[str]] = None) -> r_types.SampleCursorPage:
         filters = []
 
         _or_text_ = {}
@@ -64,11 +64,11 @@ class AnalysisQuery:
         )
 
         total_count: int = page.total_count
-        edges: List[a_types.SampleEdge[a_types.SampleType]] = page.edges
-        items: List[a_types.SampleType] = page.items
+        edges: List[r_types.SampleEdge[r_types.SamplesWithResults]] = page.edges
+        items: List[r_types.SamplesWithResults] = page.items
         page_info: PageInfo = page.page_info
 
-        return a_types.SampleCursorPage(
+        return r_types.SampleCursorPage(
             total_count=total_count,
             edges=edges,
             items=items,
@@ -87,7 +87,7 @@ class AnalysisQuery:
         return len(combined)
 
     @strawberry.field
-    async def sample_by_uid(self, info, uid: int) -> a_types.SampleTypeTyp:
+    async def sample_by_uid(self, info, uid: int) -> a_types.SampleType:
         return await a_models.Sample.get(uid=uid)
 
     @strawberry.field
@@ -107,12 +107,51 @@ class AnalysisQuery:
         return await a_models.AnalysisCategory.get(uid=uid)
 
     @strawberry.field
-    async def analysis_by_uid(self, info, uid: int) -> a_types.AnalysisType:
-        return await a_models.Analysis.get(uid=uid)
+    async def analysis_all(self, info, page_size: Optional[int] = None,
+                           after_cursor: Optional[str] = None, before_cursor: Optional[str] = None,
+                           text: Optional[str] = None,
+                           sort_by: Optional[List[str]] = None,
+                           qc_only: Optional[bool] = False) -> a_types.AnalysisCursorPage:
+
+        filters = []
+        _or_text_ = {}
+        if has_value_or_is_truthy(text):
+            arg_list = [
+                'name__ilike',
+                'description__ilike',
+                'keyword__ilike',
+            ]
+            for _arg in arg_list:
+                _or_text_[_arg] = f"%{text}%"
+
+            text_filters = {sa.or_: _or_text_}
+            filters.append(text_filters)
+
+        if qc_only:
+            filters.append({'category___name__exact': 'Quality Control'})
+
+        page = await a_models.Analysis.paginate_with_cursors(
+            after_cursor=after_cursor,
+            before_cursor=before_cursor,
+            filters=filters,
+            sort_by=sort_by
+        )
+
+        total_count: int = page.total_count
+        edges: List[a_types.AnalysisEdge[a_types.AnalysisType]] = page.edges
+        items: List[a_types.AnalysisType] = page.items
+        page_info: PageInfo = page.page_info
+
+        return a_types.AnalysisCursorPage(
+            total_count=total_count,
+            edges=edges,
+            items=items,
+            page_info=page_info,
+        )
 
     @strawberry.field
-    async def analysis_for_qc(self, info) -> List[a_types.AnalysisType]:
-        return await a_models.Analysis.where(category___name__exact='Quality Control').all()
+    async def analysis_by_uid(self, info, uid: int) -> a_types.AnalysisType:
+        return await a_models.Analysis.get(uid=uid)
 
     @strawberry.field
     async def analysis_request_all(self, info, page_size: Optional[int] = None,
@@ -145,7 +184,7 @@ class AnalysisQuery:
         )
 
         total_count: int = page.total_count
-        edges: List[a_types.AnalysisRequestEdge[a_types.AnalysisRequestType]] = page.edges
+        edges: List[a_types.AnalysisRequestEdge[a_types.AnalysisRequestWithSamples]] = page.edges
         items: List[a_types.AnalysisRequestType] = page.items
         page_info: PageInfo = page.page_info
 
@@ -157,15 +196,15 @@ class AnalysisQuery:
         )
 
     @strawberry.field
-    async def analysis_request_by_uid(self, info, uid: int) -> a_types.AnalysisRequestType:
+    async def analysis_request_by_uid(self, info, uid: int) -> a_types.AnalysisRequestWithSamples:
         return await a_models.AnalysisRequest.get(uid=uid)
 
     @strawberry.field
-    async def analysis_requests_by_patient_uid(self, info, uid: int) -> List[a_types.AnalysisRequestType]:
+    async def analysis_requests_by_patient_uid(self, info, uid: int) -> List[a_types.AnalysisRequestWithSamples]:
         return await a_models.AnalysisRequest.where(patient_uid__exact=uid).all()
 
     @strawberry.field
-    async def analysis_requests_by_client_uid(self, info, uid: int) -> List[a_types.AnalysisRequestType]:
+    async def analysis_requests_by_client_uid(self, info, uid: int) -> List[a_types.AnalysisRequestWithSamples]:
         return await a_models.AnalysisRequest.where(client_uid__exact=uid).all()
 
     @strawberry.field
@@ -177,11 +216,46 @@ class AnalysisQuery:
         return await r_models.AnalysisResult.where(sample_uid__exact=uid)
 
     @strawberry.field
-    async def qc_set_all(self, info) -> List[a_types.QCSetType]:
-        return await qc_models.QCSet.all()
+    async def qc_set_all(self, info, page_size: Optional[int] = None,
+                         after_cursor: Optional[str] = None, before_cursor: Optional[str] = None,
+                         text: Optional[str] = None,
+                         sort_by: Optional[List[str]] = None) -> r_types.QCSetCursorPage:
+
+        filters = []
+        _or_text_ = {}
+        if has_value_or_is_truthy(text):
+            arg_list = [
+                'name__ilike',
+                'description__ilike',
+                'keyword__ilike',
+            ]
+            for _arg in arg_list:
+                _or_text_[_arg] = f"%{text}%"
+
+            text_filters = {sa.or_: _or_text_}
+            filters.append(text_filters)
+
+        page = await a_models.QCSet.paginate_with_cursors(
+            after_cursor=after_cursor,
+            before_cursor=before_cursor,
+            filters=filters,
+            sort_by=sort_by
+        )
+
+        total_count: int = page.total_count
+        edges: List[r_types.QCSetEdge[r_types.QCSetWithSamples]] = page.edges
+        items: List[r_types.QCSetWithSamples] = page.items
+        page_info: PageInfo = page.page_info
+
+        return r_types.QCSetCursorPage(
+            total_count=total_count,
+            edges=edges,
+            items=items,
+            page_info=page_info,
+        )
 
     @strawberry.field
-    async def resolve_qc_set_by_uid(self, info, uid: int) -> a_types.QCSetType:
+    async def qc_set_by_uid(self, info, uid: int) -> r_types.QCSetWithSamples:
         return await qc_models.QCSet.get(uid=uid)
 
     @strawberry.field
@@ -189,7 +263,7 @@ class AnalysisQuery:
         return await qc_models.QCLevel.all()
 
     @strawberry.field
-    async def resolve_qc_level_by_uid(self, info, uid: int) -> a_types.QCLevelType:
+    async def qc_level_by_uid(self, info, uid: int) -> a_types.QCLevelType:
         return await qc_models.QCLevel.get(uid=uid)
 
     @strawberry.field

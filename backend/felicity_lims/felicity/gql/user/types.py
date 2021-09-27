@@ -1,8 +1,7 @@
-from typing import Optional, List
+from typing import Optional, List, TypeVar, Generic
 import strawberry
 
 from felicity.gql import PageInfo
-
 
 @strawberry.type
 class UserAuthType:
@@ -11,20 +10,6 @@ class UserAuthType:
     login_retry: int
     is_blocked: bool
     user_type: Optional[str]
-
-
-@strawberry.type
-class UserType:
-    uid: int
-    first_name: Optional[str]
-    last_name: Optional[str]
-    email: Optional[str]
-    mobile_phone: Optional[str]
-    business_phone: Optional[str]
-    is_active: bool
-    is_superuser: bool
-    auth_uid: Optional[int]
-    auth: Optional[UserAuthType]
 
 
 @strawberry.type
@@ -39,9 +24,23 @@ class PermissionType:
 class GroupType:
     uid: int
     name: Optional[str]
-    members: Optional[UserType]
     permissions: Optional[PermissionType]
     active: Optional[bool]
+
+
+@strawberry.type
+class UserType:
+    uid: int
+    first_name: Optional[str]
+    last_name: Optional[str]
+    email: Optional[str]
+    mobile_phone: Optional[str]
+    business_phone: Optional[str]
+    groups: Optional[List[GroupType]]
+    is_active: bool
+    is_superuser: bool
+    auth_uid: Optional[int]
+    auth: Optional[UserAuthType]
 
 
 @strawberry.type

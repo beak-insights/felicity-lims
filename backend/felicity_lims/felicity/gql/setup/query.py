@@ -216,45 +216,45 @@ class SetupQuery:
     department_all: List[DepartmentType] = strawberry.field(resolver=get_all_departments)
 
     @strawberry.field
-    async def resolve_department_by_uid(self, info, uid: int) -> DepartmentType:
+    async def department_by_uid(self, info, uid: int) -> DepartmentType:
         query = await models.Department.get(uid=uid)
         return query
 
     instrument_all: InstrumentCursorPage = strawberry.field(resolver=get_all_instruments)
 
     @strawberry.field
-    async def resolve_instrument_by_uid(self, info, uid: int) -> InstrumentType:
+    async def instrument_by_uid(self, info, uid: int) -> InstrumentType:
         query = await models.Instrument.get(uid=uid)
         return query
 
     method_all: MethodCursorPage = strawberry.field(resolver=get_all_methods)
 
     @strawberry.field
-    async def resolve_method_by_uid(self, info, uid: int) -> MethodType:
+    async def method_by_uid(self, info, uid: int) -> MethodType:
         query = await models.Method.get(uid=uid)
         return query
 
     district_all: DistrictCursorPage = strawberry.field(resolver=get_all_districts)
 
     @strawberry.field
-    async def resolve_district_by_uid(self, info, uid: int) -> DistrictType:
+    async def district_by_uid(self, info, uid: int) -> DistrictType:
         district = await models.District.get(uid=uid)
         return district
 
     @strawberry.field
-    async def resolve_districts_by_province_uid(self, info, uid: int) -> List[DistrictType]:
+    async def districts_by_province_uid(self, info, uid: int) -> List[DistrictType]:
         districts = await models.District.where(province_uid__exact=uid).all()
         return districts
 
     province_all: ProvinceCursorPage = strawberry.field(resolver=get_all_provinces)
 
     @strawberry.field
-    async def resolve_province_by_uid(self, info, uid: int) -> ProvinceType:
+    async def province_by_uid(self, info, uid: int) -> ProvinceType:
         province = await models.Province.get(uid=uid)
         return province
 
     @strawberry.field
-    async def resolve_provinces_by_country_uid(self, info, uid: int) -> List[ProvinceType]:
+    async def provinces_by_country_uid(self, info, uid: int) -> List[ProvinceType]:
         provinces = await models.Province.where(country_uid__exact=uid).all()
         return provinces
 
