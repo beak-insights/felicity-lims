@@ -31,30 +31,18 @@ export const mutations = <MutationTree<IState>>{
   },
 
   [MutationTypes.SET_USERS](state: IState, payload): void {
-    state.users = [];
-    let users = parseEdgeNodeToList(payload) || [];
-    users?.forEach((user: any) => {
-      user.groups = parseEdgeNodeToList(user.groups) || [];
-    })
-    state.users = users;
+    state.users = payload.items
   },
 
   [MutationTypes.SET_GROUPS_AND_PERMISSIONS](state: IState, payload): void {
-    state.groups = [];
-    state.permissions = [];
-    let _perms = parseEdgeNodeToList(payload?.permissionAll);
-    let _grps = parseEdgeNodeToList(payload?.groupAll);
-    _grps?.forEach((grp: any) => {
-      grp.permissions = parseEdgeNodeToList(grp.permissions) || [];
-    })
-    state.groups = _grps;
-    state.permissions = _perms;
+    state.groups = payload?.permissionAll;
+    state.permissions = payload?.groupAll;
   },
 
   [MutationTypes.UPDATE_GROUPS_PERMISSIONS](state: IState, payload): void {
     let group = payload?.group;
     const index = state.groups?.findIndex(g => g.uid === group.uid);
-    group.permissions = parseEdgeNodeToList(group?.permissions) || [];
+    group.permissions = group?.permissions || [];
     state!.groups[index] = group;
   },
 
@@ -64,15 +52,13 @@ export const mutations = <MutationTree<IState>>{
   },
 
   [MutationTypes.SET_AUDIT_LOGS](state: IState, payload): void {
-    let logs = parseEdgeNodeToList(payload) || [];
-    logs?.forEach((log: any) => {
-      console.log(log);
+    payload?.forEach((log: any) => {
       if(typeof(log.stateAfter) === "string"){
         log.stateAfter = JSON.parse(log.stateAfter);
         log.stateBefore = JSON.parse(log.stateBefore);
       }
     })
-    state.auditLogs = logs;
+    state.auditLogs = payload;
   },
 
   // Departments

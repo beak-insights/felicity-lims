@@ -201,11 +201,11 @@ class AnalysisQuery:
 
     @strawberry.field
     async def analysis_requests_by_patient_uid(self, info, uid: int) -> List[a_types.AnalysisRequestWithSamples]:
-        return await a_models.AnalysisRequest.where(patient_uid__exact=uid).all()
+        return await a_models.AnalysisRequest.get_all(patient_uid__exact=uid)
 
     @strawberry.field
     async def analysis_requests_by_client_uid(self, info, uid: int) -> List[a_types.AnalysisRequestWithSamples]:
-        return await a_models.AnalysisRequest.where(client_uid__exact=uid).all()
+        return await a_models.AnalysisRequest.get_all(client_uid__exact=uid)
 
     @strawberry.field
     async def analysis_result_by_uid(self, info, uid: int) -> r_types.AnalysisResultType:
@@ -213,7 +213,7 @@ class AnalysisQuery:
 
     @strawberry.field
     async def analysis_result_by_sample_uid(self, info, uid: int) -> List[r_types.AnalysisResultType]:
-        return await r_models.AnalysisResult.where(sample_uid__exact=uid)
+        return await r_models.AnalysisResult.get_all(sample_uid__exact=uid)
 
     @strawberry.field
     async def qc_set_all(self, info, page_size: Optional[int] = None,
@@ -276,4 +276,4 @@ class AnalysisQuery:
 
     @strawberry.field
     async def result_options_by_analysis_uid(self, info, uid: int) -> a_types.ResultOptionType:
-        return await a_models.ResultOption.where(analysis_uid__exact=uid).all()
+        return await a_models.ResultOption.get_all(analysis_uid__exact=uid)

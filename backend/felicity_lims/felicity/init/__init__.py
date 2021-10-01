@@ -4,7 +4,12 @@ from felicity.init.checks.db import check_db_conn_status
 from felicity.init.setup.create_superuser import create_super_user
 from felicity.init.setup.groups_perms import create_groups, create_permissions
 from felicity.init.setup.setup_laboratory import create_laboratory
-from felicity.init.setup.setup_analyses import create_qc_levels, create_categories
+from felicity.init.setup.setup_analyses import (
+    create_qc_levels,
+    create_categories,
+    create_sample_types,
+    create_analyses_services_and_profiles,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -22,6 +27,8 @@ async def initialize_felicity() -> bool:
     await create_permissions()
     await create_categories()
     await create_qc_levels()
+    await create_sample_types()
+    await create_analyses_services_and_profiles()
 
     logger.info("Felicity LIMS Initialisation completed.")
     return True

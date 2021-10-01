@@ -350,11 +350,8 @@ class AnalysisMutations:
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create analysis requests")
-
-        samples = passed_args.get('samples')
-        logger.info(f"samples {samples}")
 
         patient = await pt_models.Patient.get(uid=patient_uid)
         if not patient:
@@ -380,10 +377,10 @@ class AnalysisMutations:
         analysisrequest: analysis_models.AnalysisRequest = await analysis_models.AnalysisRequest.create(obj_in)
 
         # 1. create samples
-        for s in samples:
-            _st_uid = s['sample_type']
-            _profiles = s['profiles']
-            _analyses = s['analyses']
+        for s in samples:  # ARResultInputType
+            _st_uid = s.sample_type
+            _profiles = s.profiles
+            _analyses = s.analyses
             stype = await analysis_models.SampleType.get(uid=_st_uid)
             if not stype:
                 raise Exception(f"Error, failed to retrieve sample type {_st_uid}")
@@ -401,7 +398,7 @@ class AnalysisMutations:
             _profiles_analyses = set()
 
             for p_uid in _profiles:
-                profile = await analysis_models.Profile.get(uid=p_uid)
+                profile = await analysis_models.Profile.get_related(related=["analyses"], uid=p_uid)
                 profiles.append(profile)
                 analyses_ = profile.analyses
                 for _an in analyses_:
@@ -415,10 +412,9 @@ class AnalysisMutations:
                     _profiles_analyses.add(analysis)
 
             sample_schema = schemas.SampleCreate(**sample_in)
+            sample_schema.analyses = analyses
+            sample_schema.profiles = profiles
             sample: analysis_models.Sample = await analysis_models.Sample.create(sample_schema)
-            sample.analyses = analyses
-            sample.profiles = profiles
-            sample = await sample.save()
 
             # Attach Analysis result for each Analyses
             for _service in _profiles_analyses:

@@ -166,44 +166,44 @@ export const ADD_ANALYSIS_REQUEST = gql`
 mutation AddAnalysisRequest ($clientRequestId: String!, $clientUid: Int!, $patientUid: Int!, $samples: [ARSampleInputType!]!) {
   createAnalysisRequest(clientRequestId: $clientRequestId, clientUid: $clientUid, patientUid: $patientUid, samples: $samples) {
       uid
-      samples {
-        uid
-        analysisrequest {
-          uid
-          clientRequestId
-          patient {
-            uid
-            firstName
-            lastName
-            clientPatientId
-            gender
-            dateOfBirth
-            age
-            ageDobEstimated
-            consentSms
-          }
-          client {
-            uid
-            name
-          }
-        }
-        sampletype {
-          uid
-          name
-        }
-        sampleId
-        priority
-        status
-        analyses {
-          uid
-          name
-          sortKey
-        }
-        profiles {
-          uid
-          name
-        }
-      }
+      # samples {
+      #   uid
+      #   analysisrequest {
+      #     uid
+      #     clientRequestId
+      #     patient {
+      #       uid
+      #       firstName
+      #       lastName
+      #       clientPatientId
+      #       gender
+      #       dateOfBirth
+      #       age
+      #       ageDobEstimated
+      #       consentSms
+      #     }
+      #     client {
+      #       uid
+      #       name
+      #     }
+      #   }
+      #   sampletype {
+      #     uid
+      #     name
+      #   }
+      #   sampleId
+      #   priority
+      #   status
+      #   analyses {
+      #     uid
+      #     name
+      #     sortKey
+      #   }
+      #   profiles {
+      #     uid
+      #     name
+      #   }
+      # }
   }
 }
 `;

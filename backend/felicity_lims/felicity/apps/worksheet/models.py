@@ -176,11 +176,13 @@ class WorkSheet(Auditable, WSBase):
         await self.save()
 
     @classmethod
-    def create_worksheet_id(cls):
+    async def create_worksheet_id(cls):
         prefix_key = "WS"
         prefix_year = str(datetime.now().year)[2:]
         prefix = f"{prefix_key}{prefix_year}"
-        count = cls.where(worksheet_id__startswith=f'%{prefix}%').count()
+        stmt = cls.where(worksheet_id__startswith=f'%{prefix}%')
+        res = await cls.session.execute(stmt)
+        count = len(res.scalars().all())
         if isinstance(count, type(None)):
             count = 0
         return f"{prefix}-{sequencer(count + 1, 5)}"
@@ -188,7 +190,7 @@ class WorkSheet(Auditable, WSBase):
     @classmethod
     async def create(cls, obj_in: schemas.WorkSheetCreate) -> schemas.WorkSheet:
         data = cls._import(obj_in)
-        data['worksheet_id'] = cls.create_worksheet_id()
+        data['worksheet_id'] = await cls.create_worksheet_id()
         return await super().create(**data)
 
     async def update(self, obj_in: schemas.WorkSheetUpdate) -> schemas.WorkSheet:

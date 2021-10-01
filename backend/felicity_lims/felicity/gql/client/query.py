@@ -28,8 +28,8 @@ class ClientQuery:
                 'email_cc__ilike',
                 'province___name__ilike',
                 'district___name__ilike',
-                'mobile_phone__ilike',
-                'business_phone__ilike',
+                'phone_mobile__ilike',
+                'phone_business__ilike',
             ]
             for _arg in arg_list:
                 _or_[_arg] = f"%{text}%"
@@ -66,8 +66,8 @@ class ClientQuery:
 
     @strawberry.field
     async def clients_by_name(self, info, name: str) -> List[ClientType]:
-        clients = await models.Client.where(name__contains=name).all()
-        # clients = await models.Client.where(name__like=f"%{name}%").all()
+        clients = await models.Client.get_all(name__contains=name)
+        # clients = await models.Client.get_all(name__like=f"%{name}%")
         return clients
 
     @strawberry.field
@@ -77,7 +77,7 @@ class ClientQuery:
         for _filter in filters:
             arg = dict()
             arg[_filter] = f"%{query_string}%"
-            query = await models.Client.where(**arg).all()
+            query = await models.Client.get_all(**arg)
             for item in query:
                 combined.add(item)
         return list(combined)
@@ -88,4 +88,4 @@ class ClientQuery:
 
     @strawberry.field
     async def client_contact_by_client_uid(self, info, client_uid: int) -> List[ClientContactType]:
-        return await models.ClientContact.where(client_uid=client_uid).all()
+        return await models.ClientContact.get_all(client_uid=client_uid)

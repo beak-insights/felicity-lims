@@ -1,8 +1,8 @@
 import gql from 'graphql-tag'
 
 export const GET_ALL_USERS = gql`
-  query userAll {
-    userAll {
+  query userAll($first: Int, $after: String, $text: String, $sortBy: [String!] = ["uid"]) {
+    userAll(pageSize:$first, afterCursor:$after, text:$text, sortBy:$sortBy) {
       totalCount
       pageInfo {
         hasNextPage
@@ -55,7 +55,7 @@ export const GET_GROUPS_AND_PERMISSIONS = gql`
 
 
 export const GET_AUDIT_LOG_FOR_TARGET = gql`
-  query getAuditLogs($targetType: String!, $targetId: String!) {
+  query getAuditLogs($targetType: String!, $targetId: Int!) {
     auditLogsFilter(targetType:$targetType, targetId:$targetId){
       uid
       userId

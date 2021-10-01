@@ -46,9 +46,9 @@ class ClientMutations:
         return client
 
     @strawberry.mutation
-    async def update_client(self, info, uid: int, name: Optional[str], code: Optional[str], district_uid: Optional[int],
-                            email: Optional[str], email_cc: Optional[str], consent_email: Optional[bool],
-                            mobile_phone: Optional[str], business_phone: Optional[str], consent_sms: Optional[bool],
+    async def update_client(self, info, uid: int, name: Optional[str] = None, code: Optional[str] = None, district_uid: Optional[int] = None,
+                            email: Optional[str] = None, email_cc: Optional[str] = None, consent_email: Optional[bool] = False,
+                            mobile_phone: Optional[str] = None, business_phone: Optional[str] = None, consent_sms: Optional[bool] = False,
                             internal_use: Optional[bool] = False, active: Optional[bool] = True) -> ClientType:
 
         inspector = inspect.getargvalues(inspect.currentframe())
@@ -73,9 +73,10 @@ class ClientMutations:
         return client
 
     @strawberry.mutation
-    async def create_client_contact(self, info, first_name: str, client_uid: str, last_name: Optional[str],
-                                    email: Optional[str], email_cc: Optional[str], mobile_phone: Optional[str],
-                                    consent_sms: Optional[bool] = False, is_active: bool = True) -> ClientContactType:
+    async def create_client_contact(self, info, first_name: str, client_uid: int, last_name: Optional[str] = None,
+                                    email: Optional[str] = None, email_cc: Optional[str] = None,
+                                    mobile_phone: Optional[str] = None, consent_sms: Optional[bool] = False,
+                                    is_active: bool = True) -> ClientContactType:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -83,11 +84,12 @@ class ClientMutations:
         if not client_uid or not first_name:
             raise Exception("Please Provide a first_name and a client uid")
 
-        client_exists = models.Client.get(uid=client_uid)
+        client_exists = await models.Client.get(uid=client_uid)
         if not client_exists:
             raise Exception(f"Client with uid {client_uid} does not exist")
 
-        contact_exists = models.ClientContact.where(client_uid=client_uid, first_name=first_name).all()
+        contact_exists = await models.ClientContact.get_all(client_uid=client_uid, first_name=first_name)
+        logger.warning(contact_exists)
         if contact_exists:
             raise Exception(f"Client Contact with name {first_name} already exists")
 
@@ -106,8 +108,8 @@ class ClientMutations:
         return client_contact
 
     @strawberry.mutation
-    async def update_client_contact(self, info, uid: int, first_name: str, last_name: Optional[str],
-                                    email: Optional[str], email_cc: Optional[str], mobile_phone: Optional[str],
+    async def update_client_contact(self, info, uid: int, first_name: str, last_name: Optional[str] = None,
+                                    email: Optional[str] = None, email_cc: Optional[str] = None, mobile_phone: Optional[str] = None,
                                     consent_sms: Optional[bool] = False, is_active: bool = True) -> ClientContactType:
 
         inspector = inspect.getargvalues(inspect.currentframe())

@@ -107,7 +107,7 @@ class PermissionCreate(PermissionBase):
 
 # Properties to receive via API on update
 class PermissionUpdate(PermissionBase):
-    uid: Optional[str] = None
+    uid: Optional[int] = None
 
 
 class PermissionInDBBase(PermissionBase):
@@ -146,7 +146,7 @@ class GroupCreate(GroupBase):
 
 # Properties to receive via API on update
 class GroupUpdate(GroupBase):
-    uid: Optional[str] = None
+    uid: Optional[int] = None
 
 
 class GroupInDBBase(GroupBase):

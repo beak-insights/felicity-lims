@@ -96,9 +96,8 @@ export const mutations = <MutationTree<IState>>{
     Object.assign(state, initialState());
   },
 
-  [MutationTypes.SET_PATIENTS](state: IState, payload: any[]): void {
-    state.patients = [];
-    payload?.forEach(obj => state.patients?.push(obj?.node));
+  [MutationTypes.SET_PATIENTS](state: IState, payload: any): void {
+    state.patients = payload?.items;
   },
 
   [MutationTypes.DIRECT_SET_PATIENTS](state: IState, patients: IPatient[]): void {
@@ -126,9 +125,11 @@ export const actions = <ActionTree<IState, RootState>>{
     commit(MutationTypes.ADD_PATIENT, payload.data.createPatient.patient);
   },
 
-  async [ActionTypes.FETCH_PATIENTS]({ commit }){
-    await useQuery({ query: GET_ALL_PATIENTS })
-          .then(payload => commit(MutationTypes.SET_PATIENTS, payload.data.value.patientAll.edges));
+  async [ActionTypes.FETCH_PATIENTS]({ commit }, params){
+    await urqlClient
+    .query( GET_ALL_PATIENTS, { first: params.first, after: params.after, text: params.text, sortBy: params.sortBy})
+    .toPromise()
+    .then(result => commit(MutationTypes.SET_PATIENTS, result.data.patientAll));
   },
 
   async [ActionTypes.FETCH_PATIENT_BY_UID]({ commit }, uid){

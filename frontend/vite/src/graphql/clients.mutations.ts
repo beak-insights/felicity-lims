@@ -47,8 +47,8 @@ export const EDIT_CLIENT = gql`
 `;
 
 export const ADD_CLIENT_CONTACT = gql`
-  mutation AddClientContact($clientUid: String!, $firstName: String!, $email: String, $mobilePhone: String) {
-    createClientContact(clientUid: $clientUid, firstName:$firstName, email: $email, mobilePhone: $mobilePhone, isActive:false){
+  mutation AddClientContact($clientUid: Int!, $firstName: String!, $email: String, $mobilePhone: String) {
+    createClientContact(clientUid: $clientUid, firstName:$firstName, email: $email, mobilePhone: $mobilePhone, isActive:true){
         uid
         firstName
         lastName

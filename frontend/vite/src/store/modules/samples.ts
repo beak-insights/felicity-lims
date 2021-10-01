@@ -172,7 +172,6 @@ function sortAnalysisRequests(ars: IAnalysisRequest[]): IAnalysisRequest[] {
 }
 
 function sortResults(results: IAnalysisResult[]): IAnalysisResult[] {
-  console.log(results)
   results = results?.sort((a: IAnalysisResult, b: IAnalysisResult) => {
     if(a?.analysisUid === b?.analysisUid) {
       return (a?.uid || 0) > (b?.uid || 0) ? 1 : -1;
@@ -224,22 +223,17 @@ export const mutations = <MutationTree<IState>>{
     state.samples = [];
   },
   [MutationTypes.SET_SAMPLES](state: IState, payload: any): void {
-    let samples = parseEdgeNodeToList(payload?.samples);
-    samples?.forEach((sample: ISampleRequest) => {
-      sample.analyses = parseEdgeNodeToList(sample?.analyses) || [];
-      sample.profiles = parseEdgeNodeToList(sample?.profiles) || [];
-    });
+    state.samples = payload.samples.items;
+    state.sampleCount = payload.samples?.totalCount;
+    state.pageInfo = payload.samples?.pageInfo;
 
-    if(payload.fromFilter){
-      state.samples = [];
-      state.samples = samples;
-    } else {
-      let data = state.samples
-      state.samples = data.concat(samples);
-    }
-    
-    state.sampleCount = payload?.count;
-    state.pageInfo = payload?.samples?.pageInfo;
+    // if(payload.fromFilter){
+    //   state.samples = [];
+    //   state.samples = samples;
+    // } else {
+    //   let data = state.samples
+    //   state.samples = data.concat(samples);
+    // }
   },
 
   [MutationTypes.SET_SAMPLE](state: IState, payload: any): void {
@@ -340,6 +334,7 @@ export const actions = <ActionTree<IState, RootState>>{
   async [ActionTypes.RESET_SAMPLES]({ commit }) {
     commit(MutationTypes.RESET_SAMPLES);
   },
+
   async [ActionTypes.FETCH_SAMPLES]({ commit }, params){
     await urqlClient
     .query( GET_ALL_SAMPLES, { first: params.first, after: params.after, status: params.status, text: params.text, clientUid: params.clientUid})
@@ -347,7 +342,6 @@ export const actions = <ActionTree<IState, RootState>>{
     .then(result => {
       commit(MutationTypes.SET_SAMPLES, {
         samples: result.data.sampleAll,
-        count: result.data.sampleCount,
         fromFilter: params.filterAction,
       });
     })

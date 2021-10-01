@@ -12,8 +12,8 @@ export const GET_ALL_SAMPLE_TYPES = gql`
 }`;
 
 export const GET_ALL_ANALYSES_SERVICES = gql`
-  query getAllAnalysesServices {
-    analysisAll{
+  query getAllAnalysesServices($first: Int, $after: String, $text: String, $sortBy: [String!] = ["name"]) {
+    analysisAll(pageSize:$first, afterCursor:$after, text:$text, sortBy:$sortBy){
       items {
         uid
         name

@@ -42,11 +42,6 @@ add_patient_query = """
       consentSms: $consentSms   
   ) {
     uid
-    clientPatientId
-    patientId
-    firstName
-    middleName
-    lastName
   }
 }
 """

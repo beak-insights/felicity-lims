@@ -119,14 +119,14 @@ class ListingTaskUpdate(ListingTaskBase):
 class TaskMilestoneBase(BaseAuditModel):
     title: Optional[str] = ""
     done: Optional[bool] = False
-    task_uid: Optional[str] = ""
+    task_uid: Optional[int] = ""
     task: Optional[ListingTask] = ""
-    assignee_uid: Optional[str] = ""
+    assignee_uid: Optional[int] = ""
     assignee: Optional[User] = None
 
 
 class TaskMilestone(TaskMilestoneBase):
-    uid: Optional[str] = None
+    uid: Optional[int] = None
 
     class Config:
         orm_mode = True
@@ -145,12 +145,12 @@ class TaskMilestoneUpdate(TaskMilestoneBase):
 #
 class TaskCommentBase(BaseAuditModel):
     comment: Optional[str] = None
-    task_uid: Optional[str] = None
+    task_uid: Optional[int] = None
     task: Optional[ListingTask] = None
 
 
 class TaskComment(TaskCommentBase):
-    uid: Optional[str] = None
+    uid: Optional[int] = None
 
     class Config:
         orm_mode = True

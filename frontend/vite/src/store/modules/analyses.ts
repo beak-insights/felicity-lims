@@ -314,14 +314,8 @@ export const mutations = <MutationTree<IState>>{
   },
 
   // analysis services
-  [MutationTypes.SET_ANALYSES_SERVICES](state: IState, payload: any[]): void {
-    state.analysesServices = [];
-    let services =  parseEdgeNodeToList(payload);
-    services.forEach((service: IAnalysisService) => {
-      service.resultoptions = parseEdgeNodeToList(service?.resultoptions) || [];
-      service.profiles = parseEdgeNodeToList(service?.profiles) || [];
-    })
-    state.analysesServices = services;
+  [MutationTypes.SET_ANALYSES_SERVICES](state: IState, payload: any): void {
+    state.analysesServices = payload?.items;
   },
 
   [MutationTypes.UPDATE_ANALYSES_SERVICE](state: IState, payload: IAnalysisService): void {
@@ -445,9 +439,11 @@ export const actions = <ActionTree<IState, RootState>>{
   },
 
   // analysis services
-  async [ActionTypes.FETCH_ANALYSES_SERVICES]({ commit }){
-    await useQuery({ query: GET_ALL_ANALYSES_SERVICES })
-          .then(payload => commit(MutationTypes.SET_ANALYSES_SERVICES, payload.data.value.analysisAll));
+  async [ActionTypes.FETCH_ANALYSES_SERVICES]({ commit }, params){
+    await urqlClient
+          .query( GET_ALL_ANALYSES_SERVICES, { first: params.first, after: params.after, text: params.text, sortBy: params.sortBy})
+          .toPromise()
+          .then(result => commit(MutationTypes.SET_ANALYSES_SERVICES, result.data.analysisAll));
   },
 
   async [ActionTypes.UPDATE_ANALYSES_SERVICE]({ commit }, payload ){

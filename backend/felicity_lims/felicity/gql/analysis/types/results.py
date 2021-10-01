@@ -33,7 +33,7 @@ class AnalysisResultType:
     date_invalidated: datetime
     retest: bool
     reportable: bool
-    status: Optional[int]
+    status: Optional[str]
     created_by_uid: Optional[int]
     created_by: Optional[UserType]
     created_at: Optional[datetime]

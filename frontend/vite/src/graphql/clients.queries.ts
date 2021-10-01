@@ -1,8 +1,8 @@
 import gql from 'graphql-tag'
 
 export const GET_ALL_CLIENTS = gql`
-  query getAllClients {
-    clientAll {
+  query getAllClients($first: Int, $after: String, $text: String, $sortBy: [String!] = ["uid"]) {
+    clientAll(pageSize:$first, afterCursor:$after, text:$text, sortBy:$sortBy) {
       totalCount
       pageInfo {
         hasNextPage

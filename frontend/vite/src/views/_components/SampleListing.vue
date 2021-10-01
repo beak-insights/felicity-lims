@@ -298,20 +298,29 @@ export default defineComponent({
     let pageInfo = computed(() => store.getters.getPageInfo)
     let filterText = ref("");
     let filterStatus = ref("");
-    let sampleBatch = ref(25);
+
+    store.dispatch(SampleActionTypes.RESET_SAMPLES);
+    store.dispatch(SampleActionTypes.FETCH_SAMPLE_TYPES);
+
+    let analysesParams = reactive({ 
+      first: undefined, 
+      after: "",
+      text: "", 
+      sortBy: ["name"]
+    });
+    store.dispatch(ActionTypes.FETCH_ANALYSES_SERVICES, analysesParams);
+    store.dispatch(ActionTypes.FETCH_ANALYSES_PROFILES);
+
+
+    let sampleBatch = ref(50);
     let sampleParams = reactive({ 
       first: sampleBatch.value, 
       after: "",
       status: "", 
       text: "", 
-      clientUid: ifZeroEmpty(route?.query?.clientUid),
+      clientUid: +ifZeroEmpty(route?.query?.clientUid),
       filterAction: false
     });
-
-    store.dispatch(SampleActionTypes.RESET_SAMPLES);
-    store.dispatch(SampleActionTypes.FETCH_SAMPLE_TYPES);
-    store.dispatch(ActionTypes.FETCH_ANALYSES_SERVICES);
-    store.dispatch(ActionTypes.FETCH_ANALYSES_PROFILES);
     store.dispatch(SampleActionTypes.FETCH_SAMPLES, sampleParams);
     const samples = computed(() =>store.getters.getSamples)
 

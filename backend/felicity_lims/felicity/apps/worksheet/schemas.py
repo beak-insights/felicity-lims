@@ -26,7 +26,7 @@ class WorkSheetBase(BaseModel):
 
 
 class WorkSheetBaseInDB(WorkSheetBase):
-    uid: Optional[str] = None
+    uid: Optional[int] = None
 
     class Config:
         orm_mode = True
@@ -60,20 +60,20 @@ class WorkSheetInDB(WorkSheetBaseInDB):
 class WSTemplateBase(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    instrument_uid: Optional[str] = None
-    sample_type_uid: Optional[str] = None
+    instrument_uid: Optional[int] = None
+    sample_type_uid: Optional[int] = None
     analyses: List[Optional[int]] = []
     qc_analyses: List[Optional[int]] = []
     reserved: Optional[Dict] = {}
-    number_of_samples: Optional[str] = None
+    number_of_samples: Optional[int] = None
     worksheet_type: Optional[str] = 'flat'
-    rows: Optional[str] = None
-    cols: Optional[str] = None
+    rows: Optional[int] = None
+    cols: Optional[int] = None
     row_wise: Optional[bool] = True
 
 
 class WSTemplateBaseInDB(WSTemplateBase):
-    uid: Optional[str] = None
+    uid: Optional[int] = None
 
     class Config:
         orm_mode = True

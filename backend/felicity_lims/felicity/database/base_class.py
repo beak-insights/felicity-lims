@@ -1,11 +1,11 @@
-from typing import Dict, TypeVar, AsyncIterator, List, Any
+from typing import Dict, TypeVar, AsyncIterator, List, Any, Optional
 from base64 import b64decode, b64encode
 import logging
 from pydantic import BaseModel as PydanticBaseModel
 from sqlalchemy.future import select
 from sqlalchemy import Column, Integer
 from sqlalchemy.sql import func
-from sqlalchemy.orm import as_declarative, declared_attr
+from sqlalchemy.orm import selectinload, as_declarative, declared_attr
 from sqlalchemy import or_ as sa_or_
 from felicity.database.async_mixins import AllFeaturesMixin, TimestampsMixin, smart_query
 from felicity.database.paginator.cursor import PageCursor, EdgeNode, PageInfo
@@ -72,6 +72,25 @@ class DBModel(AllFeaturesMixin, TimestampsMixin):
         return found
 
     @classmethod
+    async def get_related(cls, related: Optional[list] = None, **kwargs):
+        """Return the the first value in database based on given args.
+        Example:
+            User.get(id=5)
+        """
+        try:
+            del kwargs['related']
+        except KeyError:
+            pass
+
+        stmt = cls.where(**kwargs)
+        if related:
+            stmt.options(selectinload(related))
+            logger.info(stmt)
+        results = await cls.session.execute(stmt)
+        found = results.scalars().first()
+        return found
+
+    @classmethod
     def _import(cls, schema_in: InDBSchemaType):
         """Convert Pydantic schema to dict"""
         if isinstance(schema_in, dict):
@@ -98,6 +117,12 @@ class DBModel(AllFeaturesMixin, TimestampsMixin):
         results = await cls.session.execute(stmt)
         found = results.scalars().first()
         return found
+
+    @classmethod
+    async def get_all(cls, **kwargs):
+        stmt = cls.where(**kwargs)
+        results = await cls.session.execute(stmt)
+        return results.scalars().all()
 
     @classmethod
     async def count_where(cls, filters):
