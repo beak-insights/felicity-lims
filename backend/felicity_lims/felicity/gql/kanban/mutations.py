@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 @strawberry.type
 class KanBanMutations:
     @strawberry.mutation
-    async def create_board(self, info, title: str, description: Optional[str], department_uid: Optional[int],
+    async def create_board(self, info, title: str, description: Optional[str] = None, department_uid: Optional[int] = None,
                            archived: Optional[bool] = False) -> types.BoardType:
 
         inspector = inspect.getargvalues(inspect.currentframe())
@@ -45,8 +45,8 @@ class KanBanMutations:
         return board
 
     @strawberry.mutation
-    async def update_board(self, info, uid: int, title: Optional[str], description: Optional[str],
-                           archived: Optional[bool], department_uid: Optional[int]) -> types.BoardType:
+    async def update_board(self, info, uid: int, title: Optional[str] = None, description: Optional[str] = None,
+                           archived: Optional[bool] = False, department_uid: Optional[int] = None) -> types.BoardType:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -103,7 +103,7 @@ class KanBanMutations:
         return board_uid
 
     @strawberry.mutation
-    async def create_board_listing(self, info, title: str, description: Optional[str], board_uid: int) -> types.BoardListingType:
+    async def create_board_listing(self, info, title: str, board_uid: int, description: Optional[str] = None) -> types.BoardListingType:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -131,7 +131,7 @@ class KanBanMutations:
         return listing
 
     @strawberry.mutation
-    async def update_board_listing(self, info, uid: int, title: Optional[str], description: Optional[str]) -> types.BoardListingType:
+    async def update_board_listing(self, info, uid: int, title: Optional[str] = None, description: Optional[str] = None) -> types.BoardListingType:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -188,7 +188,7 @@ class KanBanMutations:
         return listing_uid
 
     @strawberry.mutation
-    async def create_listing_task(self, info, title: str, description: Optional[str], listing_uid: int) -> types.ListingTaskType:
+    async def create_listing_task(self, info, title: str, listing_uid: int, description: Optional[str] = None) -> types.ListingTaskType:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -214,10 +214,10 @@ class KanBanMutations:
         return task
 
     @strawberry.mutation
-    async def update_listing_task(self, info, uid: int, title: Optional[str], description: Optional[str],
-                                  listing_uid: Optional[int], due_date: Optional[str], assignee_uid: Optional[int],
-                                  member_uids: List[int], tags: List[str], complete: Optional[bool],
-                                  archived: Optional[bool]) -> types.ListingTaskType:
+    async def update_listing_task(self, info, uid: int, title: Optional[str] = None, description: Optional[str] = None,
+                                  listing_uid: Optional[int] = None, due_date: Optional[str] = None, assignee_uid: Optional[int] = None,
+                                  member_uids: List[int] = None, tags: List[str] = None, complete: Optional[bool] = None,
+                                  archived: Optional[bool] = None) -> types.ListingTaskType:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -344,7 +344,7 @@ class KanBanMutations:
 
     @strawberry.mutation
     async def create_task_milestone(self, info, title: str, task_uid: int, assignee_uid: Optional[int],
-                                    done: Optional[bool]) -> types.TaskMilestoneType:
+                                    done: Optional[bool] = None) -> types.TaskMilestoneType:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)

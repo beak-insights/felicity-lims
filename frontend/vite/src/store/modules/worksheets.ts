@@ -255,11 +255,11 @@ export const actions = <ActionTree<IState, RootState>>{
   },
 
   async [ActionTypes.UPDATE_WORKSHEET_TEMPLATE]({ commit }, payload ){
-    commit(MutationTypes.UPDATE_WORKSHEET_TEMPLATE, payload.data.updateWorksheetTemplate.worksheetTemplate);
+    commit(MutationTypes.UPDATE_WORKSHEET_TEMPLATE, payload.data.updateWorksheetTemplate);
   },
 
   async [ActionTypes.ADD_WORKSHEET_TEMPLATE]({ commit }, payload ){
-    commit(MutationTypes.ADD_WORKSHEET_TEMPLATE, payload.data.createWorksheetTemplate.worksheetTemplate);
+    commit(MutationTypes.ADD_WORKSHEET_TEMPLATE, payload.data.createWorksheetTemplate);
   },
 
   // WorkSheetS
@@ -276,7 +276,7 @@ export const actions = <ActionTree<IState, RootState>>{
   },
 
   async [ActionTypes.ADD_WORKSHEET]({ commit }, payload ){
-    commit(MutationTypes.ADD_WORKSHEET, payload.data.createWorksheet.worksheet);
+    commit(MutationTypes.ADD_WORKSHEET, payload.data.createWorksheet);
   },
 
   async [ActionTypes.REMOVE_WORKSHEET]({ commit } ){

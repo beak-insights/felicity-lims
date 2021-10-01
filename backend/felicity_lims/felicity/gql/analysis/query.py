@@ -33,6 +33,12 @@ class AnalysisQuery:
                          sort_by: Optional[List[str]] = None) -> r_types.SampleCursorPage:
         filters = []
 
+        logger.info(f"page_size : {page_size}")
+        logger.info(f"text : {text}")
+        logger.info(f"status : {status}")
+        logger.info(f"client_uid : {client_uid}")
+        logger.info(f"sort_by : {sort_by}")
+
         _or_text_ = {}
         if has_value_or_is_truthy(text):
             arg_list = [
@@ -56,7 +62,10 @@ class AnalysisQuery:
 
         filters.append({'internal_use__ne': True})
 
+        logger.info(f"Filters 00 : {filters}")
+
         page = await a_models.Sample.paginate_with_cursors(
+            page_size=page_size,
             after_cursor=after_cursor,
             before_cursor=before_cursor,
             filters=filters,
@@ -131,6 +140,7 @@ class AnalysisQuery:
             filters.append({'category___name__exact': 'Quality Control'})
 
         page = await a_models.Analysis.paginate_with_cursors(
+            page_size=page_size,
             after_cursor=after_cursor,
             before_cursor=before_cursor,
             filters=filters,
@@ -177,6 +187,7 @@ class AnalysisQuery:
         filters.append({'internal_use__ne': True})
 
         page = await a_models.AnalysisRequest.paginate_with_cursors(
+            page_size=page_size,
             after_cursor=after_cursor,
             before_cursor=before_cursor,
             filters=filters,
@@ -236,6 +247,7 @@ class AnalysisQuery:
             filters.append(text_filters)
 
         page = await a_models.QCSet.paginate_with_cursors(
+            page_size=page_size,
             after_cursor=after_cursor,
             before_cursor=before_cursor,
             filters=filters,

@@ -32,7 +32,7 @@ class District(LocationBase):
         exists = await cls.get(code=district.code)
         if exists:
             raise Exception(f"District with code {district.code} already Exists")
-        data = await cls._import(district)
+        data = cls._import(district)
         return await super().create(**data)
 
     async def update(self, district: schemas.DistrictUpdate) -> schemas.District:

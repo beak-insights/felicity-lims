@@ -204,9 +204,8 @@ export const mutations = <MutationTree<IState>>{
   },
 
   // SAMPLE TYPES
-  [MutationTypes.SET_SAMPLE_TYPES](state: IState, payload: any[]): void {
-    state.sampleTypes = [];
-    state.sampleTypes = parseEdgeNodeToList(payload)
+  [MutationTypes.SET_SAMPLE_TYPES](state: IState, sampleTypes: any[]): void {
+    state.sampleTypes = sampleTypes;
   },
 
   [MutationTypes.UPDATE_SAMPLE_TYPE](state: IState, payload: ISampleType): void {
@@ -222,18 +221,20 @@ export const mutations = <MutationTree<IState>>{
   [MutationTypes.RESET_SAMPLES](state: IState): void {
     state.samples = [];
   },
+  
   [MutationTypes.SET_SAMPLES](state: IState, payload: any): void {
-    state.samples = payload.samples.items;
+    const samples = payload.samples.items;
+
+    if(payload.fromFilter){
+      state.samples = [];
+      state.samples = samples;
+    } else {
+      const data = state.samples
+      state.samples = data.concat(samples);
+    }
+
     state.sampleCount = payload.samples?.totalCount;
     state.pageInfo = payload.samples?.pageInfo;
-
-    // if(payload.fromFilter){
-    //   state.samples = [];
-    //   state.samples = samples;
-    // } else {
-    //   let data = state.samples
-    //   state.samples = data.concat(samples);
-    // }
   },
 
   [MutationTypes.SET_SAMPLE](state: IState, payload: any): void {
@@ -323,11 +324,11 @@ export const actions = <ActionTree<IState, RootState>>{
   },
 
   async [ActionTypes.UPDATE_SAMPLE_TYPE]({ commit }, payload ){
-    commit(MutationTypes.UPDATE_SAMPLE_TYPE, payload.data.updateSampleType.sampleType);
+    commit(MutationTypes.UPDATE_SAMPLE_TYPE, payload.data.updateSampleType);
   },
 
   async [ActionTypes.ADD_SAMPLE_TYPE]({ commit }, payload ){
-    commit(MutationTypes.ADD_SAMPLE_TYPE, payload.data.createSampleType.sampleType);
+    commit(MutationTypes.ADD_SAMPLE_TYPE, payload.data.createSampleType);
   },
 
   // SAMPLES
@@ -380,7 +381,7 @@ export const actions = <ActionTree<IState, RootState>>{
   },
 
   async [ActionTypes.UPDATE_ANALYSIS_RESULTS]({ commit }, payload){
-    commit(MutationTypes.UPDATE_ANALYSIS_RESULTS, payload.data.submitAnalysisResults.analysisResults);
+    commit(MutationTypes.UPDATE_ANALYSIS_RESULTS, payload.data.submitAnalysisResults);
   },
 
   // QC SETS
@@ -404,7 +405,7 @@ export const actions = <ActionTree<IState, RootState>>{
   },
 
   async [ActionTypes.ADD_QC_SETS]({ commit }, payload){
-    commit(MutationTypes.SET_QC_SETS, payload.data.createQcSet.qcSets);
+    commit(MutationTypes.SET_QC_SETS, payload.data.createQcSet);
   },
 
 };

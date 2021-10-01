@@ -58,14 +58,14 @@ class CreateQCSetData:
 @strawberry.type
 class AnalysisMutations:
     @strawberry.mutation
-    async def create_sample_type(self, info, name: str, abbr: str, description: Optional[str], 
+    async def create_sample_type(self, info, name: str, abbr: str, description: Optional[str] = None,
                                  internal_use: Optional[bool] = False, 
                                  active: Optional[bool] = True) -> a_types.SampleTypeTyp:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create sample types")
 
         if not name or not abbr:
@@ -84,14 +84,14 @@ class AnalysisMutations:
         return sample_type
 
     @strawberry.mutation
-    async def update_sample_type(self, info, uid: int, name: Optional[str], abbr: Optional[str],
-                                 description: Optional[str], internal_use: Optional[bool] = False,
-                                 active: Optional[bool] =True) -> a_types.SampleTypeTyp:
+    async def update_sample_type(self, info, uid: int, name: Optional[str] = None, abbr: Optional[str] = None,
+                                 description: Optional[str] = None, internal_use: Optional[bool] = False,
+                                 active: Optional[bool] = True) -> a_types.SampleTypeTyp:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update sample types")
 
         sample_type = await analysis_models.SampleType.get(uid=uid)
@@ -116,7 +116,7 @@ class AnalysisMutations:
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can add result options")
 
         if not analysis_uid:
@@ -138,12 +138,12 @@ class AnalysisMutations:
         return result_option
 
     @strawberry.mutation
-    async def update_result_option(self, info, uid: int, option_key: Optional[int], value: Optional[str]) -> a_types.ResultOptionType:
+    async def update_result_option(self, info, uid: int, option_key: Optional[int] = None, value: Optional[str] = None) -> a_types.ResultOptionType:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update result options")
 
         result_option = await analysis_models.ResultOption.get(uid=uid)
@@ -163,13 +163,13 @@ class AnalysisMutations:
         return result_option
 
     @strawberry.mutation
-    async def create_analysis_category(self, info, name: str, description: Optional[str],
-                                       active: Optional[bool] = True ) -> a_types.AnalysisCategoryType:
+    async def create_analysis_category(self, info, name: str, description: Optional[str] = None,
+                                       active: Optional[bool] = True) -> a_types.AnalysisCategoryType:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create analysis categories")
 
         if not name or not description:
@@ -188,13 +188,13 @@ class AnalysisMutations:
         return analysis_category
 
     @strawberry.mutation
-    async def update_analysis_category(self, info, uid: int, name: Optional[str], description: Optional[str],
-                                       active: Optional[bool]) -> a_types.AnalysisCategoryType: # noqa
+    async def update_analysis_category(self, info, uid: int, name: Optional[str] = None, description: Optional[str] = None,
+                                       active: Optional[bool] = False) -> a_types.AnalysisCategoryType: # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update analysis categories")
 
         analysis_category = await analysis_models.AnalysisCategory.get(uid=uid)
@@ -214,12 +214,12 @@ class AnalysisMutations:
         return analysis_category
 
     @strawberry.mutation
-    async def create_profile(self, info, name: str, description: str, keyword: Optional[str], active: Optional[bool] = True) -> a_types.ProfileType:
+    async def create_profile(self, info, name: str, description: str, keyword: Optional[str] = None, active: Optional[bool] = True) -> a_types.ProfileType:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create analysis profiles")
 
         if not name or not description:
@@ -234,13 +234,13 @@ class AnalysisMutations:
         return profile
 
     @strawberry.mutation
-    async def update_profile(self, info, uid: int, name: Optional[str], description: Optional[str],
-                             keyword: Optional[str], services: Optional[List[int]], active: Optional[bool] = True) -> a_types.ProfileType:
+    async def update_profile(self, info, uid: int, name: Optional[str] = None, description: Optional[str] = None,
+                             keyword: Optional[str] = None, services: Optional[List[int]] = None, active: Optional[bool] = True) -> a_types.ProfileType:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update analysis profiles")
 
         profile = await analysis_models.Profile.get(uid=uid)
@@ -271,13 +271,13 @@ class AnalysisMutations:
 
     @strawberry.mutation
     async def create_analysis(self, info, name: str, description: str, keyword: str, sort_key: int,
-                              sample_types: List[str], category_uid: Optional[int], internal_use: Optional[bool] = False,
+                              sample_types: List[str] = None, category_uid: Optional[int] = None, internal_use: Optional[bool] = False,
                               active: Optional[bool] = True) -> a_types.AnalysisWithProfiles:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create analysis")
 
         if not name or not description:
@@ -309,13 +309,13 @@ class AnalysisMutations:
 
     @strawberry.mutation
     async def update_analysis(self, info, uid: int, name: str, description: str, keyword: str, sort_key: int,
-                              sample_types: List[str], category_uid: Optional[int], internal_use: Optional[bool] = False,
+                              sample_types: List[str] = None, category_uid: Optional[int] = None, internal_use: Optional[bool] = False,
                               active: Optional[bool] = True) -> a_types.AnalysisWithProfiles:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update analysis")
 
         analysis = await analysis_models.Analysis.get(uid=uid)
@@ -343,8 +343,8 @@ class AnalysisMutations:
         return analysis
 
     @strawberry.mutation
-    async def create_analysis_request(self, info, patient_uid: int, client_uid: int, samples: List[ARSampleInputType],
-                     client_request_id: Optional[str], internal_use: Optional[bool] = False,
+    async def create_analysis_request(self, info, patient_uid: int, client_uid: int, samples: List[ARSampleInputType] = None,
+                     client_request_id: Optional[str] = None, internal_use: Optional[bool] = False,
                      priority: int = priorities.sample.NORMAL) -> a_types.AnalysisRequestWithSamples:
 
         inspector = inspect.getargvalues(inspect.currentframe())
@@ -429,13 +429,13 @@ class AnalysisMutations:
         return analysisrequest
 
     @strawberry.mutation
-    async def update_analysis_request(self, info, uid: int, patient_uid: Optional[int], client_uid: Optional[int],
-                                      client_request_id: Optional[str], internal_use: Optional[bool] = False) -> a_types.AnalysisRequestWithSamples:
+    async def update_analysis_request(self, info, uid: int, patient_uid: Optional[int] = None, client_uid: Optional[int] = None,
+                                      client_request_id: Optional[str] = None, internal_use: Optional[bool] = False) -> a_types.AnalysisRequestWithSamples:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update analysis requests")
 
         analysis_request = await analysis_models.AnalysisRequest.get(uid=uid)
@@ -455,13 +455,13 @@ class AnalysisMutations:
         return analysis_request
 
     @strawberry.mutation
-    async def update_sample(self, info, uid: int, sampletype_uid: Optional[int], profiles: List[int],
-                            analyses: List[int], internal_use: Optional[bool], cancel: Optional[bool] = False) -> a_types.SampleType:
+    async def update_sample(self, info, uid: int, sampletype_uid: Optional[int] = None, profiles: List[int] = None,
+                            analyses: List[int] = None, internal_use: Optional[bool] = False, cancel: Optional[bool] = False) -> a_types.SampleType:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update samples")
 
         sample = await analysis_models.Sample.get(uid=uid)
@@ -482,7 +482,7 @@ class AnalysisMutations:
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can submit analysis results")
 
         return_results = []
@@ -551,7 +551,7 @@ class AnalysisMutations:
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can verify analysis results")
 
         return_results = []
@@ -594,7 +594,7 @@ class AnalysisMutations:
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can retract analysis results")
 
         return_results = []
@@ -633,7 +633,7 @@ class AnalysisMutations:
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can retest analysis results")
 
         return_results = []
@@ -663,7 +663,7 @@ class AnalysisMutations:
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create qc-sets")
 
         if not samples or len(samples) == 0:
@@ -749,7 +749,7 @@ class AnalysisMutations:
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create qc-levels")
 
         if not level:
@@ -789,12 +789,12 @@ class AnalysisMutations:
         return qc_level
 
     @strawberry.mutation
-    async def create_QC_template(self, info, name: str, description: str, departments: List[int], levels: List[int] ) -> a_types.QCTemplateType:
+    async def create_QC_template(self, info, name: str, description: str, departments: List[int] = None, levels: List[int] = None) -> a_types.QCTemplateType:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create qc-templates")
 
         if not name:
@@ -832,13 +832,13 @@ class AnalysisMutations:
         return qc_template
 
     @strawberry.mutation
-    async def update_QC_template(self, info, uid: int, name: Optional[str], description: Optional[str],
-                                 departments: List[int], levels: List[int]) -> a_types.QCTemplateType:
+    async def update_QC_template(self, info, uid: int, name: Optional[str] = None, description: Optional[str] = None,
+                                 departments: List[int] = None, levels: List[int] = None) -> a_types.QCTemplateType:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
         
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update qc-templates")
 
         qc_template = await qc_models.QCTemplate.get(uid=uid)

@@ -36,7 +36,7 @@ class MarkdownMutations:
         return tag
 
     @strawberry.mutation
-    async def update_document_tag(self, info, uid: int, name: Optional[str]) -> types.DocumentTagType:  # noqa
+    async def update_document_tag(self, info, uid: int, name: Optional[str] = None) -> types.DocumentTagType:  # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -82,7 +82,7 @@ class MarkdownMutations:
         return category
 
     @strawberry.mutation
-    async def update_document_category(self, info, uid: int, name: Optional[str]) -> types.DocumentCategoryType:  # noqa
+    async def update_document_category(self, info, uid: int, name: Optional[str] = None) -> types.DocumentCategoryType:  # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -107,9 +107,9 @@ class MarkdownMutations:
         return category
 
     @strawberry.mutation
-    async def create_document(self, info, name: str, subtitle: Optional[str], document_id: Optional[str],  # noqa
-                              version: Optional[str], department_uid: Optional[int], category_uid: Optional[int],  # noqa
-                              tags_uids: Optional[List[int]]) -> types.DocumentType:  # noqa
+    async def create_document(self, info, name: str, subtitle: Optional[str] = None, document_id: Optional[str] = None,  # noqa
+                              version: Optional[str] = None, department_uid: Optional[int] = None, category_uid: Optional[int] = None,  # noqa
+                              tags_uids: Optional[List[int]] = None) -> types.DocumentType:  # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -142,9 +142,9 @@ class MarkdownMutations:
         return document
 
     @strawberry.mutation
-    async def update_document(root, info, uid: int, name: Optional[str], subtitle: Optional[str], document_id: Optional[str],  # noqa
-                        version: Optional[str], department_uid: Optional[int], category_uid: Optional[int],  # noqa
-                        tags_uids: Optional[List[int]], content: Optional[str]) -> types.DocumentType:  # noqa
+    async def update_document(root, info, uid: int, name: Optional[str] = None, subtitle: Optional[str] = None, document_id: Optional[str] = None,  # noqa
+                        version: Optional[str] = None, department_uid: Optional[int] = None, category_uid: Optional[int] = None,  # noqa
+                        tags_uids: Optional[List[int]] = None, content: Optional[str] = None) -> types.DocumentType:  # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)

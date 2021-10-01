@@ -243,7 +243,7 @@ class SetupQuery:
 
     @strawberry.field
     async def districts_by_province_uid(self, info, uid: int) -> List[DistrictType]:
-        districts = await models.District.where(province_uid__exact=uid).all()
+        districts = await models.District.get_all(province_uid__exact=uid)
         return districts
 
     province_all: ProvinceCursorPage = strawberry.field(resolver=get_all_provinces)
@@ -255,7 +255,7 @@ class SetupQuery:
 
     @strawberry.field
     async def provinces_by_country_uid(self, info, uid: int) -> List[ProvinceType]:
-        provinces = await models.Province.where(country_uid__exact=uid).all()
+        provinces = await models.Province.get_all(country_uid__exact=uid)
         return provinces
 
     country_all: List[CountryType] = strawberry.field(resolver=get_all_countries)

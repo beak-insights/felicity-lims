@@ -24,9 +24,9 @@ logger = logging.getLogger(__name__)
 @strawberry.type
 class SetupMutations:
     @strawberry.mutation
-    async def create_laboratory(self, info, lab_name: str, email: Optional[str], email_cc: Optional[str],  # noqa
-                                mobile_phone: Optional[str], business_phone: Optional[str],  # noqa
-                                lab_manager_uid: Optional[int],  # noqa
+    async def create_laboratory(self, info, lab_name: str, email: Optional[str] = None, email_cc: Optional[str] = None,  # noqa
+                                mobile_phone: Optional[str] = None, business_phone: Optional[str] = None,  # noqa
+                                lab_manager_uid: Optional[int] = None,  # noqa
                                 setup_name: str = "felicity") -> LaboratoryType:  # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
@@ -49,9 +49,9 @@ class SetupMutations:
         return laboratory
 
     @strawberry.mutation
-    async def update_laboratory(self, info, uid: int, lab_name: str, email: Optional[str], email_cc: Optional[str],  # noqa
-                                mobile_phone: Optional[str], business_phone: Optional[str],  # noqa
-                                lab_manager_uid: Optional[int], setup_name: Optional[str]) -> LaboratoryType:  # noqa
+    async def update_laboratory(self, info, uid: int, lab_name: str, email: Optional[str] = None, email_cc: Optional[str] = None,  # noqa
+                                mobile_phone: Optional[str] = None, business_phone: Optional[str] = None,  # noqa
+                                lab_manager_uid: Optional[int] = None, setup_name: Optional[str] = None) -> LaboratoryType:  # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -76,8 +76,8 @@ class SetupMutations:
         return laboratory
 
     @strawberry.mutation
-    async def create_department(root, info, name: str, description: Optional[str],  # noqa
-                                code: Optional[str]) -> DepartmentType:  # noqa
+    async def create_department(root, info, name: str, description: Optional[str] = None,  # noqa
+                                code: Optional[str] = None) -> DepartmentType:  # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -85,7 +85,7 @@ class SetupMutations:
         if not name:
             raise Exception("Please Provide a name for your department")
 
-        exists = models.Department.get(name=name)
+        exists = await models.Department.get(name=name)
         if exists:
             raise Exception(f"A Department named {name} already exists")
 
@@ -98,8 +98,8 @@ class SetupMutations:
         return department
 
     @strawberry.mutation
-    async def update_department(self, info, uid: int, name: Optional[str], description: Optional[str],  # noqa
-                                code: Optional[str]) -> DepartmentType:  # noqa
+    async def update_department(self, info, uid: int, name: Optional[str] = None, description: Optional[str] = None,  # noqa
+                                code: Optional[str] = None) -> DepartmentType:  # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -124,7 +124,7 @@ class SetupMutations:
         return department
 
     @strawberry.mutation
-    async def create_supplier(self, info, name: str, description: Optional[str], code: Optional[str]) -> SupplierType:  # noqa
+    async def create_supplier(self, info, name: str, description: Optional[str] = None, code: Optional[str] = None) -> SupplierType:  # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -145,8 +145,8 @@ class SetupMutations:
         return supplier
 
     @strawberry.mutation
-    async def update_supplier(self, info, uid: int, name: Optional[str], description: Optional[str],  # noqa
-                              code: Optional[str]) -> SupplierType:  # noqa
+    async def update_supplier(self, info, uid: int, name: Optional[str] = None, description: Optional[str] = None,  # noqa
+                              code: Optional[str] = None) -> SupplierType:  # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -171,8 +171,8 @@ class SetupMutations:
         return supplier
 
     @strawberry.mutation
-    async def create_instrument(self, info, name: str, keyword: str, description: Optional[str],  # noqa
-                                supplier_uid: Optional[int]) -> InstrumentType:  # noqa
+    async def create_instrument(self, info, name: str, keyword: str, description: Optional[str] = None,  # noqa
+                                supplier_uid: Optional[int] = None) -> InstrumentType:  # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -197,9 +197,9 @@ class SetupMutations:
         return instrument
 
     @strawberry.mutation
-    async def update_instrument(self, info, uid: int, name: Optional[str], keyword: Optional[str],  # noqa
-                                description: Optional[str],  # noqa
-                                supplier_uid: Optional[int]) -> InstrumentType:  # noqa
+    async def update_instrument(self, info, uid: int, name: Optional[str] = None, keyword: Optional[str] = None,  # noqa
+                                description: Optional[str] = None,  # noqa
+                                supplier_uid: Optional[int] = None) -> InstrumentType:  # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -230,7 +230,7 @@ class SetupMutations:
         return instrument
 
     @strawberry.mutation
-    async def create_method(self, info, name: str, keyword: Optional[str], description: Optional[str]) -> MethodType:  # noqa
+    async def create_method(self, info, name: str, keyword: Optional[str] = None, description: Optional[str] = None) -> MethodType:  # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -257,8 +257,8 @@ class SetupMutations:
         return method
 
     @strawberry.mutation
-    async def update_method(self, info, uid: int, name: Optional[str], keyword: Optional[str],  # noqa
-                            description: Optional[str]) -> MethodType:  # noqa
+    async def update_method(self, info, uid: int, name: Optional[str] = None, keyword: Optional[str] = None,  # noqa
+                            description: Optional[str] = None) -> MethodType:  # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -310,7 +310,7 @@ class SetupMutations:
         return country
 
     @strawberry.mutation
-    async def update_country(self, info, uid: int, name: Optional[str], code: Optional[str],  # noqa
+    async def update_country(self, info, uid: int, name: Optional[str] = None, code: Optional[str] = None,  # noqa
                              active: Optional[bool] = True) -> CountryType:  # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
@@ -336,10 +336,9 @@ class SetupMutations:
         return country
 
     @strawberry.mutation
-    async def create_province(self, info, name: str, code: str, country_uid: Optional[int], email: Optional[str],  # noqa
-                              email_cc: Optional[str], consent_email: Optional[bool], mobile_phone: Optional[str],  # noqa
-                              business_phone: Optional[str], consent_sms: Optional[str],  # noqa
-                              active: Optional[bool] = True) -> ProvinceType:  # noqa
+    async def create_province(self, info, name: str, code: str, country_uid: Optional[int], email: Optional[str] = None,  # noqa
+                              email_cc: Optional[str] = None, mobile_phone: Optional[str] = None,  # noqa
+                              business_phone: Optional[str] = None, active: Optional[bool] = True) -> ProvinceType:  # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -360,9 +359,9 @@ class SetupMutations:
         return province
 
     @strawberry.mutation
-    async def update_province(self, info, uid: int, name: Optional[str], code: Optional[str], country_uid: Optional[int],  # noqa
-                     email: Optional[str], email_cc: Optional[str], consent_email: Optional[bool],  # noqa
-                     mobile_phone: Optional[str], business_phone: Optional[str], consent_sms: Optional[str],  # noqa
+    async def update_province(self, info, uid: int, name: Optional[str] = None, code: Optional[str] = None, country_uid: Optional[int] = None,  # noqa
+                     email: Optional[str] = None, email_cc: Optional[str] = None, # noqa
+                     mobile_phone: Optional[str] = None, business_phone: Optional[str] = None,  # noqa
                      active: Optional[bool] = True) -> ProvinceType:  # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
@@ -388,9 +387,9 @@ class SetupMutations:
         return province
 
     @strawberry.mutation
-    async def create_district(self, info, name: str, code: Optional[str], province_uid: Optional[int],  # noqa
-                              email: Optional[str], email_cc: Optional[str], mobile_phone: Optional[str],  # noqa
-                              business_phone: Optional[str], active: Optional[bool] = True) -> DistrictType:  # noqa
+    async def create_district(self, info, name: str, code: Optional[str] = None, province_uid: Optional[int] = None,  # noqa
+                              email: Optional[str] = None, email_cc: Optional[str] = None, mobile_phone: Optional[str] = None,  # noqa
+                              business_phone: Optional[str] = None, active: Optional[bool] = True) -> DistrictType:  # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
@@ -411,9 +410,9 @@ class SetupMutations:
         return district
 
     @strawberry.mutation
-    async def update_district(self, info, uid: int, name: str, code: Optional[str], province_uid: Optional[int],  # noqa
-                              email: Optional[str], email_cc: Optional[str], mobile_phone: Optional[str],  # noqa
-                              business_phone: Optional[str], active: Optional[bool] = True) -> DistrictType:  # noqa
+    async def update_district(self, info, uid: int, name: str, code: Optional[str] = None, province_uid: Optional[int] = None,  # noqa
+                              email: Optional[str] = None, email_cc: Optional[str] = None, mobile_phone: Optional[str] = None,  # noqa
+                              business_phone: Optional[str] = None, active: Optional[bool] = True) -> DistrictType:  # noqa
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
