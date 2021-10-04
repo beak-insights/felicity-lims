@@ -78,8 +78,8 @@ class QCTemplate(DBModel):
     """
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
-    departments = relationship(Department, secondary=qctdlink, backref="qc_templates")
-    qc_levels = relationship(QCLevel, secondary=qctqcllink, backref="qc_templates")
+    departments = relationship(Department, secondary=qctdlink, backref="qc_templates", lazy="selectin")
+    qc_levels = relationship(QCLevel, secondary=qctqcllink, backref="qc_templates", lazy="selectin")
 
     @classmethod
     async def create(cls, obj_in: schemas.QCTemplateCreate) -> schemas.QCTemplate:

@@ -50,7 +50,7 @@ export const EDIT_RESULT_OPTION= gql`
 
 // ANALYSIS_SERVICE
 export const ADD_ANALYSIS_SERVICE= gql`
-  mutation AddAnalysisService ($name: String!, $keyword: String!, $active: Boolean!, $internalUse: Boolean, $description: String!, $categoryUid: Int, $sortKey: Int!, $sampleTypes: [String!]!) {
+  mutation AddAnalysisService ($name: String!, $keyword: String!, $active: Boolean!, $internalUse: Boolean, $description: String!, $categoryUid: Int, $sortKey: Int!, $sampleTypes: [Int!]) {
     createAnalysis(name: $name, keyword: $keyword, active: $active, internalUse: $internalUse, description: $description, sortKey: $sortKey, categoryUid: $categoryUid, sampleTypes:$sampleTypes){
       uid
       name
@@ -385,16 +385,16 @@ export const ADD_QC_TEMPLATE = gql`
   mutation AddQCTemplate ($name: String!, $description: String!, $levels: [Int!]!, $departments: [Int!]!) {
     createQcTemplate(name: $name, description: $description, levels: $levels, departments: $departments ){
         uid
-          name
-          description
-          qcLevels {
-                uid
-                level
-          }
-          departments {
-                uid
-                name
-          }
+        name
+        description
+        qcLevels {
+              uid
+              level
+        }
+        departments {
+              uid
+              name
+        }
   }
   }
 `;

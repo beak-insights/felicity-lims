@@ -122,7 +122,7 @@ export const actions = <ActionTree<IState, RootState>>{
   },
 
   async [ActionTypes.ADD_PATIENT]({ commit }, payload: any){
-    commit(MutationTypes.ADD_PATIENT, payload.data.createPatient.patient);
+    commit(MutationTypes.ADD_PATIENT, payload.data.createPatient);
   },
 
   async [ActionTypes.FETCH_PATIENTS]({ commit }, params){

@@ -72,6 +72,27 @@ class DBModel(AllFeaturesMixin, TimestampsMixin):
         return found
 
     @classmethod
+    async def create(cls, **kwargs):
+        """Returns a new get instance of the class
+        This is so that mutations can work well and prevent asyc IO issues
+        """
+        fill = cls().fill(**kwargs)
+        created = await cls.save(fill)
+        if created:
+            created = await cls.get(uid=created.uid)
+        return created
+
+    async def update(self, **kwargs):
+        """Returns a new get instance of the class
+        This is so that mutations can work well and prevent asyc IO issues
+        """
+        fill = self.fill(**kwargs)
+        updated = await fill.save()
+        if updated:
+            updated = await self.get(uid=updated.uid)
+        return updated
+
+    @classmethod
     async def get_related(cls, related: Optional[list] = None, **kwargs):
         """Return the the first value in database based on given args.
         Example:

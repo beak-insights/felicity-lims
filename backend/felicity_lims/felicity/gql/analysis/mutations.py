@@ -271,7 +271,7 @@ class AnalysisMutations:
 
     @strawberry.mutation
     async def create_analysis(self, info, name: str, description: str, keyword: str, sort_key: int,
-                              sample_types: List[str] = None, category_uid: Optional[int] = None, internal_use: Optional[bool] = False,
+                              sample_types: Optional[List[int]] = None, category_uid: Optional[int] = None, internal_use: Optional[bool] = False,
                               active: Optional[bool] = True) -> a_types.AnalysisWithProfiles:
 
         inspector = inspect.getargvalues(inspect.currentframe())
@@ -305,11 +305,12 @@ class AnalysisMutations:
 
         obj_in = schemas.AnalysisCreate(**incoming)  # skip this stage if its not adding analyses and stypes
         analysis: analysis_models.Analysis = await analysis_models.Analysis.create(obj_in)
+
         return analysis
 
     @strawberry.mutation
     async def update_analysis(self, info, uid: int, name: str, description: str, keyword: str, sort_key: int,
-                              sample_types: List[str] = None, category_uid: Optional[int] = None, internal_use: Optional[bool] = False,
+                              sample_types: Optional[List[str]] = None, category_uid: Optional[int] = None, internal_use: Optional[bool] = False,
                               active: Optional[bool] = True) -> a_types.AnalysisWithProfiles:
 
         inspector = inspect.getargvalues(inspect.currentframe())
