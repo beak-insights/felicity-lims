@@ -1,5 +1,6 @@
 from datetime import datetime
-from typing import Optional, List
+import json
+from typing import Optional, List, Any, NewType
 
 import strawberry
 
@@ -10,12 +11,20 @@ from felicity.gql.setup.types import InstrumentType
 from felicity.gql.user.types import UserType
 
 
+JSONScalar = strawberry.scalar(
+    NewType("JSONScalar", Any),
+    serialize=lambda v: v,
+    parse_value=lambda v: json.loads(v),
+    description="The GenericScalar scalar type represents a generic GraphQL scalar value that could be: List or Object."
+)
+
+
 @strawberry.type
 class WorkSheetTemplateType:
     uid: int
     worksheet_type: str
-    reserved: str
-    plate: str
+    reserved: Optional[JSONScalar]
+    plate: Optional[JSONScalar]
     number_of_samples: Optional[int]
     rows: Optional[int]
     cols: Optional[int]
@@ -38,8 +47,8 @@ class WorkSheetTemplateType:
 class WorkSheetType:
     uid: int
     worksheet_type: str
-    reserved: str
-    plate: str
+    reserved: Optional[JSONScalar]
+    plate: Optional[JSONScalar]
     number_of_samples: Optional[int]
     rows: Optional[int]
     cols: Optional[int]

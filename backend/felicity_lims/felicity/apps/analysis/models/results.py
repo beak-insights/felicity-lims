@@ -21,9 +21,9 @@ class AnalysisResult(Auditable, BaseMPTT):
     the number of linked sample_analyses at minimum :)
     """
     sample_uid = Column(Integer, ForeignKey('sample.uid'), nullable=False)
-    sample = relationship(analysis_models.Sample, backref="analysis_results", lazy="selectin")
+    sample = relationship(analysis_models.Sample, back_populates="analysis_results", lazy="selectin")
     worksheet_uid = Column(Integer, ForeignKey('worksheet.uid'), nullable=True)
-    worksheet = relationship(ws_models.WorkSheet, backref="analysis_results", lazy="selectin")
+    worksheet = relationship(ws_models.WorkSheet, back_populates="analysis_results", lazy="selectin")
     worksheet_position = Column(Integer, nullable=True)
     assigned = Column(Boolean(), default=False)
     analysis_uid = Column(Integer, ForeignKey('analysis.uid'), nullable=False)

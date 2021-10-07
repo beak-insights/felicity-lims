@@ -68,13 +68,16 @@ class AuditLog(DBModel):
         state_after = json.dumps(state_after) if state_after else json.dumps({})
         state_before = json.dumps(state_before) if state_before else json.dumps({})
 
-        logger.info(f"saving audit log: state_after: {state_after} state_before: {state_before}")
         connection.execute(
             self.__table__.insert(),
-            user_id=self.user_id,
-            target_type=self.target_type,
-            target_id=self.target_id,
-            action=self.action,
-            state_before=state_before,
-            state_after=state_after
+            [
+                {
+                    'user_id':self.user_id,
+                    'target_type':self.target_type,
+                    'target_id':self.target_id,
+                    'action':self.action,
+                    'state_before':state_before,
+                    'state_after':state_after,
+                }
+            ]
         )

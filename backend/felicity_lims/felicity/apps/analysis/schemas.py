@@ -176,7 +176,7 @@ class AnalysisInDB(AnalysisBaseInDB):
 class ResultOptionBase(BaseAuditModel):
     option_key: Optional[int] = None
     value: Optional[str] = None
-    analysis_uid: Optional[str] = None
+    analysis_uid: Optional[int] = None
 
 
 class ResultOptionBaseInDB(ResultOptionBase):

@@ -1,6 +1,7 @@
 from typing import Optional, Dict, List
 
 from pydantic import BaseModel
+from felicity.apps.analysis.schemas import AnalysisBaseInDB, QCLevelInDB
 
 
 # 
@@ -14,6 +15,7 @@ class WorkSheetBase(BaseModel):
     worksheet_id: Optional[str] = None
     instrument_uid: Optional[int] = None
     sample_type_uid: Optional[int] = None
+    analyses: Optional[List[AnalysisBaseInDB]] = []
     analyses_uid: Optional[int] = None
     reserved: Optional[Dict] = {}
     number_of_samples: Optional[int] = None
@@ -62,8 +64,9 @@ class WSTemplateBase(BaseModel):
     description: Optional[str] = None
     instrument_uid: Optional[int] = None
     sample_type_uid: Optional[int] = None
-    analyses: List[Optional[int]] = []
-    qc_analyses: List[Optional[int]] = []
+    analyses: Optional[List[AnalysisBaseInDB]] = []
+    qc_analyses: Optional[List[AnalysisBaseInDB]] = []
+    qc_levels: Optional[List[QCLevelInDB]] = []
     reserved: Optional[Dict] = {}
     number_of_samples: Optional[int] = None
     worksheet_type: Optional[str] = 'flat'

@@ -53,12 +53,12 @@ ar_variables = [  # list of lists - each list will be run in its own thread -> s
     [
         {
             "clientRequestId": engine.ssn(),
-            "clientUid": random.choice([1,2]),
-            "patientUid": random.randint(50, 2100),
+            "clientUid": random.randint(1, 9),
+            "patientUid": random.randint(5, 1650),
             "priority":random.choice([0, 1]),
             "samples": [gen_sample() for _x in range(random.randint(1, 5))],
-        } for i in range(10000)
-    ] for x in range(2)
+        } for i in range(100)
+    ] for x in range(10)
 ]
 
 # def do_work1(var_list):

@@ -37,6 +37,8 @@ async def populate_worksheet_plate(job_uid: int):
         logger.warning(f"Failed to acquire WorkSheet {ws_uid}")
         return
 
+    await ws.reset_assigned_count()
+
     # Don't handle processed worksheets
     if ws.state in [conf.worksheet_states.TO_BE_VERIFIED, conf.worksheet_states.VERIFIED]:
         await job.change_status(new_status=job_states.FAILED, change_reason=f"WorkSheet {ws_uid} - is already processed")
@@ -44,7 +46,8 @@ async def populate_worksheet_plate(job_uid: int):
         return
 
     # Enforce WS with at least a processed sample
-    if ws.has_processed_samples():
+    has_processed_samples = await ws.has_processed_samples()
+    if has_processed_samples:
         await job.change_status(new_status=job_states.FAILED, change_reason=f"WorkSheet {ws_uid} - contains at least a "
                                                                       f"processed sample")
         logger.warning(f"WorkSheet {ws_uid} - contains at least a processed sample")
@@ -59,7 +62,7 @@ async def populate_worksheet_plate(job_uid: int):
 
     logger.info(f"Filtering samples by template criteria ...")
     # get sample, filtered by analysis_service and Sample Type
-    samples = await AnalysisResult.smart_query(
+    samples_stmt = AnalysisResult.smart_query(
         filters={
             'status__exact': analysis_conf.states.result.PENDING,
             'assigned__exact': False,
@@ -68,7 +71,9 @@ async def populate_worksheet_plate(job_uid: int):
             'sample___sampletype_uid__exact': ws.sample_type_uid,
         },
         sort_attrs=['-sample___priority', '-created_at']
-    ).all()
+    )
+
+    samples = (await AnalysisResult.session.execute(samples_stmt)).scalars().all()
 
     available_samples = len(samples)
     logger.info(f"Done filtering: Got {available_samples} samples available ...")
@@ -165,7 +170,7 @@ async def setup_ws_quality_control(ws):
     reserved_pos = ws.reserved
     if ws.template.qc_levels:
         # if ws has qc set, then retrieve
-        _a_res = await AnalysisResult.where(worksheet_uid=ws.uid).all()
+        _a_res = await AnalysisResult.get_all(worksheet_uid=ws.uid)
         _qc_sets = []
 
         for _a_r in _a_res:

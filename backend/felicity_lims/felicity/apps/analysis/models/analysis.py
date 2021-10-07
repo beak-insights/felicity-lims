@@ -210,10 +210,11 @@ class Sample(Auditable, BaseMPTT):
     analysisrequest_uid = Column(Integer, ForeignKey('analysisrequest.uid'), nullable=True)
     analysisrequest = relationship('AnalysisRequest', back_populates="samples", lazy='selectin')
     sampletype_uid = Column(Integer, ForeignKey('sampletype.uid'), nullable=False)
-    sampletype = relationship('SampleType', backref="samples", lazy='joined')
+    sampletype = relationship('SampleType', backref="samples", lazy='selectin')
     sample_id = Column(String, index=True, unique=True, nullable=True)
     profiles = relationship(Profile, secondary=splink, backref="samples", lazy='selectin')
     analyses = relationship(Analysis, secondary=salink, backref="samples", lazy='selectin')
+    analysis_results = relationship("AnalysisResult", back_populates="sample", lazy='selectin')
     priority = Column(Integer, nullable=False, default=0)
     status = Column(String, nullable=False)
     assigned = Column(Boolean(), default=False)
@@ -230,7 +231,7 @@ class Sample(Auditable, BaseMPTT):
     internal_use = Column(Boolean(), default=False)
     # QC Samples
     qc_set_uid = Column(Integer, ForeignKey('qcset.uid'), nullable=True)
-    qc_set = relationship(QCSet, backref="samples", lazy='selectin')
+    qc_set = relationship(QCSet, back_populates="samples", lazy='selectin')
     qc_level_uid = Column(Integer, ForeignKey('qclevel.uid'), nullable=True)
     qc_level = relationship(QCLevel, backref="qcsamples", lazy='selectin')
 

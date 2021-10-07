@@ -67,20 +67,20 @@ class WorkSheetQuery:
 
     @strawberry.field
     async def worksheet_by_analyst(self, info, analyst_uid: int) -> List[WorkSheetType]:
-        return await ws_models.WorkSheet.where(analyst_uid=analyst_uid)
+        return await ws_models.WorkSheet.get_all(analyst_uid=analyst_uid)
 
     @strawberry.field
     async def worksheet_by_uid(self, info, worksheet_uid: int) -> WorkSheetType:
-        return await ws_models.WorkSheet.where(worksheet_uid=worksheet_uid)
+        return await ws_models.WorkSheet.get(uid=worksheet_uid)
 
     @strawberry.field
     async def worksheet_by_id(self, info, worksheet_id: int) -> WorkSheetType:
-        return await ws_models.WorkSheet.where(worksheet_id=worksheet_id)
+        return await ws_models.WorkSheet.get(worksheet_id=worksheet_id)
 
     @strawberry.field
     async def worksheet_by_status(self, info, worksheet_status: str) -> List[WorkSheetType]:
-        return await ws_models.WorkSheet.where(status__exact=worksheet_status)
+        return await ws_models.WorkSheet.get_all(status__exact=worksheet_status)
 
     @strawberry.field
     async def worksheet_template_by_uid(self, info, worksheet_uid: int) -> List[WorkSheetType]:
-        return await ws_models.WorkSheet.where(uid=worksheet_uid)
+        return await ws_models.WorkSheet.get_all(uid=worksheet_uid)

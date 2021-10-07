@@ -12,7 +12,7 @@ class JobBase(BaseModel):
     action: Optional[str] = None
     category: Optional[str] = categories.WORKSHEET
     priority: Optional[int] = priorities.NORMAL
-    job_id: Optional[str] = None
+    job_id: Optional[int] = None
     status: Optional[str] = states.PENDING
     reason: Optional[str] = None
     creator_uid: Optional[int] = None

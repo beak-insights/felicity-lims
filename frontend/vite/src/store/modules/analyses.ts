@@ -14,7 +14,7 @@ import { IClient } from '../common';
 import { Client } from './clients';
 
 export interface IAnalysisCategory {
-  uid?: string;
+  uid?: number;
   name?: string;
   description?: string;
   active?: boolean;
@@ -22,7 +22,7 @@ export interface IAnalysisCategory {
 
 export class AnalysisCategory implements IAnalysisCategory {
   constructor(
-    public uid: string,
+    public uid: number,
     public name: string,
     public description: string,
     public active: boolean,
@@ -33,14 +33,14 @@ export class AnalysisCategory implements IAnalysisCategory {
 
 
 export interface IResultOption {
-  uid?: string;
-  analysisUid?: string;
-  optionKey?: string;
+  uid?: number;
+  analysisUid?: number;
+  optionKey?: number;
   value?: string;
 }
 
 export interface IAnalysisService {
-  uid?: string;
+  uid?: number;
   name?: string;
   keyword?: string;
   description?: string;
@@ -48,7 +48,7 @@ export interface IAnalysisService {
   profiles?: IAnalysisProfile[];
   category?: IAnalysisCategory;
   resultoptions?: IResultOption[],
-  categoryUid?: string,
+  categoryUid?: number,
   sortKey?: number;
   active?: boolean;
   internalUse?: boolean;
@@ -57,14 +57,14 @@ export interface IAnalysisService {
 
 export class AnalysisService implements IAnalysisService {
   constructor(
-    public uid: string,
+    public uid: number,
     public name: string,
     public description: string,
     public keyword: string,
     public profiles: IAnalysisProfile[],
     public category: IAnalysisCategory,
     public resultoptions: IResultOption[],
-    public categoryUid: string,
+    public categoryUid: number,
     public sortKey: number,
     public active: boolean,
     public internalUse: boolean,
@@ -76,7 +76,7 @@ export class AnalysisService implements IAnalysisService {
 }
 
 export interface IAnalysisProfile {
-  uid?: string;
+  uid?: number;
   name?: string;
   description?: string;
   keyword?: string,
@@ -86,7 +86,7 @@ export interface IAnalysisProfile {
 
 export class AnalysisProfile implements IAnalysisProfile {
   constructor(
-    public uid: string,
+    public uid: number,
     public name: string,
     public description: string,
     public keyword: string,

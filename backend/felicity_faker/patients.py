@@ -61,7 +61,7 @@ patient_variables = [  # list of lists - each list will be run in its own thread
             'phoneMobile': engine.phone_number(),
             'phoneHome': engine.phone_number(),
             'consentSms': engine.boolean(),
-        } for i in range(10)
+        } for i in range(100)
     ] for x in range(10)
 ]
 

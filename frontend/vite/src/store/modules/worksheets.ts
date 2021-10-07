@@ -26,9 +26,9 @@ export class Reserved implements IReserved {
 }
 
 export interface IWorkSheetTemplate {
-  uid?: string;
+  uid?: number;
   name?: string;
-  qcTemplateUid?: string;
+  qcTemplateUid?: number;
   reserved?: IReserved[];
   preview?: IReserved[];
   numberOfSamples?: number;
@@ -44,7 +44,7 @@ export interface IWorkSheetTemplate {
 
 export class WorkSheetTemplate implements IWorkSheetTemplate {
   constructor(
-    public uid?: string,
+    public uid?: number,
     public name?: string,
     public reserved?: IReserved[],
     public preview?: IReserved[],
@@ -52,7 +52,7 @@ export class WorkSheetTemplate implements IWorkSheetTemplate {
     public rows?: number,
     public cols?: number,
     public rowWise?: Boolean,
-    public qcTemplateUid?: string,
+    public qcTemplateUid?: number,
     public worksheetType?: string,
     public instrument?: IInstrument,
     public description?: string,
@@ -68,7 +68,7 @@ export class WorkSheetTemplate implements IWorkSheetTemplate {
 
 
 export interface IWorkSheet {
-  uid?: string;
+  uid?: number;
   name?: string;
   reserved?: string[];
   plate?: Map<string, string>;
@@ -86,7 +86,7 @@ export interface IWorkSheet {
 
 export class WorkSheet implements IWorkSheet {
   constructor(
-    public uid?: string,
+    public uid?: number,
     public name?: string,
     public reserved?: string[],
     public plate?: Map<string, string>,
@@ -161,7 +161,7 @@ export const getters = <GetterTree<IState, RootState>>{
   getWorkSheetTemplates: (state) => state.workSheetTemplates,
   getWorkSheets: (state) => state.workSheets,
   getWorkSheet: (state) => state.workSheet,
-  getWorkSheetByUid: (state) => (uid: string) => state.workSheets?.find(ws => ws.uid === uid),
+  getWorkSheetByUid: (state) => (uid: number) => state.workSheets?.find(ws => ws.uid === uid),
 };
 
 // Mutations
@@ -180,7 +180,6 @@ export const mutations = <MutationTree<IState>>{
       reserved?.forEach(item => new_res.push(keysToCamel(item[1]) as IReserved || {}));
       template.reserved = new_res;
     });
-    console.log(wst)
     state.workSheetTemplates = wst;
   },
 
@@ -205,7 +204,7 @@ export const mutations = <MutationTree<IState>>{
 
   // WorkSheetS
   [MutationTypes.SET_WORKSHEETS](state: IState, wst: any): void {
-    state.workSheets = wst;
+    state.workSheets = wst?.items;
   },
 
   [MutationTypes.SET_WORKSHEET](state: IState, wst: any): void {

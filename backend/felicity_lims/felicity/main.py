@@ -1,7 +1,9 @@
 import base64
 import binascii
 import logging
+import pyfiglet as pf
 from typing import List
+from datetime import datetime
 
 from fastapi import FastAPI, WebSocket
 from starlette.middleware.cors import CORSMiddleware
@@ -18,6 +20,7 @@ from strawberry.asgi import GraphQL
 
 from felicity.api.api_v1.api import api_router  # noqa
 from felicity.core.config import settings  # noqa
+from felicity.core.repeater import repeat_every
 from felicity.gql.schema import gql_schema  # noqa
 from felicity.gql.deps import get_current_active_user
 from felicity.apps.job.sched import felicity_halt_workforce
@@ -63,13 +66,21 @@ flims = FastAPI(
 
 @flims.on_event("startup")
 async def startup():
+    print("\n")
+    print(pf.Figlet("doom").renderText("FELICITY  LIMS"))  # "puffy"
     await initialize_felicity()
     felicity_workforce_init()
+
+@flims.on_event("startup")
+@repeat_every(seconds=3)  # 60 * 60 = 1 hour
+async def always_and_forever():
+    print(datetime.now())
 
 
 @flims.on_event("shutdown")
 async def shutdown():
     felicity_halt_workforce()
+
 
 
 # Set all CORS enabled origins

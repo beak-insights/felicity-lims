@@ -17,6 +17,8 @@ class QCSet(DBModel):
     """
     name = Column(String, nullable=False)
     note = Column(String, nullable=True)
+    samples = relationship("Sample", back_populates='qc_set', lazy="selectin")
+
 
     @classmethod
     async def create(cls, obj_in: schemas.QCSetCreate) -> schemas.QCSet:

@@ -492,7 +492,7 @@ class AnalysisMutations:
             raise Exception(f"No Results to update are provided!")
 
         for _ar in analysis_results:
-            uid = _ar['uid']
+            uid = _ar.uid
             a_result: result_models.AnalysisResult  = await result_models.AnalysisResult.get(uid=uid)
             if not a_result:
                 raise Exception(f"AnalysisResult with uid {uid} not found")
@@ -504,9 +504,9 @@ class AnalysisMutations:
 
             analysis_result = a_result.to_dict(nested=False)
             for field in analysis_result:
-                if field in _ar:
+                if field in _ar.__dict__.keys():
                     try:
-                        setattr(a_result, field, _ar[field])
+                        setattr(a_result, field, getattr(_ar, field, None))
                     except AttributeError as e:
                         logger.warning(e)
 
@@ -537,11 +537,11 @@ class AnalysisMutations:
             siblings = a_result.sample.analysis_results
             match = all([(sibling.status in statuses) for sibling in siblings])
             if match:
-                a_result = await a_result.sample.submit(submitted_by=felicity_user)
+                await a_result.sample.submit(submitted_by=felicity_user)
 
             # try to submit associated worksheet
-            if a_result.worksheet:
-                a_result = await a_result.worksheet.submit(submitter=felicity_user)
+            if a_result.worksheet_uid:
+                await a_result.worksheet.submit(submitter=felicity_user)
 
             return_results.append(a_result)
         return return_results
@@ -568,7 +568,7 @@ class AnalysisMutations:
             # No Empty Results
             status = getattr(a_result, 'status', None)
             if status == states.result.RESULTED:
-                a_result = await a_result.verify(verifier=felicity_user)
+                await a_result.verify(verifier=felicity_user)
             else:
                 continue
 
@@ -578,12 +578,13 @@ class AnalysisMutations:
             statuses = [states.result.VERIFIED, states.result.RETRACTED]
             siblings = a_result.sample.analysis_results
             match = all([(sibling.status in statuses) for sibling in siblings])
+            logger.warning(match)
             if match:
-                a_result = await a_result.sample.verify(verified_by=felicity_user)
+                await a_result.sample.verify(verified_by=felicity_user)
 
             # try to submit associated worksheet
-            if a_result.worksheet:
-                a_result = await a_result.worksheet.verify(verified_by=felicity_user)
+            if a_result.worksheet_uid:
+                await a_result.worksheet.verify(verified_by=felicity_user)
 
             return_results.append(a_result)
 
@@ -611,8 +612,8 @@ class AnalysisMutations:
             status = getattr(a_result, 'status', None)
             if status in [states.result.RESULTED]:
                 retest = await retest_analysis_result(a_result)
-                a_result = await a_result.hide_report()
-                a_result = await a_result.retract(retracted_by=felicity_user)
+                await a_result.hide_report()
+                await a_result.retract(retracted_by=felicity_user)
 
                 # if in worksheet then keep add retest to ws
                 if a_result.worksheet_uid:
@@ -650,8 +651,8 @@ class AnalysisMutations:
             status = getattr(a_result, 'status', None)
             if status in [states.result.RESULTED]:
                 retest = await retest_analysis_result(a_result)
-                a_result = await a_result.hide_report()
-                a_result = await a_result.verify(verifier=felicity_user)
+                await a_result.hide_report()
+                await a_result.verify(verifier=felicity_user)
 
                 return_results.append(retest)
 
