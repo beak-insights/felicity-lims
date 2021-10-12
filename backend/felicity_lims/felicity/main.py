@@ -74,8 +74,8 @@ async def startup():
 @flims.on_event("startup")
 @repeat_every(seconds=3)  # 60 * 60 = 1 hour
 async def always_and_forever():
-    print(datetime.now())
-
+    # print(datetime.now())
+    pass
 
 @flims.on_event("shutdown")
 async def shutdown():

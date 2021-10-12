@@ -534,7 +534,7 @@ class AnalysisMutations:
             # to to_be_verified
 
             statuses = [states.result.RESULTED, states.result.RETRACTED, states.result.VERIFIED]
-            siblings = a_result.sample.analysis_results
+            siblings = await result_models.AnalysisResult.get_all(sample_uid=a_result.sample_uid) # a_result.sample.analysis_results
             match = all([(sibling.status in statuses) for sibling in siblings])
             if match:
                 await a_result.sample.submit(submitted_by=felicity_user)
@@ -576,7 +576,7 @@ class AnalysisMutations:
             # to verified
 
             statuses = [states.result.VERIFIED, states.result.RETRACTED]
-            siblings = a_result.sample.analysis_results
+            siblings = await result_models.AnalysisResult.get_all(sample_uid=a_result.sample_uid) # a_result.sample.analysis_results
             match = all([(sibling.status in statuses) for sibling in siblings])
             logger.warning(match)
             if match:
