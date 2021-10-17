@@ -75,7 +75,7 @@ export const ADD_LISTING_TASK = gql`
 
 export const EDIT_LISTING_TASK = gql`
   mutation editListingTask($uid: Int!, $title: String, $description: String, $listingUid: Int, $dueDate: String, 
-    $assigneeUid: Int, $memberUids: [Int!]!, $tags: [String!]!, $complete: Boolean, $archived: Boolean) {
+    $assigneeUid: Int, $memberUids: [Int!], $tags: [String!], $complete: Boolean, $archived: Boolean) {
     updateListingTask(uid: $uid, title: $title, description: $description, listingUid: $listingUid, dueDate: $dueDate, 
     assigneeUid: $assigneeUid, memberUids: $memberUids, tags: $tags, complete: $complete, archived: $archived){
       uid

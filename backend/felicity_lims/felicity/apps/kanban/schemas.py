@@ -15,12 +15,12 @@ class BoardBase(BaseAuditModel):
     title: Optional[str] = ""
     description: Optional[str] = ""
     archived: Optional[bool] = False
-    department_uid: Optional[str] = None
+    department_uid: Optional[int] = None
     department: Optional[Department] = None
 
 
 class Board(BoardBase):
-    uid: Optional[str] = None
+    uid: Optional[int] = None
 
     class Config:
         orm_mode = True
@@ -40,12 +40,12 @@ class BoardUpdate(BoardBase):
 class BoardListingBase(BaseAuditModel):
     title: Optional[str] = ""
     description: Optional[str] = ""
-    board_uid: Optional[str] = ""
+    board_uid: Optional[int] = ""
     board: Optional[Board] = ""
 
 
 class BoardListing(BoardListingBase):
-    uid: Optional[str] = None
+    uid: Optional[int] = None
 
     class Config:
         orm_mode = True
@@ -67,7 +67,7 @@ class TaskTagBase(BaseAuditModel):
 
 
 class TaskTag(TaskTagBase):
-    uid: Optional[str] = None
+    uid: Optional[int] = None
 
     class Config:
         orm_mode = True
@@ -87,9 +87,9 @@ class TaskTagUpdate(TaskTagBase):
 class ListingTaskBase(BaseAuditModel):
     title: Optional[str] = ""
     description: Optional[str] = ""
-    listing_uid: Optional[str] = ""
+    listing_uid: Optional[int] = ""
     listing: Optional[BoardListing] = None
-    assignee_uid: Optional[str] = ""
+    assignee_uid: Optional[int] = ""
     assignee: Optional[User] = None
     tags: Optional[List[TaskTag]] = []
     members: Optional[List[User]] = []
@@ -99,7 +99,7 @@ class ListingTaskBase(BaseAuditModel):
 
 
 class ListingTask(ListingTaskBase):
-    uid: Optional[str] = None
+    uid: Optional[int] = None
 
     class Config:
         orm_mode = True

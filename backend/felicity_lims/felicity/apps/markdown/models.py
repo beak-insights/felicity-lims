@@ -55,7 +55,7 @@ class Document(DBModel):
     document_id = Column(String)
     content = Column(String)
     version = Column(String)
-    tags = relationship(DocumentTag, secondary=doctags, backref="tagged_documents")
+    tags = relationship(DocumentTag, secondary=doctags, backref="tagged_documents", lazy="selectin")
     authors = relationship(User, secondary=docauthors, backref="authored_markdowns")
     readers = relationship(User, secondary=docreaders, backref="read_markdowns")
     department_uid = Column(Integer, ForeignKey('department.uid'), nullable=True)

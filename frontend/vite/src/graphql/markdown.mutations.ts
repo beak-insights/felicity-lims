@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 
 export const ADD_MARKDOWN_DOCUMENT = gql`
-  mutation AddMDocument($name: String!, $departmentUid: Int!) {
+  mutation AddMDocument($name: String!, $departmentUid: Int) {
     createDocument(name: $name, departmentUid: $departmentUid){
       uid
       name

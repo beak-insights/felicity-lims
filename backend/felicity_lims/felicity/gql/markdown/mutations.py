@@ -130,12 +130,13 @@ class MarkdownMutations:
             incoming[k] = v
 
         tags_uids = passed_args.get('tags_uids', [])
-        tags = []
-        for _tag_uid in tags_uids:
-            tag = await models.DocumentTag.get(uid=_tag_uid)
-            if tag:
-                tags.append(tag)
-        incoming['tags'] = tags
+        if tags_uids:
+            tags = []
+            for _tag_uid in tags_uids:
+                tag = await models.DocumentTag.get(uid=_tag_uid)
+                if tag:
+                    tags.append(tag)
+            incoming['tags'] = tags
 
         obj_in = schemas.DocumentCreate(**incoming)
         document: models.Document = await models.Document.create(obj_in)
@@ -166,12 +167,13 @@ class MarkdownMutations:
 
         document.tags.clear()
         tags_uids = passed_args.get('tags_uids', [])
-        tags = []
-        for _tag_uid in tags_uids:
-            tag = await models.DocumentTag.get(uid=_tag_uid)
-            if tag:
-                tags.append(tag)
-        setattr(document, 'tags', tags)
+        if tags_uids:
+            tags = []
+            for _tag_uid in tags_uids:
+                tag = await models.DocumentTag.get(uid=_tag_uid)
+                if tag:
+                    tags.append(tag)
+            setattr(document, 'tags', tags)
 
         obj_in = schemas.DocumentUpdate(**document.to_dict())
         document = await document.update(obj_in)

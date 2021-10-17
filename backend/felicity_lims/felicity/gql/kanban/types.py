@@ -69,7 +69,7 @@ class ListingTaskType:
 @strawberry.type
 class BoardListingType:
     uid: int
-    title: int
+    title: str
     description: Optional[str]
     board_uid: Optional[int]
     listing_tasks: Optional[List[ListingTaskType]]

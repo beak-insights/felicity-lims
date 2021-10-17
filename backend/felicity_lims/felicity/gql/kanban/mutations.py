@@ -23,7 +23,7 @@ class KanBanMutations:
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
 
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create kanban boards")
 
         if not title:
@@ -51,7 +51,7 @@ class KanBanMutations:
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
 
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update kanban boards")
 
         if not uid:
@@ -84,7 +84,7 @@ class KanBanMutations:
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
 
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can delete kanban board")
 
         if not uid:
@@ -100,7 +100,7 @@ class KanBanMutations:
 
         board_uid = board.uid
         await board.delete()
-        return board_uid
+        return DeletedItem(uid=board_uid)
 
     @strawberry.mutation
     async def create_board_listing(self, info, title: str, board_uid: int, description: Optional[str] = None) -> types.BoardListingType:
@@ -108,7 +108,7 @@ class KanBanMutations:
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
 
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create  kanban board listings")
 
         if not title:
@@ -136,7 +136,7 @@ class KanBanMutations:
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
 
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update kanban board listings")
 
         if not uid:
@@ -169,7 +169,7 @@ class KanBanMutations:
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
 
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can delete kanban board listings")
 
         if not uid:
@@ -185,7 +185,7 @@ class KanBanMutations:
         listing_uid = listing.uid
         await listing.delete()
 
-        return listing_uid
+        return DeletedItem(uid=listing_uid)
 
     @strawberry.mutation
     async def create_listing_task(self, info, title: str, listing_uid: int, description: Optional[str] = None) -> types.ListingTaskType:
@@ -193,7 +193,7 @@ class KanBanMutations:
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
 
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create kanban tasks")
 
         if not title:
@@ -216,13 +216,13 @@ class KanBanMutations:
     @strawberry.mutation
     async def update_listing_task(self, info, uid: int, title: Optional[str] = None, description: Optional[str] = None,
                                   listing_uid: Optional[int] = None, due_date: Optional[str] = None, assignee_uid: Optional[int] = None,
-                                  member_uids: List[int] = None, tags: List[str] = None, complete: Optional[bool] = None,
+                                  member_uids: Optional[List[int]] = None, tags: Optional[List[str]] = None, complete: Optional[bool] = None,
                                   archived: Optional[bool] = None) -> types.ListingTaskType:
 
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
 
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can update kanban tasks")
 
         if not uid:
@@ -266,7 +266,7 @@ class KanBanMutations:
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
 
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can delete kanban tasks")
 
         if not uid:
@@ -284,7 +284,7 @@ class KanBanMutations:
 
         task_uid = task.uid
         await task.delete()
-        return task_uid
+        return DeletedItem(uid=task_uid)
 
     @strawberry.mutation
     async def duplicate_listing_task(self, info, uid: int, title: str) -> types.ListingTaskType:
@@ -292,7 +292,7 @@ class KanBanMutations:
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
 
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can delete kanban tasks")
 
         if not uid:
@@ -322,7 +322,7 @@ class KanBanMutations:
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
 
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create kanban tasks")
 
         if not task_uid:
@@ -349,7 +349,7 @@ class KanBanMutations:
         inspector = inspect.getargvalues(inspect.currentframe())
         passed_args = get_passed_args(inspector)
 
-        is_authenticated, felicity_user = auth_from_info(info)
+        is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(is_authenticated, felicity_user, "Only Authenticated user can create kanban tasks")
 
         if not task_uid:

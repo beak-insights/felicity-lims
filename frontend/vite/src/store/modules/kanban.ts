@@ -79,7 +79,7 @@ export class Task implements ITask {
 
  export interface IListing {
     uid?: string;
-    name?: string;
+    title?: string;
     description?: string;
     listingTasks?: ITask[];
   }
@@ -87,7 +87,7 @@ export class Task implements ITask {
   export class Listing implements IListing {
     constructor(
       public uid?: string,
-      public name?: string,
+      public title?: string,
       public description?: string,
       public listingTasks?: ITask[],
     ) {
@@ -203,8 +203,8 @@ export const mutations = <MutationTree<IState>>{
     state.board = null;;
   },
 
-  [MutationTypes.SET_BOARDS](state: IState, boards: any[]): void {
-    state.boards = boards;
+  [MutationTypes.SET_BOARDS](state: IState, payload: any): void {
+    state.boards = payload.items;
   },
 
   [MutationTypes.ADD_BOARD](state: IState, board: IBoard): void {
@@ -228,9 +228,11 @@ export const mutations = <MutationTree<IState>>{
 
   // listing
   [MutationTypes.ADD_BOARD_LISTING](state: IState, payload: any): void {
-    let board = state.board;
-    if(board) board.boardListings!.push(payload.listing)
-    state.board = board;
+    if(state.board!.boardListings) {
+      state!.board!.boardListings.push(payload)
+    }else{
+      state!.board!.boardListings = [payload];
+    }
   },
 
   [MutationTypes.DELETE_BOARD_LISTING](state: IState, listingUid: any): void {
@@ -249,16 +251,15 @@ export const mutations = <MutationTree<IState>>{
 
   [MutationTypes.ADD_LISTING_TASK](state: IState, task: any): void {
     let board = state.board;
-    board!.boardListings?.forEach((listing: IListing) => {
+    state!.board!.boardListings?.forEach((listing: IListing) => {
       if (listing.uid?.toString() === task.listingUid?.toString()) {
-        if(listing.listingTasks) {
-          listing.listingTasks.push(task)
+        if(listing.listingTasks!.length > 0) {
+          listing.listingTasks!.push(task)
         } else {
           listing.listingTasks = [task]
         }
       }
     })
-    state.board = board;
   },
 
   [MutationTypes.SET_LISTING_TASK](state: IState, task: any): void {
@@ -294,8 +295,8 @@ export const mutations = <MutationTree<IState>>{
   [MutationTypes.DUPLICATE_LISTING_TASK](state: IState, payload: any): void {
     let board = state.board;
     board!.boardListings?.forEach((listing: IListing) => {
-      if (listing.uid?.toString() === payload.task.listingUid?.toString()) {
-        listing.listingTasks!.push(payload.task)
+      if (listing.uid?.toString() === payload.listingUid?.toString()) {
+        listing.listingTasks!.push(payload)
       }
     })
     state.board = board;
@@ -353,7 +354,7 @@ export const actions = <ActionTree<IState, RootState>>{
   },
   
   async [ActionTypes.DELETE_BOARD_LISTING]({ commit }, payload){
-    commit(MutationTypes.DELETE_BOARD_LISTING, payload.data.deleteBoardListing.listingUid);
+    commit(MutationTypes.DELETE_BOARD_LISTING, payload.data.deleteBoardListing.uid);
   },
   
   
@@ -378,7 +379,7 @@ export const actions = <ActionTree<IState, RootState>>{
   },
   
   async [ActionTypes.DELETE_LISTING_TASK]({ commit }, payload){
-    commit(MutationTypes.DELETE_LISTING_TASK, payload.data.deleteListingTask.taskUid);
+    commit(MutationTypes.DELETE_LISTING_TASK, payload.data.deleteListingTask.uid);
   },
   
   async [ActionTypes.DUPLICATE_LISTING_TASK]({ commit }, payload){

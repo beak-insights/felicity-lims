@@ -10,19 +10,19 @@ from felicity.gql.user.types import UserType
 @strawberry.type
 class DocumentTagType:
     uid: int
-    name: str
+    name: Optional[str]
 
 
 @strawberry.type
 class DocumentCategoryType:
     uid: int
-    name: str
+    name: Optional[str]
 
 
 @strawberry.type
 class DocumentType:
     uid: int
-    name: str
+    name: Optional[str]
     subtitle: Optional[str]
     document_id: Optional[str]
     content: Optional[Text]

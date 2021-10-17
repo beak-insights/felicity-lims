@@ -76,7 +76,7 @@ export const mutations = <MutationTree<IState>>{
   },
 
   [MutationTypes.SET_DOCUMENTS](state: IState, payload: any): void {
-    state.documents = payload?.items;
+    state.documents = payload;
   },  
 
   [MutationTypes.ADD_DOCUMENT](state: IState, payload: any): void {
