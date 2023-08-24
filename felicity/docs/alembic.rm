@@ -1,0 +1,3 @@
+alembic -c ./infrastructure/database/alembic.ini revision --autogenerate -m "init"
+
+alembic -c ./infrastructure/database/alembic.ini upgrade head

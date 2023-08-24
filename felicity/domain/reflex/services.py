@@ -1,0 +1,350 @@
+from domain.shared.services import BaseService
+from domain.reflex.ports.service import (
+    IReflexRuleService,
+    IReflexBrainAdditionService,
+    IReflexBrainFinalService,
+    IReflexBrainCriteriaService,
+    IReflexBrainService,
+    IReflexActionService,
+)
+from domain.reflex.schemas import (
+    ReflexRule,
+    ReflexBrainAddition,
+    ReflexBrainFinal,
+    ReflexBrainCriteria,
+    ReflexBrain,
+    ReflexAction,
+)
+
+
+    @strawberry.field(permission_classes=[IsAuthenticated])
+    async def reflex_rule_all(
+        self,
+        info,
+        page_size: int | None = None,
+        after_cursor: str | None = None,
+        before_cursor: str | None = None,
+        text: str | None = None,
+        sort_by: list[str] | None = None,
+    ) -> ReflexRuleCursorPage:
+        filters = {}
+
+        _or_ = dict()
+        if has_value_or_is_truthy(text):
+            arg_list = ["name__ilike", "description__ilike"]
+            for _arg in arg_list:
+                _or_[_arg] = f"%{text}%"
+
+            filters = {sa.or_: _or_}
+
+        page = await models.ReflexRule.paginate_with_cursors(
+            page_size=page_size,
+            after_cursor=after_cursor,
+            before_cursor=before_cursor,
+            filters=filters,
+            sort_by=sort_by,
+        )
+
+        total_count: int = page.total_count
+        edges: List[ReflexRuleEdge[ReflexRuleType]] = page.edges
+        items: List[ReflexRuleType] = page.items
+        page_info: PageInfo = page.page_info
+
+        return ReflexRuleCursorPage(
+            total_count=total_count, edges=edges, items=items, page_info=page_info
+        )
+        
+
+    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    async def create_reflex_rule(
+        self, info, payload: ReflexRuleInput
+    ) -> ReflexRuleResponse:
+
+        is_authenticated, felicity_user = await auth_from_info(info)
+        verify_user_auth(
+            is_authenticated,
+            felicity_user,
+            "Only Authenticated user can add reflex rules",
+        )
+
+        if not payload.name or not payload.description:
+            return OperationError(error="Name and Description are required")
+
+        exists = await models.ReflexRule.get(name=payload.name)
+        if exists:
+            return OperationError(error=f"Reflex Rule name must be unique")
+
+        incoming: dict = {
+            "created_by_uid": felicity_user.uid,
+            "updated_by_uid": felicity_user.uid,
+        }
+        for k, v in payload.__dict__.items():
+            incoming[k] = v
+
+        obj_in = schemas.ReflexRuleCreate(**incoming)
+        reflex: models.ReflexRule = await models.ReflexRule.create(obj_in)
+        return ReflexRuleType(**reflex.marshal_simple())
+
+    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    async def update_reflex_rule(
+        self, info, uid: str, payload: ReflexRuleInput
+    ) -> ReflexRuleResponse:
+
+        is_authenticated, felicity_user = await auth_from_info(info)
+        verify_user_auth(
+            is_authenticated,
+            felicity_user,
+            "Only Authenticated user can update reflex rules",
+        )
+
+        if not uid:
+            return OperationError(error="No uid provided to identify update obj")
+
+        reflex_rule: models.ReflexRule = await models.ReflexRule.get(uid=uid)
+        if not reflex_rule:
+            return OperationError(
+                error=f"reflex_rule with uid {uid} not found. Cannot update obj ..."
+            )
+
+        obj_data = reflex_rule.to_dict()
+        for field in obj_data:
+            if field in payload.__dict__:
+                try:
+                    setattr(reflex_rule, field, payload.__dict__[field])
+                except Exception as e:  # noqa
+                    pass
+
+        setattr(reflex_rule, "updated_by_uid", felicity_user.uid)
+
+        obj_in = schemas.ReflexRuleUpdate(**reflex_rule.to_dict())
+        reflex_rule = await reflex_rule.update(obj_in)
+        return ReflexRuleType(**reflex_rule.marshal_simple())
+
+    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    async def create_reflex_action(
+        self, info, payload: ReflexActionInput
+    ) -> ReflexActionResponse:
+
+        is_authenticated, felicity_user = await auth_from_info(info)
+        verify_user_auth(
+            is_authenticated,
+            felicity_user,
+            "Only Authenticated user can add reflex actions",
+        )
+
+        if (
+            not len(payload.analyses) > 0
+            or not payload.level
+            or not payload.description
+        ):
+            return OperationError(error="Anaysis, Level and description are required")
+
+        incoming: dict = {
+            "created_by_uid": felicity_user.uid,
+            "updated_by_uid": felicity_user.uid,
+        }
+        for k, v in payload.__dict__.items():
+            incoming[k] = v
+
+        del incoming["analyses"]
+
+        obj_in = schemas.ReflexActionCreate(**incoming)
+
+        analyses = []
+        for _anal_uid in payload.analyses:
+            _anal = await analysis_models.Analysis.get(uid=_anal_uid)
+            analyses.append(_anal)
+        obj_in.analyses = analyses
+
+        action: models.ReflexAction = await models.ReflexAction.create(obj_in)
+        return ReflexActionType(**action.marshal_simple())
+
+    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    async def update_reflex_action(
+        self, info, uid: str, payload: ReflexActionInput
+    ) -> ReflexActionResponse:
+
+        is_authenticated, felicity_user = await auth_from_info(info)
+        verify_user_auth(
+            is_authenticated,
+            felicity_user,
+            "Only Authenticated user can add reflex actions",
+        )
+
+        if not uid:
+            return OperationError(error="No uid provided to identify update obj")
+
+        reflex_action: models.ReflexAction = await models.ReflexAction.get(uid=uid)
+        if not reflex_action:
+            return OperationError(
+                error=f"reflex_action with uid {uid} not found. Cannot update obj ..."
+            )
+
+        obj_data = reflex_action.to_dict()
+        for field in obj_data:
+            if field in payload.__dict__:
+                try:
+                    setattr(reflex_action, field, payload.__dict__[field])
+                except Exception as e:  # noqa
+                    pass
+
+        setattr(reflex_action, "updated_by_uid", felicity_user.uid)
+
+        analyses = []
+        for _anal_uid in payload.analyses:
+            _anal = await analysis_models.Analysis.get(uid=_anal_uid)
+            analyses.append(_anal)
+        setattr(reflex_action, "analyses", analyses)
+
+        obj_in = schemas.ReflexActionUpdate(**reflex_action.to_dict())
+        reflex_action = await reflex_action.update(obj_in)
+        return ReflexActionType(**reflex_action.marshal_simple())
+
+    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    async def create_reflex_brain(
+        self, info, payload: ReflexBrainInput
+    ) -> ReflexBrainResponse:
+
+        is_authenticated, felicity_user = await auth_from_info(info)
+        verify_user_auth(
+            is_authenticated,
+            felicity_user,
+            "Only Authenticated user can add reflex brains",
+        )
+
+        if not payload.description:
+            return OperationError(error="Description are required")
+
+        incoming: dict = {
+            "reflex_action_uid": payload.reflex_action_uid,
+            "description": payload.description,
+            "created_by_uid": felicity_user.uid,
+            "updated_by_uid": felicity_user.uid,
+        }
+        obj_in = schemas.ReflexBrainCreate(**incoming)
+
+        brain: models.ReflexBrain = await models.ReflexBrain.create(obj_in)
+
+        analyses_values = []
+        for criteria in payload.analyses_values:
+            _anal = await analysis_models.Analysis.get(uid=criteria.analysis_uid)
+            assoc = models.ReflexBrainCriteria()
+            assoc.operator = criteria.operator
+            assoc.value = criteria.value
+            assoc.analysis_uid = _anal.uid
+            assoc.reflex_brain_uid = brain.uid
+            analyses_values.append(assoc)
+        brain.analyses_values = analyses_values
+
+        finalise = []
+        for final in payload.finalise:
+            _anal = await analysis_models.Analysis.get(uid=final.analysis_uid)
+            assoc = models.ReflexBrainFinal()
+            assoc.value = final.value
+            assoc.analysis_uid = _anal.uid
+            assoc.reflex_brain_uid = brain.uid
+            finalise.append(assoc)
+        brain.finalise = finalise
+
+        add_new = []
+        for add_n in payload.add_new:
+            _anal = await analysis_models.Analysis.get(uid=add_n.analysis_uid)
+            assoc = models.ReflexBrainAddition()
+            assoc.count = add_n.count
+            assoc.analysis_uid = _anal.uid
+            assoc.reflex_brain_uid = brain.uid
+            add_new.append(assoc)
+        brain.add_new = add_new
+
+        await brain.save()
+        brain = await models.ReflexBrain.get_related(
+            related=["add_new.analysis", "analyses_values.analysis"], uid=brain.uid
+        )
+        return ReflexBrainType(**brain.marshal_simple())
+
+    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    async def update_reflex_brain(
+        self, info, uid: str, payload: ReflexBrainInput
+    ) -> ReflexBrainResponse:
+
+        is_authenticated, felicity_user = await auth_from_info(info)
+        verify_user_auth(
+            is_authenticated,
+            felicity_user,
+            "Only Authenticated user can add reflex brains",
+        )
+
+        if not uid:
+            return OperationError(error="No uid provided to identify update obj")
+
+        reflex_brain: models.ReflexBrain = await models.ReflexBrain.get(uid=uid)
+        if not reflex_brain:
+            return OperationError(
+                error=f"reflex_action with uid {uid} not found. Cannot update obj ..."
+            )
+
+        obj_data = reflex_brain.to_dict()
+        for field in obj_data:
+            if field in payload.__dict__:
+                try:
+                    setattr(reflex_brain, field, payload.__dict__[field])
+                except Exception as e:  # noqa
+                    pass
+
+        setattr(reflex_brain, "updated_by_uid", felicity_user.uid)
+
+        analyses_values = []
+        for criteria in payload.analyses_values:
+            _anal = await analysis_models.Analysis.get(uid=criteria.analysis_uid)
+            assoc = models.ReflexBrainCriteria()
+            assoc.operator = criteria.operator
+            assoc.value = criteria.value
+            assoc.analysis_uid = _anal.uid
+            assoc.reflex_brain_uid = reflex_brain.uid
+            analyses_values.append(assoc)
+        reflex_brain.analyses_values = analyses_values
+
+        finalise = []
+        for final in payload.finalise:
+            _anal = await analysis_models.Analysis.get(uid=final.analysis_uid)
+            assoc = models.ReflexBrainFinal()
+            assoc.value = final.value
+            assoc.analysis_uid = _anal.uid
+            assoc.reflex_brain_uid = reflex_brain.uid
+            finalise.append(assoc)
+        reflex_brain.finalise = finalise
+
+        add_new = []
+        for add_n in payload.add_new:
+            _anal = await analysis_models.Analysis.get(uid=add_n.analysis_uid)
+            assoc = models.ReflexBrainAddition()
+            assoc.count = add_n.count
+            assoc.analysis_uid = _anal.uid
+            assoc.reflex_brain_uid = reflex_brain.uid
+            add_new.append(assoc)
+        reflex_brain.add_new = add_new
+
+        obj_in = schemas.ReflexBrainUpdate(**reflex_brain.to_dict())
+        reflex_brain = await reflex_brain.update(obj_in)
+        return ReflexBrainType(**reflex_brain.marshal_simple())
+
+
+
+
+class ReflexRuleService(BaseService[ReflexRule], IReflexRuleService):
+    ...
+
+class ReflexBrainAdditionService(BaseService[ReflexBrainAddition], IReflexBrainAdditionService):
+    ...
+
+class ReflexBrainFinalService(BaseService[ReflexBrainFinal], IReflexBrainFinalService):
+    ...
+
+class ReflexBrainCriteriaService(BaseService[ReflexBrainCriteria], IReflexBrainCriteriaService):
+    ...
+
+class ReflexBrainService(BaseService[ReflexBrain], IReflexBrainService):
+    ...
+
+class ReflexActionService(BaseService[ReflexAction], IReflexActionService):
+    ...
