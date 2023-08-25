@@ -3,9 +3,9 @@ from abc import ABC, abstractmethod
 from domain.shared.ports.repository import IBaseRepository
 
 
-class ClientRepository(IBaseRepository, ABC):
+class IClientRepository(IBaseRepository, ABC):
     ...
 
 
-class ClientContactRepository(IBaseRepository, ABC):
+class IClientContactRepository(IBaseRepository, ABC):
     ...

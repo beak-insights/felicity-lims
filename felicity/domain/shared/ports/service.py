@@ -1,12 +1,30 @@
 from typing import Generic, TypeVar
 from abc import ABC, abstractmethod
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
+
+from domain.shared.ports.paginator.cursor import PageCursor
 
 M = TypeVar("M")
 PydanticModel = TypeVar("PydanticModel", bound=BaseModel)
 
 
 class IBaseService(Generic[M], ABC):
+    @abstractmethod
+    async def paging_filter(
+        self,
+        page_size: int | None,
+        after_cursor: str | None,
+        before_cursor: str | None,
+        text: str | None,
+        sort_by: list[str] | None,
+        **kwargs
+    ) -> PageCursor:
+        pass
+
+    @abstractmethod
+    async def search(self, **kwargs) -> list[M]:
+        pass
+
     @abstractmethod
     async def all(self) -> list[M]:
         pass
@@ -21,6 +39,10 @@ class IBaseService(Generic[M], ABC):
 
     @abstractmethod
     async def create(self, **kwargs) -> M:
+        pass
+
+    @abstractmethod
+    async def bulk_create(self, bulk: list[dict]) -> None:
         pass
 
     @abstractmethod

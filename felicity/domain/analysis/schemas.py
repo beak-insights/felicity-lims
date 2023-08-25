@@ -1,8 +1,9 @@
 from datetime import datetime
 from typing import List, Optional
+from pydantic import BaseModel, ConfigDict
 
-from apps.common.schemas import BaseAuditModel, BaseModel
-from apps.setup.schemas import Department, Unit
+from domain.shared.schemas import BaseAuditModel
+from domain.setup.schemas import Department, Unit
 
 
 #

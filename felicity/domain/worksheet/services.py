@@ -337,24 +337,6 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
 
         return ws
 
-    async def paging_filter(
-        self,
-        page_size: int | None = None,
-        after_cursor: str | None = None,
-        before_cursor: str | None = None,
-        text: str | None = None,
-        status: str | None = None,
-        sort_by: list[str] | None = None,
-    ) -> PageCursor:
-        return await self.repository.paginate_with_cursors(
-            page_size,
-            after_cursor,
-            before_cursor,
-            text,
-            status,
-            sort_by,
-        )
-
     async def populate_worksheet_plate(self, job_uid: str) -> None:
         logger.info(f"starting job {job_uid} ....")
         job = await self.job_service.get(uid=job_uid)

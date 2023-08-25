@@ -1,10 +1,31 @@
 """Note:
-    - The felicity app must be creaed first before importing other modules.
+    - The felicity app must be created first before importing other modules.
     - This is important to register felicity in sanic registry
 """
-from sanic import Sanic
+# import uvicorn
+# from sanic import Sanic
+#
+#
+# if __name__ == "__main__":
+#     from adapters.application import container
+#
+#     ct = container.Container()
+#
+#     felicity = Sanic("felicity-hexagonal")
+#     felicity.ctx.container = ct
+#     from adapters.application import register_felicity, container
+#
+#     felicity = register_felicity(felicity)
+#
+#     uvicorn.run(app=felicity, host="0.0.0.0", port=8081)
+#     # felicity.run(host="0.0.0.0", port=8001, debug=True)
 
-felicity = Sanic("felicity-hex")
 from adapters.application import register_felicity
 
-register_felicity(felicity)
+
+app = register_felicity()
+
+
+if __name__ == "__main__":
+    # uvicorn.run(app=app, host="0.0.0.0", port=8081)
+    app.run(host="0.0.0.0", port=8001, debug=True)

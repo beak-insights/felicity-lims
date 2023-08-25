@@ -1,7 +1,7 @@
 from sanic import Blueprint
 
-from api.rest.api_v1.endpoints import reports, setup
-from api.rest.api_v1.fhir import r4
+from adapters.rest.api_v1.endpoints import reports, setup
+from adapters.rest.api_v1.fhir import r4
 
 api = Blueprint.group(
     reports.reports,

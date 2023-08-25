@@ -1,6 +1,8 @@
 from typing import TypeVar, Generic, Any
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime
+
+from domain.shared.ports.paginator.cursor import PageCursor
 from domain.shared.ports.repository import IBaseRepository
 from domain.shared.ports.service import IBaseService
 
@@ -11,6 +13,22 @@ PydanticModel = TypeVar("PydanticModel", bound=BaseModel)
 class BaseService(Generic[M], IBaseService[M]):
     def __init__(self, repository: IBaseRepository) -> None:
         self.repository = repository
+
+    async def paging_filter(
+        self,
+        page_size: int | None = None,
+        after_cursor: str | None = None,
+        before_cursor: str | None = None,
+        text: str | None = None,
+        sort_by: list[str] | None = None,
+        **kwargs
+    ) -> PageCursor:
+        return await self.repository.paginate_with_cursors(
+            page_size, after_cursor, before_cursor, text, sort_by, **kwargs
+        )
+
+    async def search(self, **kwargs) -> list[M]:
+        return await self.repository.search(**kwargs)
 
     async def all(self) -> list[M]:
         return await self.repository.all()
@@ -23,6 +41,9 @@ class BaseService(Generic[M], IBaseService[M]):
 
     async def create(self, **kwargs) -> M:
         return await self.repository.create(**kwargs)
+
+    async def bulk_create(self, bulk: list[dict]) -> None:
+        pass
 
     async def update(self, uid: str, **kwargs) -> M:
         return await self.repository.update(uid, **kwargs)

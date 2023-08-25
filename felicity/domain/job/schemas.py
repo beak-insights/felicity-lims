@@ -2,7 +2,7 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict
 
-from .conf import categories, priorities, states
+from domain.job.conf import JobStates, JobPriorities, JobCategories
 
 
 #
@@ -10,11 +10,11 @@ from .conf import categories, priorities, states
 #
 class JobBase(BaseModel):
     action: str | None = None
-    category: str | None = categories.WORKSHEET
-    priority: int | None = priorities.NORMAL
+    category: str | None = JobCategories.WORKSHEET
+    priority: int | None = JobPriorities.NORMAL
     data: Optional[Any] = None
     job_id: str | None = None
-    status: str | None = states.PENDING
+    status: str | None = JobStates.PENDING
     reason: str | None = None
     creator_uid: str | None = None
 

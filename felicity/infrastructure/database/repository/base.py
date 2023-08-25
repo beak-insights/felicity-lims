@@ -41,35 +41,35 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
                 raise
         return m
 
-    async def create(self, **kwargs):
+    async def create(self, **kwargs) -> M:
         cls = self.model()  # self.model.__class__()
         filled = self.fill(cls, **kwargs)
         return await self.save(filled)
 
-    async def update(self, model: M, **kwargs):
+    async def update(self, model: M, **kwargs) -> M:
         filled = self.fill(model, **kwargs)
         return await self.save(filled)
 
-    async def update_by_uid(self, uid: str, **kwargs):
+    async def update_by_uid(self, uid: str, **kwargs) -> M:
         update = await self.get(uid=uid)
         filled = self.fill(update, **kwargs)
         return await self.save(filled)
 
-    async def get(self, **kwargs):
+    async def get(self, **kwargs) -> M:
         stmt = self._qb.where(**kwargs)
         async with self.async_session() as session:
             results = await session.execute(stmt)
             found = results.scalars().first()
         return found
 
-    async def get_all(self, **kwargs):
+    async def get_all(self, **kwargs) -> list[M]:
         stmt = self._qb.where(**kwargs)
         async with self.async_session() as session:
             results = await session.execute(stmt)
             found = results.scalars().all()
         return found
 
-    async def all(self):
+    async def all(self) -> list[M]:
         async with self.async_session() as session:
             results = await session.execute(select(self.model))
         return results.scalars().all()
@@ -104,7 +104,7 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
             await session.flush()
             await session.commit()
 
-    async def delete(self, uid: str):
+    async def delete(self, uid: str) -> M:
         obj = await self.get(uid=uid)
         async with self.async_session() as session:
             await session.delete(obj)
@@ -124,14 +124,29 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
         count = res.scalars().one()
         return count
 
-    async def paginate(
+    async def search(self, **kwargs) -> list[M]:
+        filters = []
+        combined = set()
+        for k, v in kwargs:
+            filter_string = f"{k}__ilike"
+            filters.append(filter_string)
+
+            arg = dict()
+            arg[k] = f"%{v}%"
+            query = await self.get_all(**arg)
+            for item in query:
+                combined.add(item)
+
+        return list(combined)
+
+    async def paginate_with_cursors(
         self,
         page_size: int | None,
         after_cursor: str | None,
         before_cursor: str | None,
         filters: dict | list[dict] | None,
         sort_by: list[str] | None,
-        get_related: str = None,
+        **kwargs,
     ) -> PageCursor:
         if not filters:
             filters = {}
@@ -158,7 +173,7 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
 
         stmt = self._qb.smart_query(filters=_filters, sort_attrs=sort_by)
 
-        if get_related:
+        if kwargs.get("get_related"):
             # stmt = stmt.options(selectinload(get_related))   noqa
             pass
 

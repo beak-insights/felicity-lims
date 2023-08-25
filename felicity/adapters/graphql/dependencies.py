@@ -8,6 +8,8 @@ from strawberry.http.temporal_response import TemporalResponse
 from strawberry.types.info import Info as StrawberryInfo, RootValueType
 
 from adapters.shared import BaseDependencyService
+from domain.job.ports.service import IJobService
+from domain.job.services import JobService
 
 from domain.shared.ports.persistance import PersistenceProtocol
 from domain.user.services import (
@@ -90,5 +92,9 @@ def register_dependencies(app: Sanic):
     app.ext.add_dependency(IGroupService, GroupService)
     app.ext.add_dependency(IPermissionService, PermissionService)
     app.ext.add_dependency(IUserPreferenceService, UserPreferenceService)
+    # job
+    # app.ext.add_dependency(IJobService, JobService)
     # graphql context
     app.ext.add_dependency(IDependencyService, DependencyService)
+
+    return app

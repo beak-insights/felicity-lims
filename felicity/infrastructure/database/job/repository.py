@@ -1,3 +1,4 @@
+from domain.job.conf import JobStates
 from domain.job.ports.repository import IJobRepository
 from domain.shared.ports.persistance import PersistenceProtocol
 from infrastructure.database.repository.base import BaseRepository
@@ -5,7 +6,23 @@ from infrastructure.database.repository.base import BaseRepository
 from infrastructure.database.job.entities import Job
 
 
-class JobRespository(BaseRepository[Job], IJobRepository):
+class JobRepository(BaseRepository[Job], IJobRepository):
     def __init__(self, db: PersistenceProtocol) -> None:
         self.model = Job
         super().__init__(db)
+
+    async def fetch_sorted(self):
+        _jobs = self._qb.smart_query(
+            filters={
+                "status__notin": [
+                    JobStates.FINISHED,
+                    JobStates.FAILED,
+                    JobStates.RUNNING,
+                ]
+            },
+            sort_attrs=["-priority"],
+        )
+        async with self.async_session() as session:
+            results = session.ecxecute(_jobs)
+        jobs = results.scalars().all()
+        return list(filter(lambda job: job.is_ready_for_execution, jobs))

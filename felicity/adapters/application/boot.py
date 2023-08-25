@@ -4,26 +4,18 @@ from sanic.response import json
 
 from adapters.graphql.schema import schema
 from adapters.graphql.view import AppGraphQLView, Request
-
 from adapters.graphql.dependencies import IDependencyService, register_dependencies
 
 
 from core.setting import settings
+from .container import Container
+from .tasks import init_scheduler
 
 
 def register_configs(app: Sanic):
     app.config.update(settings.__dict__)
     Extend(app)
-
-
-def register_events(app: Sanic):
-    @app.listener("before_server_start")
-    async def _(app):
-        print("Setting up database for felicity ...")
-
-
-def register_middlewares(app: Sanic):
-    ...
+    return app
 
 
 def register_blueprints(app: Sanic):
@@ -31,7 +23,7 @@ def register_blueprints(app: Sanic):
     def h(_) -> HTTPResponse:
         return json({"status": "pong"})
 
-    # app.blueprint(api)
+    return app
 
 
 def register_graphql(app: Sanic):
@@ -45,16 +37,18 @@ def register_graphql(app: Sanic):
         request.ctx.deps = deps
         return AppGraphQLView(schema=schema, graphiql=True).get(request)
 
-
-def register_health(app: Sanic):
-    ...
+    return app
 
 
-def register_felicity(app: Sanic):
+def register_felicity():
+    app = Sanic("felicity-hexagonal")
+    container = Container()
+    app.ctx.container = container
+
     register_configs(app)
-    register_events(app)
-    register_middlewares(app)
     register_dependencies(app)
     register_blueprints(app)
     register_graphql(app)
-    register_health(app)
+    init_scheduler(app)
+
+    return app

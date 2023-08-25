@@ -178,22 +178,6 @@ class UserService(BaseService[User], IUserService):
 
         return user
 
-    async def paging_filter(
-        self,
-        page_size: int | None = None,
-        after_cursor: str | None = None,
-        before_cursor: str | None = None,
-        text: str | None = None,
-        sort_by: list[str] | None = None,
-    ) -> PageCursor:
-        return await self.repository.paginate_with_cursors(
-            page_size,
-            after_cursor,
-            before_cursor,
-            text,
-            sort_by,
-        )
-
     async def authenticate(self, username: str, password: str) -> AuthenticatedUser:
 
         if is_valid_email(username):
@@ -253,10 +237,10 @@ class UserService(BaseService[User], IUserService):
 
 class GroupService(BaseService[Group], IGroupService):
     def __init__(
-        self, repository: IGroupRepository, premission_service: IPermissionService
+        self, repository: IGroupRepository, permission_service: IPermissionService
     ):
         self.repository = repository
-        self.premission_service = premission_service
+        self.permission_service = permission_service
         super().__init__(repository)
 
     async def create(self, name: str, pages: str, active: bool = True) -> Group:
@@ -309,7 +293,7 @@ class GroupService(BaseService[Group], IGroupService):
             permission = list(permissions)[0]
             group.permissions.remove(permission)
         else:
-            permission = await self.premission_service.get(uid=permission_uid)
+            permission = await self.permission_service.get(uid=permission_uid)
             if not permission:
                 raise NotFoundError(f"permission with uid {permission_uid} not found")
             group.permissions.append(permission)

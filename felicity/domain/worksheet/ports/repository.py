@@ -10,14 +10,4 @@ class IWorkSheetTemplateRepository(IBaseRepository[WSTemplate], ABC):
 
 
 class IWorkSheetRepository(IBaseRepository[WorkSheet], ABC):
-    @abstractmethod
-    async def paginate_with_cursors(
-        self,
-        page_size: int | None = None,
-        after_cursor: str | None = None,
-        before_cursor: str | None = None,
-        text: str | None = None,
-        status: str | None = None,
-        sort_by: list[str] | None = None,
-    ) -> PageCursor:
-        pass
+    ...

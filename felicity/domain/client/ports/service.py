@@ -20,3 +20,7 @@ class IClientContactService(IBaseService[ClientContact], ABC):
     @abstractmethod
     async def link_auth(self, auth_uid):
         ...
+
+    @abstractmethod
+    async def search(self, query: str):
+        pass

@@ -1,52 +1,42 @@
+from datetime import datetime, timedelta
+
+from domain.job.ports.repository import IJobRepository
 from domain.shared.services import BaseService
-from domain.exceptions import NoFoundError, AlreadyExistsError
 from domain.job.ports.service import IJobService
 from domain.job.schemas import Job
+from domain.job.conf import JobStates, JobPriorities
 
 
 class JobService(BaseService[Job], IJobService):
-    async def backoff(self, minutes=5, max_retries=5):
-        bck = minutes * self.retries
-        self.next_try = datetime.now() + timedelta(minutes=bck)
+    def __init__(self, repository: IJobRepository):
+        self.repository = repository
+        super().__init__(repository)
 
-        if self.retries >= max_retries + 1:
-            self.status = conf.states.FAILED
-            self.reason = f"max retries have been exceeded: {max_retries}"
+    async def backoff(self, job: Job, minutes: int = 5, max_retries: int = 5):
+        bck = minutes * job.retries
+        job.next_try = datetime.now() + timedelta(minutes=bck)
 
-        self.retries += 1
-        await self.save()
+        if job.retries >= max_retries + 1:
+            job.status = JobStates.FAILED
+            job.reason = f"max retries have been exceeded: {max_retries}"
 
-    @property
-    def is_ready_for_execution(self):
-        current_time = datetime.now()
-        return self.next_try <= current_time if self.next_try else True
+        job.retries += 1
+        await self.repository.update(job, **self.marshal(job))
 
-    @classmethod
-    async def fetch_sorted(cls):
-        _jobs = Job.smart_query(
-            filters={
-                "status__notin": [
-                    conf.states.FINISHED,
-                    conf.states.FAILED,
-                    conf.states.RUNNING,
-                ]
-            },
-            sort_attrs=["-priority"],
-        )
-        jobs = await Job.from_smart_query(_jobs)
-        return list(filter(lambda job: job.is_ready_for_execution, jobs))
+    async def fetch_sorted(self):
+        return self.repository.fetch_sorted()
 
-    async def change_status(self, new_status, change_reason=""):
-        self.status = new_status
-        self.reason = change_reason
-        await self.save()
+    async def change_status(self, job: Job, new_status, change_reason=""):
+        job.status = new_status
+        job.reason = change_reason
+        await self.repository.update(job, **self.marshal(job))
 
-    async def increase_priority(self):
-        if self.priority < conf.priorities.HIGH:
-            self.priority += 1
-            await self.save()
+    async def increase_priority(self, job: Job):
+        if job.priority < JobPriorities.HIGH:
+            job.priority += 1
+            await self.repository.update(job, **self.marshal(job))
 
-    async def decrease_priority(self):
-        if self.priority > conf.priorities.NORMAL:
-            self.priority -= 1
-            await self.save()
+    async def decrease_priority(self, job: Job):
+        if job.priority > JobPriorities.NORMAL:
+            job.priority -= 1
+            await self.repository.update(job, **self.marshal(job))
