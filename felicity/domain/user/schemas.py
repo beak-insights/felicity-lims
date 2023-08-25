@@ -11,6 +11,7 @@ from domain.user.conf import Themes
 #  Permission Schema
 #
 
+
 class PermissionBase(BaseModel):
     action: str | None = None
     target: str | None = None
@@ -22,13 +23,14 @@ class PermissionCreate(PermissionBase):
 
 
 class PermissionUpdate(PermissionBase):
-    uid: str| None = None
+    uid: str | None = None
 
 
 class PermissionInDBBase(PermissionBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class Permission(PermissionInDBBase):
     pass
@@ -41,6 +43,7 @@ class PermissionInDB(PermissionInDBBase):
 #
 #  Group Schema
 #
+
 
 class GroupBase(BaseModel):
     name: str | None = None
@@ -55,13 +58,14 @@ class GroupCreate(GroupBase):
 
 
 class GroupUpdate(GroupBase):
-    uid: str| None = None
+    uid: str | None = None
 
 
 class GroupInDBBase(GroupBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class Group(GroupInDBBase):
     pass
@@ -75,17 +79,18 @@ class GroupPermission(BaseModel):
     permission: Permission
     group: Group
 
+
 #
 #  User Preferences
 #
 class UserPreferenceBase(BaseAuditModel):
-    expanded_menu: bool| None = False
+    expanded_menu: bool | None = False
     departments: Optional[List["Department"]]
     theme: str | None = Themes.LIGHT
 
 
 class UserPreference(UserPreferenceBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -103,7 +108,6 @@ class UserPreferenceUpdate(UserPreferenceBase):
 #
 
 
-
 class UserBasicBase(BaseModel):
     first_name: str | None = None
     last_name: str | None = None
@@ -112,7 +116,7 @@ class UserBasicBase(BaseModel):
 
 class UserBase(BaseModel):
     email: Optional[EmailStr] = None
-    is_active: bool| None = True
+    is_active: bool | None = True
     is_superuser: bool = False
     first_name: str | None = None
     last_name: str | None = None
@@ -122,11 +126,9 @@ class UserBase(BaseModel):
     bio: str | None = None
     default_route: str | None = None
     groups: Optional[list[Group]] = []
-    user_name: str | None = None
-    password: str | None = None
     passwordc: str | None = None
     login_retry: int | None = 0
-    is_blocked: bool| None = False
+    is_blocked: bool | None = False
     user_type: str | None = None
 
 
@@ -139,19 +141,21 @@ class UserCreate(UserBase):
 
 
 class UserUpdate(UserBase):
-    auth_uid: str| None = None
-    preference_uid: str| None = None
+    auth_uid: str | None = None
+    preference_uid: str | None = None
 
 
 class UserInDBBase(UserBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class UserBasic(UserBasicBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class User(UserInDBBase):
     pass
@@ -159,7 +163,6 @@ class User(UserInDBBase):
 
 class UserInDB(UserInDBBase):
     hashed_password: str
-
 
 
 class AuthenticatedUser(BaseModel):

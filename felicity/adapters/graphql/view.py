@@ -8,4 +8,4 @@ class AppGraphQLView(GraphQLView):
     async def get_context(self, request: Request, response) -> InfoContext:
         deps: IDependencyService = request.ctx.deps
         more = await deps.get_gql_context(request)
-        return InfoContext(**{**more, "request": request, "response" : response})
+        return InfoContext(**{**more, "request": request, "response": response})

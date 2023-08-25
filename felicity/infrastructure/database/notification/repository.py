@@ -19,7 +19,9 @@ class ActivityFeedRespository(BaseRepository[ActivityFeed], IActivityFeedReposit
         super().__init__(db)
 
 
-class ActivityStreamRespository(BaseRepository[ActivityStream], IActivityStreamRepository):
+class ActivityStreamRespository(
+    BaseRepository[ActivityStream], IActivityStreamRepository
+):
     def __init__(self, db: PersistenceProtocol) -> None:
         self.model = ActivityStream
         super().__init__(db)

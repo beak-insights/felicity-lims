@@ -3,23 +3,24 @@ from abc import ABC, abstractmethod
 
 from domain.shared.ports.service import IBaseService
 from domain.worksheet.schemas import WorkSheet, WSTemplate
+from domain.shared.ports.paginator.cursor import PageCursor
 
 T = TypeVar("T")
 
 
 class IWorkSheetTemplateService(IBaseService[WSTemplate], ABC):
     ...
-    
+
 
 class IWorkSheetService(IBaseService[WorkSheet], ABC):
     @abstractmethod
     async def get_analysis_results(self) -> list[T]:
         ...
-    
+
     @abstractmethod
     async def reset_assigned_count(self) -> WorkSheet:
         ...
-    
+
     @abstractmethod
     async def change_state(self, state, updated_by_uid: str) -> WorkSheet:
         ...
@@ -35,3 +36,15 @@ class IWorkSheetService(IBaseService[WorkSheet], ABC):
     @abstractmethod
     async def verify(self, verified_by) -> WorkSheet:
         ...
+
+    @abstractmethod
+    async def paging_filter(
+        self,
+        page_size: int | None = None,
+        after_cursor: str | None = None,
+        before_cursor: str | None = None,
+        text: str | None = None,
+        status: str | None = None,
+        sort_by: list[str] | None = None,
+    ) -> PageCursor:
+        pass

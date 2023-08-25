@@ -5,6 +5,6 @@ from domain.analytics.schemas import ReportMeta
 
 
 class IReportMetaService(IBaseService[ReportMeta], ABC):
-    
     @abstractmethod
-    async def set_final(self, status: str, location: str | None = None): ...
+    async def set_final(self, status: str, location: str | None = None):
+        ...

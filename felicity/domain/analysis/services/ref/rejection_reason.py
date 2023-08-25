@@ -19,7 +19,6 @@ RejectionReasonResponse = strawberry.union(
 )
 
 
-@strawberry.mutation(permission_classes=[IsAuthenticated])
 async def create_rejection_reason(info, reason: str) -> RejectionReasonResponse:
 
     is_authenticated, felicity_user = await auth_from_info(info)
@@ -51,7 +50,6 @@ async def create_rejection_reason(info, reason: str) -> RejectionReasonResponse:
     return a_types.RejectionReasonType(**rejection_reason.marshal_simple())
 
 
-@strawberry.mutation(permission_classes=[IsAuthenticated])
 async def update_rejection_reason(
     info, uid: str, reason: str
 ) -> RejectionReasonResponse:

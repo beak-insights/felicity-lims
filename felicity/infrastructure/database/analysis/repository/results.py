@@ -17,7 +17,9 @@ class QCSetRespository(BaseRepository[QCSet], IQCSetRepository):
         super().__init__(db)
 
 
-class ResultMutationRespository(BaseRepository[ResultMutation], IResultMutationRepository):
+class ResultMutationRespository(
+    BaseRepository[ResultMutation], IResultMutationRepository
+):
     def __init__(self, db: PersistenceProtocol) -> None:
         self.model = ResultMutation
         super().__init__(db)

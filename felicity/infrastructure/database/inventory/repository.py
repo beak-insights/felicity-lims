@@ -8,7 +8,7 @@ from domain.inventory.ports.repository import (
     IStockOrderRepository,
     IStockOrderProductRepository,
     IStockTransactionRepository,
-    IStockAdjustmentRepository
+    IStockAdjustmentRepository,
 )
 from domain.shared.ports.persistance import PersistenceProtocol
 from infrastructure.database.repository.base import BaseRepository
@@ -23,7 +23,7 @@ from infrastructure.database.inventory.entities import (
     StockOrder,
     StockOrderProduct,
     StockTransaction,
-    StockAdjustment
+    StockAdjustment,
 )
 
 
@@ -51,7 +51,9 @@ class StockUnitRespository(BaseRepository[StockUnit], IStockUnitRepository):
         super().__init__(db)
 
 
-class StockPackagingRespository(BaseRepository[StockPackaging], IStockPackagingRepository):
+class StockPackagingRespository(
+    BaseRepository[StockPackaging], IStockPackagingRepository
+):
     def __init__(self, db: PersistenceProtocol) -> None:
         self.model = StockPackaging
         super().__init__(db)
@@ -69,19 +71,25 @@ class StockOrderRespository(BaseRepository[StockOrder], IStockOrderRepository):
         super().__init__(db)
 
 
-class StockOrderProductRespository(BaseRepository[StockOrderProduct], IStockOrderProductRepository):
+class StockOrderProductRespository(
+    BaseRepository[StockOrderProduct], IStockOrderProductRepository
+):
     def __init__(self, db: PersistenceProtocol) -> None:
         self.model = StockOrderProduct
         super().__init__(db)
 
 
-class StockTransactionRespository(BaseRepository[StockTransaction], IStockTransactionRepository):
+class StockTransactionRespository(
+    BaseRepository[StockTransaction], IStockTransactionRepository
+):
     def __init__(self, db: PersistenceProtocol) -> None:
         self.model = StockTransaction
         super().__init__(db)
 
 
-class StockAdjustmentRespository(BaseRepository[StockAdjustment], IStockAdjustmentRepository):
+class StockAdjustmentRespository(
+    BaseRepository[StockAdjustment], IStockAdjustmentRepository
+):
     def __init__(self, db: PersistenceProtocol) -> None:
         self.model = StockAdjustment
         super().__init__(db)

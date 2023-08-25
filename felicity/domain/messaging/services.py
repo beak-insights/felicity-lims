@@ -1,6 +1,6 @@
 
 from domain.shared.services import BaseService
-from domain.exceptions import NoFoundError, AleadyExistsError
+from domain.exceptions import NoFoundError, AlreadyExistsError
 from domain.messaging.ports.service import (
     IMessageThreadService,
     IMessageService
@@ -12,7 +12,7 @@ from domain.messaging.schemas import (
 from domain.user.schemas import User
 
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def send_message(
         self, info, recipients: List[str], body: str
     ) -> MessageResponse:
@@ -61,7 +61,7 @@ from domain.user.schemas import User
         message: models.Message = await models.Message.create(obj_in)
         return MessageType(**message.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def reply_message(
         self, info, thread_uid: str, body: str
     ) -> MessageResponse:
@@ -102,7 +102,7 @@ from domain.user.schemas import User
         message: models.Message = await models.Message.create(obj_in)
         return MessageType(**message.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def view_message(self, info, uid: str) -> MessageResponse:
 
         is_authenticated, felicity_user = await auth_from_info(info)
@@ -117,7 +117,7 @@ from domain.user.schemas import User
         message = await message.add_viewer(felicity_user)
         return MessageType(**message.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def delete_message(self, info, uid: str) -> DeleteResponse:
 
         is_authenticated, felicity_user = await auth_from_info(info)
@@ -134,7 +134,7 @@ from domain.user.schemas import User
         uid = await message.delete_for_user(felicity_user)
         return DeletedItem(uid=uid)
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def delete_thread(self, info, uid: str) -> DeleteResponse:
 
         is_authenticated, felicity_user = await auth_from_info(info)

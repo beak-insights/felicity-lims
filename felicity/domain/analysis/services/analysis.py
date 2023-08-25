@@ -1,6 +1,5 @@
-
 from domain.shared.services import BaseService
-from domain.exceptions import NoFoundError, AleadyExistsError
+from domain.exceptions import NoFoundError, AlreadyExistsError
 from domain.analysis.ports.service.analysis import (
     ICodingStandardService,
     ISampleTypeService,
@@ -41,13 +40,21 @@ from domain.analysis.schemas import (
 )
 
 
-class CodingStandardService(BaseService[CodingStandard], ICodingStandardService): ...
+class CodingStandardService(BaseService[CodingStandard], ICodingStandardService):
+    ...
 
-class SampleTypeService(BaseService[SampleType], ISampleTypeService): ...
 
-class SampleTypeCodingService(BaseService[SampleTypeCoding], ISampleTypeCodingService): ...
+class SampleTypeService(BaseService[SampleType], ISampleTypeService):
+    ...
 
-class AnalysisCategoryService(BaseService[AnalysisCategory], IAnalysisCategoryService): ...
+
+class SampleTypeCodingService(BaseService[SampleTypeCoding], ISampleTypeCodingService):
+    ...
+
+
+class AnalysisCategoryService(BaseService[AnalysisCategory], IAnalysisCategoryService):
+    ...
+
 
 class ProfileService(BaseService[Profile], IProfileService):
     async def update_tat(self):
@@ -63,28 +70,59 @@ class ProfileService(BaseService[Profile], IProfileService):
             self.tat_length_minutes = tat
             return await self.save()
         return self
-    
-class ProfileCodingService(BaseService[ProfileCoding], IProfileCodingService): ...
 
-class AnalysisService(BaseService[Analysis], IAnalysisService): ...
 
-class AnalysisCodingService(BaseService[AnalysisCoding], IAnalysisCodingService): ...
+class ProfileCodingService(BaseService[ProfileCoding], IProfileCodingService):
+    ...
 
-class AnalysisInterimService(BaseService[AnalysisInterim], IAnalysisInterimService): ...
 
-class AnalysisCorrectionFactorService(BaseService[AnalysisCorrectionFactor], IAnalysisCorrectionFactorService): ...
+class AnalysisService(BaseService[Analysis], IAnalysisService):
+    ...
 
-class AnalysisDetectionLimitService(BaseService[AnalysisDetectionLimit], IAnalysisDetectionLimitService): ...
 
-class AnalysisUncertaintyService(BaseService[AnalysisUncertainty], IAnalysisUncertaintyService): ...
+class AnalysisCodingService(BaseService[AnalysisCoding], IAnalysisCodingService):
+    ...
 
-class AnalysisSpecificationService(BaseService[AnalysisSpecification], IAnalysisSpecificationService): ...
 
-class ResultOptionService(BaseService[ResultOption], IResultOptionService): ...
+class AnalysisInterimService(BaseService[AnalysisInterim], IAnalysisInterimService):
+    ...
 
-class AnalysisRequestService(BaseService[AnalysisRequest], IAnalysisRequestService): ...
 
-class RejectionReasonService(BaseService[RejectionReason], IRejectionReasonService): ...
+class AnalysisCorrectionFactorService(
+    BaseService[AnalysisCorrectionFactor], IAnalysisCorrectionFactorService
+):
+    ...
+
+
+class AnalysisDetectionLimitService(
+    BaseService[AnalysisDetectionLimit], IAnalysisDetectionLimitService
+):
+    ...
+
+
+class AnalysisUncertaintyService(
+    BaseService[AnalysisUncertainty], IAnalysisUncertaintyService
+):
+    ...
+
+
+class AnalysisSpecificationService(
+    BaseService[AnalysisSpecification], IAnalysisSpecificationService
+):
+    ...
+
+
+class ResultOptionService(BaseService[ResultOption], IResultOptionService):
+    ...
+
+
+class AnalysisRequestService(BaseService[AnalysisRequest], IAnalysisRequestService):
+    ...
+
+
+class RejectionReasonService(BaseService[RejectionReason], IRejectionReasonService):
+    ...
+
 
 class SampleService(BaseService[Sample], ISampleService):
     def copy_include_keys(self):
@@ -155,19 +193,21 @@ class SampleService(BaseService[Sample], ISampleService):
         from apps.analysis.models.results import AnalysisResult
 
         return await AnalysisResult.get_all(sample_uid=self.uid)
-    
+
     async def get_referred_analyses(self):
         analysis = await self.get_analysis_results()
-        return analysis, list(filter(lambda a: a.status == states.Result.REFERRED ,analysis))
-    
+        return analysis, list(
+            filter(lambda a: a.status == states.Result.REFERRED, analysis)
+        )
+
     async def has_fully_referred_analyses(self):
         analysis, referred = await self.get_referred_analyses()
         return len(analysis) == len(referred)
-    
+
     async def has_no_referred_analyses(self):
         analysis, referred = await self.get_referred_analyses()
         return len(referred) == 0
-    
+
     async def has_partly_referred_analyses(self):
         analysis, referred = await self.get_referred_analyses()
         return len(analysis) != len(referred) and len(referred) > 0
@@ -216,8 +256,7 @@ class SampleService(BaseService[Sample], ISampleService):
             states.result.CANCELLED,
         ]
         analysis_results = await self.get_analysis_results()
-        match = all([(sibling.status in statuses)
-                    for sibling in analysis_results])
+        match = all([(sibling.status in statuses) for sibling in analysis_results])
         if match and self.status in [states.sample.RECEIVED]:
             self.status = states.sample.AWAITING
             self.submitted_by_uid = submitted_by.uid
@@ -244,7 +283,7 @@ class SampleService(BaseService[Sample], ISampleService):
     async def un_assign(self):
         self.assigned = False
         return await self.save()
-    
+
     async def is_verifiable(self):
         statuses = [
             states.result.APPROVED,
@@ -252,14 +291,15 @@ class SampleService(BaseService[Sample], ISampleService):
             states.result.CANCELLED,
         ]
         analysis_results = await self.get_analysis_results()
-        match = all([(sibling.status in statuses)
-                    for sibling in analysis_results])
+        match = all([(sibling.status in statuses) for sibling in analysis_results])
         if match and self.status in [states.sample.AWAITING, states.sample.PAIRED]:
             return True
-        
+
         # if there are no results in referred state but some are in pending state. transition awaiting to pending state
         analysis, referred = await self.get_referred_analyses()
-        if not referred and not list(filter(lambda an: an.status in [states.result.PENDING] ,analysis)):
+        if not referred and not list(
+            filter(lambda an: an.status in [states.result.PENDING], analysis)
+        ):
             self.change_status(states.sample.RECEIVED)
 
         return False
@@ -345,7 +385,9 @@ class SampleService(BaseService[Sample], ISampleService):
         data = cls._import(obj_in)
         sample_type = await SampleType.find(data["sample_type_uid"])
         # data["sample_id"] = (await IdSequence.get_next_number(sample_type.abbr))[1]
-        data["sample_id"] = (await IdSequence.get_next_number(prefix="S", generic=True))[1]
+        data["sample_id"] = (
+            await IdSequence.get_next_number(prefix="S", generic=True)
+        )[1]
         return await super().create(**data)
 
     async def duplicate_unique(self, duplicator) -> Sample:

@@ -5,7 +5,6 @@ from apps.common.schemas import BaseAuditModel, BaseModel
 from apps.setup.schemas import Department, Unit
 
 
-
 #
 # Coding standard Schemas
 #
@@ -42,8 +41,6 @@ class CodingStandardInDB(CodingStandardBaseInDB):
     pass
 
 
-
-
 #
 # SampleType Schemas
 #
@@ -55,12 +52,12 @@ class SampleTypeBase(BaseAuditModel):
     name: str | None = None
     description: str | None = None
     abbr: str | None = None
-    internal_use: bool| None = False
-    active: bool| None = True
+    internal_use: bool | None = False
+    active: bool | None = True
 
 
 class SampleTypeBaseInDB(SampleTypeBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -89,6 +86,7 @@ class SampleTypeInDB(SampleTypeBaseInDB):
 # SampleTypeCoding Schemas
 #
 
+
 class SampleTypeCodingBase(BaseAuditModel):
     sample_type_uid: str | None
     sample_type: SampleType | None
@@ -100,7 +98,7 @@ class SampleTypeCodingBase(BaseAuditModel):
 
 
 class SampleTypeCodingBaseInDB(SampleTypeCodingBase):
-    uid: str| None
+    uid: str | None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -125,7 +123,6 @@ class SampleTypeCodingInDB(SampleTypeCodingBaseInDB):
     pass
 
 
-
 #
 # Profile Schemas
 #
@@ -136,14 +133,14 @@ class ProfileBase(BaseAuditModel):
     analyses: Optional[List["Analysis"]]
     sample_types: Optional[List[SampleType]]
     description: str | None = None
-    department_uid: str| None = None
+    department_uid: str | None = None
     keyword: str | None = None
     tat_length_minutes: int | None = None
-    active: bool| None = True
+    active: bool | None = True
 
 
 class ProfileBaseInDB(ProfileBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -172,8 +169,10 @@ class ProfileInDB(ProfileBaseInDB):
 # ProfileCoding Schemas
 #
 
+
 class ProfileCodingBase(BaseAuditModel):
     """SampleTypeMapping"""
+
     profile_uid: str | None
     profile: Profile | None
     coding_standard_uid: str
@@ -184,7 +183,7 @@ class ProfileCodingBase(BaseAuditModel):
 
 
 class ProfileCodingBaseInDB(ProfileCodingBase):
-    uid: str| None
+    uid: str | None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -209,7 +208,6 @@ class ProfileCodingInDB(ProfileCodingBaseInDB):
     pass
 
 
-
 # AnalysisCategory Schemas
 #
 
@@ -217,12 +215,12 @@ class ProfileCodingInDB(ProfileCodingBaseInDB):
 class AnalysisCategoryBase(BaseAuditModel):
     name: str | None = None
     description: str | None = None
-    department_uid: str| None = None
-    active: bool| None = True
+    department_uid: str | None = None
+    active: bool | None = True
 
 
 class AnalysisCategoryBaseInDB(AnalysisCategoryBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -266,24 +264,24 @@ class AnalysisBase(BaseAuditModel):
     sample_types: Optional[List[SampleType]] = []
     tat_length_minutes: int | None = None
     unit: str | None = None
-    category_uid: str| None
+    category_uid: str | None
     sort_key: int | None = 0
-    internal_use: bool| None = False
+    internal_use: bool | None = False
     tat_length_minutes: int | None = None
     precision: int | None = None
     required_verifications: int = 1
-    self_verification: bool| None = False
-    active: bool| None = True
+    self_verification: bool | None = False
+    active: bool | None = True
 
 
 class AnalysisBasic(AnalysisBasicBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class AnalysisBaseInDB(AnalysisBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -308,9 +306,9 @@ class AnalysisInDB(AnalysisBaseInDB):
     pass
 
 
-
 class AnalysisCodingBase(BaseAuditModel):
     """SampleTypeMapping"""
+
     analysis_uid: str | None = None
     analysis: Analysis | None
     coding_standard_uid: str
@@ -321,7 +319,7 @@ class AnalysisCodingBase(BaseAuditModel):
 
 
 class AnalysisCodingBaseInDB(AnalysisCodingBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -359,7 +357,7 @@ class AnalysisInterimBase(BaseAuditModel):
 
 
 class AnalysisInterimInDB(AnalysisInterimBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -397,7 +395,7 @@ class AnalysisCorrectionFactorBase(BaseAuditModel):
 
 
 class AnalysisCorrectionFactorBaseInDB(AnalysisCorrectionFactorBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -436,7 +434,7 @@ class AnalysisDetectionLimitBase(BaseAuditModel):
 
 
 class AnalysisDetectionLimitBaseInDB(AnalysisDetectionLimitBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -476,7 +474,7 @@ class AnalysisUncertaintyBase(BaseAuditModel):
 
 
 class AnalysisUncertaintyBaseInDB(AnalysisUncertaintyBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -508,10 +506,10 @@ class AnalysisUncertaintyInDB(AnalysisUncertaintyBaseInDB):
 # Shared properties
 class AnalysisSpecificationBase(BaseAuditModel):
     analysis_uid: str
-    min: float| None = None
-    max: float| None = None
-    min_warn: float| None = None
-    max_warn: float| None = None
+    min: float | None = None
+    max: float | None = None
+    min_warn: float | None = None
+    max_warn: float | None = None
     min_report: str | None = None
     max_report: str | None = None
     warn_values: str | None = None
@@ -519,13 +517,13 @@ class AnalysisSpecificationBase(BaseAuditModel):
     gender: str | None = None
     age_min: int | None = None
     age_max: int | None = None
-    method_uid: str| None = None
-    unit_uid: str| None = None
+    method_uid: str | None = None
+    unit_uid: str | None = None
     unit: Optional[Unit]
 
 
 class AnalysisSpecificationBaseInDB(AnalysisSpecificationBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -558,11 +556,11 @@ class AnalysisSpecificationInDB(AnalysisSpecificationBaseInDB):
 class ResultOptionBase(BaseAuditModel):
     option_key: int | None = None
     value: str | None = None
-    analysis_uid: str| None = None
+    analysis_uid: str | None = None
 
 
 class ResultOptionBaseInDB(ResultOptionBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -593,15 +591,15 @@ class ResultOptionInDB(ResultOptionBaseInDB):
 
 # Shared properties
 class AnalysisRequestBase(BaseAuditModel):
-    patient_uid: str| None = None
-    client_uid: str| None = None
+    patient_uid: str | None = None
+    client_uid: str | None = None
     request_id: str | None = None
     client_request_id: str | None = None
-    internal_use: bool| None = False
+    internal_use: bool | None = False
 
 
 class AnalysisRequestBaseInDB(AnalysisRequestBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -632,21 +630,21 @@ class AnalysisRequestInDB(AnalysisRequestBaseInDB):
 
 # Shared properties
 class SampleBase(BaseAuditModel):
-    analysis_request_uid: str| None = None
-    sample_type_uid: str| None = None
+    analysis_request_uid: str | None = None
+    sample_type_uid: str | None = None
     profiles: Optional[List[Profile]] = []
     analyses: Optional[List[Analysis]] = []
     sample_id: str | None = None
     priority: int | None = 0
-    invalidated_by_uid: str| None = None
+    invalidated_by_uid: str | None = None
     date_invalidated: datetime | None = None
-    internal_use: bool| None = False
+    internal_use: bool | None = False
     due_date: datetime | None = None
     status: str | None = None
 
 
 class SampleBaseInDB(SampleBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -681,7 +679,7 @@ class RejectionReasonBase(BaseAuditModel):
 
 
 class RejectionReasonBaseInDB(RejectionReasonBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -712,29 +710,29 @@ class RejectionReasonInDB(RejectionReasonBaseInDB):
 
 # Shared properties
 class AnalysisResultBase(BaseAuditModel):
-    analysis_uid: str| None = None
-    parent_id: str| None = None
-    sample_uid: str| None = None
-    instrument_uid: str| None = None
-    method_uid: str| None = None
+    analysis_uid: str | None = None
+    parent_id: str | None = None
+    sample_uid: str | None = None
+    instrument_uid: str | None = None
+    method_uid: str | None = None
     result: str | None = None
-    analyst_uid: str| None = None
-    submitted_by_uid: str| None = None
+    analyst_uid: str | None = None
+    submitted_by_uid: str | None = None
     date_submitted: datetime | None = None
     date_verified: datetime | None = None
-    invalidated_by_uid: str| None = None
+    invalidated_by_uid: str | None = None
     date_invalidated: datetime | None = None
     status: str | None = None
-    worksheet_uid: str| None = None
+    worksheet_uid: str | None = None
     worksheet_position: int | None = None
-    assigned: bool| None = False
-    retest: bool| None = False
-    reportable: bool| None = True
+    assigned: bool | None = False
+    retest: bool | None = False
+    reportable: bool | None = True
     reflex_level: int | None = None
 
 
 class AnalysisResultBaseInDB(AnalysisResultBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -770,7 +768,7 @@ class QCSetBase(BaseAuditModel):
 
 
 class QCSetBaseInDB(QCSetBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -805,7 +803,7 @@ class QCLevelBase(BaseAuditModel):
 
 
 class QCLevelBaseInDB(QCLevelBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -843,7 +841,7 @@ class QCTemplateBase(BaseAuditModel):
 
 
 class QCTemplateBaseInDB(QCTemplateBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -866,6 +864,3 @@ class QCTemplate(QCTemplateBaseInDB):
 # Properties stored in DB
 class QCTemplateInDB(QCTemplateBaseInDB):
     pass
-
-
-

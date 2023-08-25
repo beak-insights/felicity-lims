@@ -5,7 +5,7 @@ from sqlalchemy import event, inspect
 from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm.attributes import get_history
 
-from  infrastructure.database.audit.entities import AuditLog
+from infrastructure.database.audit.entities import AuditLog
 
 
 ACTION_CREATE = 1

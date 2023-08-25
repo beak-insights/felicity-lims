@@ -1,6 +1,5 @@
-
 from domain.shared.services import BaseService
-from domain.exceptions import NoFoundError, AleadyExistsError
+from domain.exceptions import NoFoundError, AlreadyExistsError
 
 from domain.analysis.schemas import AnalysisResult
 
@@ -15,7 +14,7 @@ class AnalysisResultService(BaseService[AnalysisResult], IAnalysisResultService)
             required = 1
         current = len(self.verified_by)
         return required, current
-    
+
     # async def last_verificator(self):
     #     _, verifications = await self.verifications()
     #     if verifications == 0:
@@ -160,7 +159,7 @@ class AnalysisResultService(BaseService[AnalysisResult], IAnalysisResultService)
             analyses_results = (await session.execute(stmt)).scalars().all()
 
         return analyses_results
-    
+
 
 class ResultMutationService(BaseService[T], IResultMutationService):
     ...

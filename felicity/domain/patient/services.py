@@ -77,7 +77,7 @@ from domain.patient.schemas import (
         return list(combined)
 
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def create_identification(info, name: str) -> IdentificationResponse:
 
         is_authenticated, felicity_user = await auth_from_info(info)
@@ -108,7 +108,7 @@ from domain.patient.schemas import (
         )
         return IdentificationType(**identification.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def update_identification(
         info, uid: str, name: str
     ) -> IdentificationResponse:
@@ -132,7 +132,7 @@ from domain.patient.schemas import (
         identification = await identification.update(id_in)
         return IdentificationType(**identification.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def create_patient(self, info, payload: PatientInputType) -> PatientResponse:
 
         is_authenticated, felicity_user = await auth_from_info(info)
@@ -185,7 +185,7 @@ from domain.patient.schemas import (
 
         return PatientType(**patient.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def update_patient(
         self, info, uid: str, payload: PatientInputType
     ) -> PatientResponse:

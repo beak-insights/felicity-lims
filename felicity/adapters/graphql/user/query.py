@@ -15,7 +15,6 @@ from adapters.graphql.user.types import (
 from domain.user.schemas import User
 
 
-
 @strawberry.type
 class UserQuery:
     @strawberry.field(permission_classes=[IsAuthenticated])
@@ -82,7 +81,5 @@ class UserQuery:
         return await info.context.permission_service.all()
 
     @strawberry.field(permission_classes=[IsAuthenticated])
-    async def permission_by_uid(
-        self, info: Info, uid: str
-    ) -> Optional[PermissionType]:
+    async def permission_by_uid(self, info: Info, uid: str) -> Optional[PermissionType]:
         return await info.context.permission_service.get(uid=uid)

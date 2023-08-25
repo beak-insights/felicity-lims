@@ -4,7 +4,7 @@ from domain.setup.ports.repository.setup import (
     ILaboratorySettingRespository,
     IManufacturerRespository,
     ISupplierRespository,
-    IUnitRespository
+    IUnitRespository,
 )
 from domain.shared.ports.persistance import PersistenceProtocol
 from infrastructure.database.repository.base import BaseRepository
@@ -15,8 +15,9 @@ from infrastructure.database.setup.entities import (
     LaboratorySetting,
     Manufacturer,
     Supplier,
-    Unit
+    Unit,
 )
+
 
 class DepartmentRespository(BaseRepository[Department], IDepartmentRepository):
     def __init__(self, db: PersistenceProtocol) -> None:
@@ -30,10 +31,13 @@ class LaboratoryRespository(BaseRepository[Laboratory], ILaboratoryRepository):
         super().__init__(db)
 
 
-class LaboratorySettingRespository(BaseRepository[LaboratorySetting], ILaboratorySettingRepository):
+class LaboratorySettingRespository(
+    BaseRepository[LaboratorySetting], ILaboratorySettingRepository
+):
     def __init__(self, db: PersistenceProtocol) -> None:
         self.model = LaboratorySetting
         super().__init__(db)
+
 
 class ManufacturerRespository(BaseRepository[Manufacturer], IManufacturerRepository):
     def __init__(self, db: PersistenceProtocol) -> None:

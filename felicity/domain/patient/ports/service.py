@@ -1,11 +1,7 @@
 from abc import ABC, abstractmethod
 
 from domain.shared.ports.service import IBaseService
-from domain.patient.schemas import (
-    Identification,
-    PatientIdentification,
-    Patient
-)
+from domain.patient.schemas import Identification, PatientIdentification, Patient
 
 
 class IIdentificationService(IBaseService[Identification], ABC):

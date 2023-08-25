@@ -25,10 +25,9 @@ class AnalysisCategoryInputType:
     name: str
     department_uid: str | None = None
     description: str | None = None
-    active: bool| None = True
+    active: bool | None = True
 
 
-@strawberry.mutation(permission_classes=[IsAuthenticated])
 async def create_analysis_category(
     info, payload: AnalysisCategoryInputType
 ) -> AnalysisCategoryResponse:
@@ -67,7 +66,6 @@ async def create_analysis_category(
     return a_types.AnalysisCategoryType(**analysis_category.marshal_simple())
 
 
-@strawberry.mutation(permission_classes=[IsAuthenticated])
 async def update_analysis_category(
     self, info, uid: str, payload: AnalysisCategoryInputType
 ) -> AnalysisCategoryResponse:  # noqa

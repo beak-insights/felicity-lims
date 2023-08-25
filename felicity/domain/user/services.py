@@ -2,33 +2,37 @@ from datetime import timedelta
 from core.setting import settings
 from domain.shared.utils.validator import is_valid_email
 from core.security import (
-    verify_password, 
-    create_access_token, 
+    verify_password,
+    create_access_token,
     generate_password_reset_token,
-    get_password_hash, password_check
+    get_password_hash,
+    password_check,
 )
 from domain.user.ports.service import (
     IUserService,
     IGroupService,
     IPermissionService,
-    IUserPreferenceService
+    IUserPreferenceService,
 )
 from domain.user.schemas import (
-    User, UserCreate, UserUpdate,
+    User,
+    UserCreate,
+    UserUpdate,
     AuthenticatedUser,
-    Group, GroupCreate,
+    Group,
+    GroupCreate,
     Permission,
     GroupPermission,
-    UserPreferenceCreate
+    UserPreferenceCreate,
 )
-from domain.user.ports.repository import (
-    IUserRepository,
-    IGroupRepository
-)
+from domain.user.ports.repository import IUserRepository, IGroupRepository
 from domain.shared.services import BaseService
 from domain.exceptions import (
-    AleadyExistsError, NotAllowedError, NotFoundError,
-    GenericError, ValidationError
+    AlreadyExistsError,
+    NotAllowedError,
+    NotFoundError,
+    GenericError,
+    ValidationError,
 )
 from domain.user.conf import Themes, UserType
 from domain.shared.ports.paginator.cursor import PageCursor
@@ -39,59 +43,65 @@ class UserService(BaseService[User], IUserService):
     user_preference_service = None
     group_service = None
     permission_service = None
-    def __init__(self, 
+
+    def __init__(
+        self,
         repository: IUserRepository,
         user_preference_service: IUserPreferenceService,
         group_service: IGroupService,
-        permission_service: IPermissionService
+        permission_service: IPermissionService,
     ) -> None:
         self.repository = repository
         self.user_preference_service = user_preference_service
         self.group_service = group_service
         self.permission_service = permission_service
         super().__init__(self.repository)
-        
+
     async def create(
-        self, 
+        self,
         first_name: str,
         last_name: str,
         email: str,
-        user_name: str, 
-        password: str, 
+        user_name: str,
+        password: str,
         passwordc: str,
         group_uid: str | None = None,
-        open_reg: bool = False
+        open_reg: bool = False,
     ) -> User:
-        user = await self.add_user(first_name, last_name, email, user_name, password, passwordc, open_reg)
+        user = await self.add_user(
+            first_name, last_name, email, user_name, password, passwordc, open_reg
+        )
         user = await self.add_to_group(user, group_uid)
         return await self.add_preferences(user)
 
     async def add_user(
-        self, 
+        self,
         first_name: str,
         last_name: str,
         email: str,
-        user_name: str, 
-        password: str, 
+        user_name: str,
+        password: str,
         passwordc: str,
-        open_reg: bool = False
+        open_reg: bool = False,
     ) -> User:
-        
+
         if open_reg and not settings.USERS_OPEN_REGISTRATION:
             raise NotAllowedError("Open user registration is not allowed")
-        
+
         if email:
             user_e = await self.get(email=email)
             if user_e:
-                raise AleadyExistsError("A user with this email already exists in the system")
-            
+                raise AlreadyExistsError(
+                    "A user with this email already exists in the system"
+                )
+
         if password != passwordc:
             raise ValidationError("Password do not match, try again")
 
         policy = password_check(password, user_name)
         if not policy["password_ok"]:
             raise ValidationError(policy["message"])
-        
+
         user_in = {
             "first_name": first_name,
             "last_name": last_name,
@@ -102,27 +112,31 @@ class UserService(BaseService[User], IUserService):
             "passwordc": password,
             "is_blocked": False,
             "is_superuser": False,
-            "user_type": UserType.LABORATORY_CONTACT
-        }        
+            "user_type": UserType.LABORATORY_CONTACT,
+        }
         user_in = UserCreate(**user_in)
-        return await self.repository.create(**{
-            **self.marshal(user_in),
-            "hashed_password": get_password_hash(user_in.password)
-        })
-    
+        return await self.repository.create(
+            **{
+                **self.marshal(user_in),
+                "hashed_password": get_password_hash(user_in.password),
+            }
+        )
+
     async def add_to_group(self, user: User, group_uid: str) -> User:
         if not group_uid:
             raise ValidationError("group id is required")
         group = await self.group_service.get(uid=group_uid)
         user.groups.append(group)
         return await self.repository.update(user, **self.marshal(user))
-        
+
     async def add_preferences(self, user: User) -> User:
-        pref_in = UserPreferenceCreate(**{"expanded_menu":False, "departments": [], "theme":Themes.LIGHT})
+        pref_in = UserPreferenceCreate(
+            **{"expanded_menu": False, "departments": [], "theme": Themes.LIGHT}
+        )
         preference = await self.user_preference_service.create(**self.marshal(pref_in))
         update_in = UserUpdate(**{"preference_uid": preference.uid})
         return await self.repository.update(user, **self.marshal(update_in))
-        
+
     async def update(
         self,
         user_uid: str,
@@ -131,7 +145,7 @@ class UserService(BaseService[User], IUserService):
         mobile_phone: str | None,
         email: str | None,
         group_uid: str | None,
-        is_active: bool| None,
+        is_active: bool | None,
     ) -> User:
 
         user = await self.get(uid=user_uid)
@@ -163,7 +177,7 @@ class UserService(BaseService[User], IUserService):
             await self.repository.update(user, **self.marshal(user))
 
         return user
-    
+
     async def paging_filter(
         self,
         page_size: int | None = None,
@@ -180,50 +194,41 @@ class UserService(BaseService[User], IUserService):
             sort_by,
         )
 
-    async def authenticate(
-        self, username: str, password: str
-    ) -> AuthenticatedUser:
-        
+    async def authenticate(self, username: str, password: str) -> AuthenticatedUser:
+
         if is_valid_email(username):
             user = await self.get(email=username)
         else:
             user = await self.get(username=username)
-            
+
         if not user:
             raise NotFoundError(f"User with username {username} not found")
-        
+
         has_access = await self.has_access(user, password)
         if not has_access:
-            raise NotAllowedError(error="Authentication failed")
+            raise NotAllowedError("Authentication failed")
 
-        access_token_expires = timedelta(
-            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = (
             create_access_token(user.uid, expires_delta=access_token_expires),
         )
         return AuthenticatedUser(token=access_token[0], token_type="bearer", user=user)
 
-
     async def recover_password(self, username: str) -> bool:
         auth = await self.user_auth_service.get(username=username)
         if not auth:
-            raise NotFoundError(
-                "Error, failed to fetch user for password reset"
-            )
+            raise NotFoundError("Error, failed to fetch user for password reset")
 
-        password_reset_token = generate_password_reset_token(
-            email=auth.user.email
-        )
+        password_reset_token = generate_password_reset_token(email=auth.user.email)
 
         # post_event("password_reset", user=user, token=password_reset_token)   noqa
         # msg = "Password recovery email sent"  noqa
         return True
 
-   
     async def has_access(self, user: User, password):
         if user.is_blocked:
             raise NotAllowedError("Blocked Account: Reset Password to regain access")
-    
+
         if not getattr(user, "is_active"):  # e.g self.ccuser.is_active
             raise NotAllowedError("In active account: contact administrator")
 
@@ -244,14 +249,11 @@ class UserService(BaseService[User], IUserService):
             user_obj["login_retry"] = 0
             await self.repository.update(user, **user_obj)
         return user
-    
 
 
-class GroupService(BaseService[Group], IGroupService):    
+class GroupService(BaseService[Group], IGroupService):
     def __init__(
-        self, 
-        repository: IGroupRepository,
-        premission_service: IPermissionService
+        self, repository: IGroupRepository, premission_service: IPermissionService
     ):
         self.repository = repository
         self.premission_service = premission_service
@@ -260,13 +262,11 @@ class GroupService(BaseService[Group], IGroupService):
     async def create(self, name: str, pages: str, active: bool = True) -> Group:
 
         if not name:
-            raise ValidationError(error="Name Required")
+            raise ValidationError("Name Required")
 
         group = await self.repository.get(name=name)
         if group:
-            return NotAllowedError(
-                f"Group with name {name} already exists"
-            )
+            raise NotAllowedError(f"Group with name {name} already exists")
 
         incoming = {
             "keyword": name.upper(),
@@ -285,39 +285,38 @@ class GroupService(BaseService[Group], IGroupService):
 
         group = await self.repository.get(uid=uid)
         if not group:
-            return NotFoundError(error=f"Group with uid {uid} does not exist")
+            raise NotFoundError(f"Group with uid {uid} does not exist")
 
         setattr(group, "name", name)
         setattr(group, "pages", pages)
         setattr(group, "active", active)
         setattr(group, "keyword", name.upper())
-        
+
         return await self.repository.update(group, **self.marshal(group))
 
-    async def update_group_permissions(self, group_uid: str, permission_uid: str) -> GroupPermission:
+    async def update_group_permissions(
+        self, group_uid: str, permission_uid: str
+    ) -> GroupPermission:
         if not group_uid or not permission_uid:
-            raise NotFoundError(error="Group and Permission are required.")
+            raise NotFoundError("Group and Permission are required.")
 
         group = await self.repository.get(uid=group_uid)
         if not group:
-            raise NotFoundError(error=f"group with uid {group_uid} not found")
+            raise NotFoundError(f"group with uid {group_uid} not found")
 
         if permission_uid in [perm.uid for perm in group.permissions]:
-            permissions = filter(
-                lambda p: p.uid == permission_uid, group.permissions)
+            permissions = filter(lambda p: p.uid == permission_uid, group.permissions)
             permission = list(permissions)[0]
             group.permissions.remove(permission)
         else:
             permission = await self.premission_service.get(uid=permission_uid)
             if not permission:
-                raise NotFoundError(
-                    f"permission with uid {permission_uid} not found"
-                )
+                raise NotFoundError(f"permission with uid {permission_uid} not found")
             group.permissions.append(permission)
         group = await self.repository.update(group, **self.marshal(group))
 
         return GroupPermission(group=group, permission=permission)
-     
+
     def add_member(self, group: Group, member):
         group.members.add(member)
         self.repository.update(group, **self.marshal(group))
@@ -337,5 +336,7 @@ class GroupService(BaseService[Group], IGroupService):
 
 class PermissionService(BaseService[Permission], IPermissionService):
     ...
-    
-class UserPreferenceService(BaseService[Permission], IUserPreferenceService): ...
+
+
+class UserPreferenceService(BaseService[Permission], IUserPreferenceService):
+    ...

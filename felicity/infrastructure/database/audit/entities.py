@@ -2,13 +2,14 @@ import json
 
 from sqlalchemy import Column, Integer, String, UnicodeText
 
-from  infrastructure.database.sqlalchemy import DBModel
+from infrastructure.database.sqlalchemy import DBModel
 
 
 class AuditLog(DBModel):
     """Model an audit log of user actions"""
+
     __tablename__ = "audit_log"
-    
+
     user_id = Column(String, doc="The ID of the user who made the change")
     target_type = Column(
         String(100), nullable=False, doc="The table name of the altered object"

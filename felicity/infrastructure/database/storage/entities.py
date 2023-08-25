@@ -1,22 +1,23 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
-from infrastructure.database import  BaseAuditDBModel
+from infrastructure.database import BaseAuditDBModel
 
 
 class StoreRoom(BaseAuditDBModel):
     """Store Room"""
+
     __tablename__ = "store_room"
-    
+
     name = Column(String, nullable=False)
     description = Column(String, nullable=False)
-
 
 
 class StorageLocation(BaseAuditDBModel):
     """Storage Location
     e.g: Fridge, CupBoard, Floor, Box, etc
     """
+
     __tablename__ = "storage_location"
 
     name = Column(String, nullable=False)
@@ -29,6 +30,7 @@ class StorageSection(BaseAuditDBModel):
     """Storage Location Section/Compartment
     e.g: Shelve, Tray, Rack, etc
     """
+
     __tablename__ = "storage_section"
 
     name = Column(String, nullable=False)
@@ -45,6 +47,7 @@ class StorageContainer(BaseAuditDBModel):
     """Storage Carrier
     e.g: Sample K-Lite, etc
     """
+
     __tablename__ = "storage_container"
 
     name = Column(String, nullable=False)

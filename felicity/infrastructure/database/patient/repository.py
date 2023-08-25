@@ -1,7 +1,7 @@
 from domain.patient.ports.repository import (
     IPatientRepository,
     IIdentificationRepository,
-    IPatientIdentificationRepository
+    IPatientIdentificationRepository,
 )
 from domain.shared.ports.persistance import PersistenceProtocol
 from infrastructure.database.repository.base import BaseRepository
@@ -9,7 +9,7 @@ from infrastructure.database.repository.base import BaseRepository
 from infrastructure.database.patient.entities import (
     Patient,
     Identification,
-    PatientIdentification
+    PatientIdentification,
 )
 
 
@@ -19,13 +19,17 @@ class PatientRespository(BaseRepository[Patient], IPatientRepository):
         super().__init__(db)
 
 
-class IdentificationRespository(BaseRepository[Identification], IIdentificationRepository):
+class IdentificationRespository(
+    BaseRepository[Identification], IIdentificationRepository
+):
     def __init__(self, db: PersistenceProtocol) -> None:
         self.model = Identification
         super().__init__(db)
 
 
-class PatientIdentificationRespository(BaseRepository[PatientIdentification], IPatientIdentificationRepository):
+class PatientIdentificationRespository(
+    BaseRepository[PatientIdentification], IPatientIdentificationRepository
+):
     def __init__(self, db: PersistenceProtocol) -> None:
         self.model = PatientIdentification
         super().__init__(db)

@@ -1,13 +1,10 @@
-
 from domain.shared.services import BaseService
-from domain.exceptions import NoFoundError, AleadyExistsError
+from domain.exceptions import NoFoundError, AlreadyExistsError
 from domain.impress.ports.service import IReportImpressService
 from domain.impress.schemas import ReportImpress
 
 
 class ReportImpressService(BaseService[ReportImpress], IReportImpressService):
-
-
     async def impress_reports_download(
         self, info, uids: List[str]
     ) -> BytesScalar | None:
@@ -50,10 +47,7 @@ class ReportImpressService(BaseService[ReportImpress], IReportImpressService):
 
         return out_stream
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
-    async def impress_report_download(
-        self, info, uid: str
-    ) -> BytesScalar | None:
+    async def impress_report_download(self, info, uid: str) -> BytesScalar | None:
         report = await ReportImpress.get(uid=uid)
 
         if not report:

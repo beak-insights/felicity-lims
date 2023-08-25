@@ -19,14 +19,16 @@ from infrastructure.database.user.entities import User
 
 class CodingStandard(BaseAuditDBModel):
     """conding standars e.g LOINC"""
+
     __tablename__ = "coding_standard"
-    
+
     name = Column(String, nullable=False)
     description = Column(String, nullable=False)
 
 
 class SampleType(BaseAuditDBModel):
     """SampleType"""
+
     __tablename__ = "sample_type"
 
     name = Column(String, nullable=False)
@@ -38,11 +40,14 @@ class SampleType(BaseAuditDBModel):
 
 class SampleTypeCoding(BaseAuditDBModel):
     """SampleTypeCoding"""
+
     __tablename__ = "sample_type_coding"
-    
+
     sample_type_uid = Column(String, ForeignKey("sample_type.uid"), nullable=False)
     sample_type = relationship("SampleType", lazy="selectin")
-    coding_standard_uid = Column(String, ForeignKey("coding_standard.uid"), nullable=True)
+    coding_standard_uid = Column(
+        String, ForeignKey("coding_standard.uid"), nullable=True
+    )
     coding_standard = relationship("CodingStandard", lazy="selectin")
     name = Column(String, nullable=True)
     description = Column(String, nullable=True)
@@ -84,18 +89,19 @@ analysis_profile = Table(
 
 class AnalysisCategory(BaseAuditDBModel):
     """Categorise Analysis"""
+
     __tablename__ = "analysis_category"
 
     name = Column(String, nullable=False)
     description = Column(String, nullable=False)
-    department_uid = Column(String, ForeignKey(
-        "department.uid"), nullable=True)
+    department_uid = Column(String, ForeignKey("department.uid"), nullable=True)
     department = relationship("Department", lazy="selectin")
     active = Column(Boolean(), default=False)
 
 
 class Profile(BaseAuditDBModel):
     """Grouped Analysis e.g FBC, U&E's, MCS ..."""
+
     __tablename__ = "profile"
 
     name = Column(String, nullable=False)
@@ -112,19 +118,20 @@ class Profile(BaseAuditDBModel):
     sample_types = relationship(
         "SampleType", secondary=profile_sample_type, backref="profiles", lazy="selectin"
     )
-    department_uid = Column(String, ForeignKey(
-        "department.uid"), nullable=True)
+    department_uid = Column(String, ForeignKey("department.uid"), nullable=True)
     department = relationship("Department", lazy="selectin")
 
 
 class ProfileCoding(BaseAuditDBModel):
     """ProfileCoding"""
+
     __tablename__ = "profile_coding"
-    
-    profile_uid = Column(String, ForeignKey(
-        "profile.uid"), nullable=True)
+
+    profile_uid = Column(String, ForeignKey("profile.uid"), nullable=True)
     profile = relationship("Profile", lazy="selectin")
-    coding_standard_uid = Column(String, ForeignKey("coding_standard.uid"), nullable=True)
+    coding_standard_uid = Column(
+        String, ForeignKey("coding_standard.uid"), nullable=True
+    )
     coding_standard = relationship("CodingStandard", lazy="selectin")
     name = Column(String, nullable=True)
     description = Column(String, nullable=True)
@@ -154,6 +161,7 @@ analysis_instrument = Table(
 
 class Analysis(BaseAuditDBModel):
     """Analysis Test/Service"""
+
     __tablename__ = "analysis"
 
     name = Column(String, nullable=False)
@@ -163,10 +171,10 @@ class Analysis(BaseAuditDBModel):
     unit_uid = Column(String, ForeignKey("unit.uid"), nullable=True)
     unit = relationship("Unit", lazy="selectin")
     profiles = relationship(
-        "Profile", 
-        secondary=analysis_profile, 
+        "Profile",
+        secondary=analysis_profile,
         back_populates="analyses",
-        lazy="selectin"
+        lazy="selectin",
     )
     sample_types = relationship(
         "SampleType",
@@ -180,8 +188,7 @@ class Analysis(BaseAuditDBModel):
     methods = relationship(
         "Method", secondary=analysis_method, backref="analyses", lazy="selectin"
     )
-    interims = relationship(
-        "AnalysisInterim", backref="analysis", lazy="selectin")
+    interims = relationship("AnalysisInterim", backref="analysis", lazy="selectin")
     correction_factors = relationship(
         "AnalysisCorrectionFactor", backref="analysis", lazy="selectin"
     )
@@ -194,16 +201,13 @@ class Analysis(BaseAuditDBModel):
     uncertainties = relationship(
         "AnalysisUncertainty", backref="analysis", lazy="selectin"
     )
-    result_options = relationship(
-        "ResultOption", backref="analyses", lazy="selectin")
+    result_options = relationship("ResultOption", backref="analyses", lazy="selectin")
     category_uid = Column(String, ForeignKey("analysis_category.uid"))
-    category = relationship(
-        AnalysisCategory, backref="analyses", lazy="selectin")
+    category = relationship(AnalysisCategory, backref="analyses", lazy="selectin")
     tat_length_minutes = Column(Integer, nullable=True)  # to calculate TAT
     sort_key = Column(Integer, nullable=True)
     internal_use = Column(Boolean(), default=False)  # e.g QC Services
-    department_uid = Column(String, ForeignKey(
-        "department.uid"), nullable=True)
+    department_uid = Column(String, ForeignKey("department.uid"), nullable=True)
     department = relationship("Department", lazy="selectin")
     # precision -> decimal places to report
     precision = Column(Integer, nullable=True)
@@ -215,12 +219,14 @@ class Analysis(BaseAuditDBModel):
 
 class AnalysisCoding(BaseAuditDBModel):
     """AnalysisCoding"""
+
     __tablename__ = "analysis_coding"
-    
-    analysis_uid = Column(String, ForeignKey(
-        "analysis.uid"), nullable=True)
+
+    analysis_uid = Column(String, ForeignKey("analysis.uid"), nullable=True)
     analysis = relationship("Analysis", lazy="selectin")
-    coding_standard_uid = Column(String, ForeignKey("coding_standard.uid"), nullable=True)
+    coding_standard_uid = Column(
+        String, ForeignKey("coding_standard.uid"), nullable=True
+    )
     coding_standard = relationship("CodingStandard", lazy="selectin")
     name = Column(String, nullable=True)
     description = Column(String, nullable=True)
@@ -229,39 +235,36 @@ class AnalysisCoding(BaseAuditDBModel):
 
 class AnalysisInterim(BaseAuditDBModel):
     """Analysis Interim Result Field"""
+
     __tablename__ = "analysis_interim"
 
     key = Column(Integer, nullable=False)
     value = Column(String, nullable=False)
-    analysis_uid = Column(String, ForeignKey(
-        "analysis.uid"), nullable=True)
-    instrument_uid = Column(String, ForeignKey(
-        "instrument.uid"), nullable=True)
+    analysis_uid = Column(String, ForeignKey("analysis.uid"), nullable=True)
+    instrument_uid = Column(String, ForeignKey("instrument.uid"), nullable=True)
     instrument = relationship("Instrument")
 
 
 class AnalysisCorrectionFactor(BaseAuditDBModel):
     """Analysis Correction Factor"""
+
     __tablename__ = "analysis_correction_factor"
 
     factor = Column(Float, nullable=False)
-    analysis_uid = Column(String, ForeignKey(
-        "analysis.uid"), nullable=True)
-    instrument_uid = Column(String, ForeignKey(
-        "instrument.uid"), nullable=True)
+    analysis_uid = Column(String, ForeignKey("analysis.uid"), nullable=True)
+    instrument_uid = Column(String, ForeignKey("instrument.uid"), nullable=True)
     method_uid = Column(String, ForeignKey("method.uid"), nullable=True)
 
 
 class AnalysisDetectionLimit(BaseAuditDBModel):
     """Analysis Detection Limit"""
+
     __tablename__ = "analysis_detection_limit"
 
     lower_limit = Column(Float, nullable=False)
     upper_limit = Column(Float, nullable=False)
-    analysis_uid = Column(String, ForeignKey(
-        "analysis.uid"), nullable=True)
-    instrument_uid = Column(String, ForeignKey(
-        "instrument.uid"), nullable=True)
+    analysis_uid = Column(String, ForeignKey("analysis.uid"), nullable=True)
+    instrument_uid = Column(String, ForeignKey("instrument.uid"), nullable=True)
     method_uid = Column(String, ForeignKey("method.uid"), nullable=True)
 
 
@@ -269,24 +272,23 @@ class AnalysisUncertainty(BaseAuditDBModel):
     """Analysis Measurment Uncertainty
     If value is within the the range min.max then result becomes a range (result +/- value)
     """
+
     __tablename__ = "analysis_uncertainty"
 
     min = Column(Float, nullable=False)
     max = Column(Float, nullable=False)
     value = Column(Float, nullable=False)
-    analysis_uid = Column(String, ForeignKey(
-        "analysis.uid"), nullable=True)
-    instrument_uid = Column(String, ForeignKey(
-        "instrument.uid"), nullable=True)
+    analysis_uid = Column(String, ForeignKey("analysis.uid"), nullable=True)
+    instrument_uid = Column(String, ForeignKey("instrument.uid"), nullable=True)
     method_uid = Column(String, ForeignKey("method.uid"), nullable=True)
 
 
 class AnalysisSpecification(BaseAuditDBModel):
     """Analysis Specification Ranges"""
+
     __tablename__ = "analysis_specification"
 
-    analysis_uid = Column(String, ForeignKey(
-        "analysis.uid"), nullable=True)
+    analysis_uid = Column(String, ForeignKey("analysis.uid"), nullable=True)
     unit_uid = Column(String, ForeignKey("unit.uid"), nullable=True)
     unit = relationship("Unit", lazy="selectin")
     # Normal Range
@@ -313,9 +315,9 @@ class AnalysisSpecification(BaseAuditDBModel):
     age_max = Column(Integer, nullable=True)
 
 
-
 class ResultOption(BaseAuditDBModel):
     """Result Choices"""
+
     __tablename__ = "result_option"
 
     option_key = Column(Integer, nullable=False)
@@ -325,6 +327,7 @@ class ResultOption(BaseAuditDBModel):
 
 class AnalysisRequest(BaseAuditDBModel):
     """AnalysisRequest a.k.a Laboratory Request"""
+
     __tablename__ = "result_request"
 
     patient_uid = Column(String, ForeignKey("patient.uid"))
@@ -335,12 +338,10 @@ class AnalysisRequest(BaseAuditDBModel):
     client = relationship(
         ct_entities.Client, backref="analysis_requests", lazy="selectin"
     )
-    samples = relationship(
-        "Sample", back_populates="analysis_request", lazy="selectin")
+    samples = relationship("Sample", back_populates="analysis_request", lazy="selectin")
     request_id = Column(String, index=True, unique=True, nullable=True)
     client_request_id = Column(String, unique=True, nullable=False)
     internal_use = Column(Boolean(), default=False)  # e.g Test Requests
-
 
 
 """
@@ -370,21 +371,21 @@ sample_rejection_reason = Table(
     "sample_rejection_reason",
     DBModel.metadata,
     Column("sample_uid", ForeignKey("sample.uid"), primary_key=True),
-    Column("rejection_reason_uid", ForeignKey(
-        "rejectionreason.uid"), primary_key=True),
+    Column("rejection_reason_uid", ForeignKey("rejectionreason.uid"), primary_key=True),
 )
 
 
 class RejectionReason(BaseAuditDBModel):
     """Rejection Reason"""
+
     __tablename__ = "rejection_reason"
 
     reason = Column(String, nullable=False)
 
 
-
 class Sample(Auditable, BaseMPTT):
     """Sample"""
+
     __tablename__ = "sample"
 
     analysis_request_uid = Column(
@@ -393,10 +394,8 @@ class Sample(Auditable, BaseMPTT):
     analysis_request = relationship(
         "AnalysisRequest", back_populates="samples", lazy="selectin"
     )
-    sample_type_uid = Column(String, ForeignKey(
-        "sampletype.uid"), nullable=False)
-    sample_type = relationship(
-        "SampleType", backref="samples", lazy="selectin")
+    sample_type_uid = Column(String, ForeignKey("sampletype.uid"), nullable=False)
+    sample_type = relationship("SampleType", backref="samples", lazy="selectin")
     sample_id = Column(String, index=True, unique=True, nullable=True)
     profiles = relationship(
         Profile, secondary=sample_profile, backref="samples", lazy="selectin"
@@ -411,40 +410,28 @@ class Sample(Auditable, BaseMPTT):
     priority = Column(Integer, nullable=False, default=0)
     status = Column(String, nullable=False)
     date_collected = Column(DateTime, nullable=True)
-    received_by_uid = Column(
-        String, ForeignKey("user.uid"), nullable=True)
-    received_by = relationship(
-        User, foreign_keys=[received_by_uid], lazy="selectin")
+    received_by_uid = Column(String, ForeignKey("user.uid"), nullable=True)
+    received_by = relationship(User, foreign_keys=[received_by_uid], lazy="selectin")
     date_received = Column(DateTime, nullable=True)
-    submitted_by_uid = Column(
-        String, ForeignKey("user.uid"), nullable=True)
-    submitted_by = relationship(
-        User, foreign_keys=[submitted_by_uid], lazy="selectin")
+    submitted_by_uid = Column(String, ForeignKey("user.uid"), nullable=True)
+    submitted_by = relationship(User, foreign_keys=[submitted_by_uid], lazy="selectin")
     date_submitted = Column(DateTime, nullable=True)
-    verified_by_uid = Column(
-        String, ForeignKey("user.uid"), nullable=True)
-    verified_by = relationship(
-        User, foreign_keys=[verified_by_uid], lazy="selectin")
+    verified_by_uid = Column(String, ForeignKey("user.uid"), nullable=True)
+    verified_by = relationship(User, foreign_keys=[verified_by_uid], lazy="selectin")
     date_verified = Column(DateTime, nullable=True)
-    published_by_uid = Column(
-        String, ForeignKey("user.uid"), nullable=True)
-    published_by = relationship(
-        User, foreign_keys=[published_by_uid], lazy="selectin")
+    published_by_uid = Column(String, ForeignKey("user.uid"), nullable=True)
+    published_by = relationship(User, foreign_keys=[published_by_uid], lazy="selectin")
     date_published = Column(DateTime, nullable=True)
     printed = Column(Boolean(), default=False)
-    printed_by_uid = Column(
-        String, ForeignKey("user.uid"), nullable=True)
-    printed_by = relationship(
-        User, foreign_keys=[printed_by_uid], lazy="selectin")
+    printed_by_uid = Column(String, ForeignKey("user.uid"), nullable=True)
+    printed_by = relationship(User, foreign_keys=[printed_by_uid], lazy="selectin")
     date_printed = Column(DateTime, nullable=True)
-    invalidated_by_uid = Column(
-        String, ForeignKey("user.uid"), nullable=True)
+    invalidated_by_uid = Column(String, ForeignKey("user.uid"), nullable=True)
     invalidated_by = relationship(
         User, foreign_keys=[invalidated_by_uid], lazy="selectin"
     )
     date_invalidated = Column(DateTime, nullable=True)
-    cancelled_by_uid = Column(
-        String, ForeignKey("user.uid"), nullable=True)
+    cancelled_by_uid = Column(String, ForeignKey("user.uid"), nullable=True)
     cancelled_by = relationship(
         "User", foreign_keys=[cancelled_by_uid], lazy="selectin"
     )

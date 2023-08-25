@@ -1,6 +1,6 @@
 from typing import List, Optional, Any
 from domain.shared.services import BaseService
-from domain.exceptions import NoFoundError, AleadyExistsError
+from domain.exceptions import NoFoundError, AlreadyExistsError
 from domain.notification.ports.service import (
     IActivityFeedService,
     IActivityStreamService,
@@ -15,7 +15,7 @@ from domain.user.schemas import User, Group
 from domain.setup.schemas import Department
 
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def notification_filter(
         self,
         info,

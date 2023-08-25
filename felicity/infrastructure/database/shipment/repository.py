@@ -1,7 +1,7 @@
 from domain.shipment.ports.repository import (
     IReferralLaboratoryRepository,
     IShipmentRepository,
-    IShippedSampleRepository 
+    IShippedSampleRepository,
 )
 from domain.shared.ports.persistance import PersistenceProtocol
 from infrastructure.database.repository.base import BaseRepository
@@ -9,10 +9,13 @@ from infrastructure.database.repository.base import BaseRepository
 from infrastructure.database.shipment.entities import (
     ReferralLaboratory,
     Shipment,
-    ShippedSample
+    ShippedSample,
 )
 
-class ReferralLaboratoryRespository(BaseRepository[ReferralLaboratory], IReferralLaboratoryRepository):
+
+class ReferralLaboratoryRespository(
+    BaseRepository[ReferralLaboratory], IReferralLaboratoryRepository
+):
     def __init__(self, db: PersistenceProtocol) -> None:
         self.model = ReferralLaboratory
         super().__init__(db)

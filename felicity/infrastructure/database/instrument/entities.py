@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Table
 from sqlalchemy.orm import relationship
 
-from infrastructure.database import  BaseAuditDBModel, DBModel
+from infrastructure.database import BaseAuditDBModel, DBModel
 
 
 """
@@ -17,8 +17,9 @@ method_instrument = Table(
 
 class Method(BaseAuditDBModel):
     """Analyses/Test Method"""
+
     __tablename__ = "method"
-    
+
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
     keyword = Column(String, nullable=True)
@@ -37,6 +38,7 @@ class Method(BaseAuditDBModel):
 
 class InstrumentType(BaseAuditDBModel):
     """Instrument Type"""
+
     __tablename__ = "instrument_type"
 
     name = Column(String, nullable=False)
@@ -45,6 +47,7 @@ class InstrumentType(BaseAuditDBModel):
 
 class Instrument(BaseAuditDBModel):
     """Instrument/Analyser"""
+
     __tablename__ = "instrument"
 
     name = Column(String, nullable=False)
@@ -56,9 +59,7 @@ class Instrument(BaseAuditDBModel):
     instrument_type = relationship("InstrumentType", lazy="selectin")
     supplier_uid = Column(String, ForeignKey("supplier.uid"), nullable=True)
     supplier = relationship("Supplier", backref="instruments", lazy="selectin")
-    manufacturer_uid = Column(
-        String, ForeignKey("manufacturer.uid"), nullable=True
-    )
+    manufacturer_uid = Column(String, ForeignKey("manufacturer.uid"), nullable=True)
     manufacturer = relationship(
         "Manufacturer", backref="manufacturers", lazy="selectin"
     )
@@ -69,6 +70,7 @@ class Instrument(BaseAuditDBModel):
 
 class InstrumentCalibration(BaseAuditDBModel):
     """Instrument Caliberation Task"""
+
     __tablename__ = "instrument_calibration"
 
     instrument_uid = Column(String, ForeignKey("instrument.uid"), nullable=True)
@@ -87,6 +89,7 @@ class InstrumentCalibration(BaseAuditDBModel):
 
 class CalibrationCertificate(BaseAuditDBModel):
     """Instrument Calibration Certificate"""
+
     __tablename__ = "calibration_certificate"
 
     instrument_uid = Column(String, ForeignKey("instrument.uid"), nullable=True)
@@ -114,7 +117,7 @@ class CalibrationCertificate(BaseAuditDBModel):
 #     )
 #     issue_date = Column(DateTime, nullable=False)
 #     expiry_date = Column(DateTime, nullable=False)
-    
+
 #     @property
 #     async def is_valid(self):
 #         return datetime.now() < self.expiry_date

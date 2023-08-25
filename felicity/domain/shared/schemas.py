@@ -11,12 +11,11 @@ class Token(BaseModel):
 
 
 class TokenPayload(BaseModel):
-    sub: str| None = None
+    sub: str | None = None
 
 
 class Message(BaseModel):
     msg: str
-
 
 
 class SimpleUser(BaseModel):
@@ -27,11 +26,10 @@ class SimpleUser(BaseModel):
     user_name: str | None = None
 
 
-
 class BaseAuditModel(BaseModel):
     created_at: datetime | None = None
-    created_by_uid: str| None = None
+    created_by_uid: str | None = None
     created_by: Optional[SimpleUser] = None  # noqa
     updated_at: datetime | None = None
-    updated_by_uid: str| None = None
+    updated_by_uid: str | None = None
     updated_by: Optional[SimpleUser] = None  # noqa

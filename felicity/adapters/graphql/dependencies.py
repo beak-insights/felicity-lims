@@ -11,21 +11,28 @@ from adapters.shared import BaseDependencyService
 
 from domain.shared.ports.persistance import PersistenceProtocol
 from domain.user.services import (
-    IUserService, UserService,
-    IGroupService, GroupService,
-    IUserPreferenceService, UserPreferenceService,
-    IPermissionService, PermissionService,
+    IUserService,
+    UserService,
+    IGroupService,
+    GroupService,
+    IUserPreferenceService,
+    UserPreferenceService,
+    IPermissionService,
+    PermissionService,
 )
 from infrastructure.database.user.repository import (
-    IUserRepository, UserRespository,
-    IGroupRepository, GroupRespository,
-    IUserPreferenceRepository, UserPreferenceRespository,
-    IPermissionRepository, PermissionRespository,
+    IUserRepository,
+    UserRespository,
+    IGroupRepository,
+    GroupRespository,
+    IUserPreferenceRepository,
+    UserPreferenceRespository,
+    IPermissionRepository,
+    PermissionRespository,
 )
 from domain.user.schemas import User
 from infrastructure.database.sqlalchemy import Database
 from infrastructure.database.repository.base import BaseRepository, IBaseRepository
-
 
 
 @dataclass
@@ -36,7 +43,8 @@ class InfoContext:
     user_service: IUserService
     group_service: IGroupService
     permission_service: IPermissionService
-    
+
+
 Info = StrawberryInfo[InfoContext, RootValueType]
 
 
@@ -47,7 +55,7 @@ class IDependencyService(Protocol):
 
 class DependencyService(BaseDependencyService):
     def __init__(
-        self, 
+        self,
         user_service: IUserService,
         group_service: IGroupService,
         permission_service: IPermissionService,
@@ -56,8 +64,8 @@ class DependencyService(BaseDependencyService):
         self.user_service = user_service
         self.group_service = group_service
         self.permission_service = permission_service
-        self.user_preference_service = user_preference_service  
-        
+        self.user_preference_service = user_preference_service
+
     async def get_gql_context(self, request: Request) -> Any:
         ctx = await self.get_app_context(request)
         ctx["user_service"] = self.user_service
@@ -82,6 +90,5 @@ def register_dependencies(app: Sanic):
     app.ext.add_dependency(IGroupService, GroupService)
     app.ext.add_dependency(IPermissionService, PermissionService)
     app.ext.add_dependency(IUserPreferenceService, UserPreferenceService)
-    # graphql context 
+    # graphql context
     app.ext.add_dependency(IDependencyService, DependencyService)
-

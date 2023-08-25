@@ -12,13 +12,13 @@ from sqlalchemy.orm import subqueryload
 
 M = TypeVar("M")
 
-JOINED = 'joined'
-SUBQUERY = 'subquery'
+JOINED = "joined"
+SUBQUERY = "subquery"
 
-RELATION_SPLITTER = '___'
-OPERATOR_SPLITTER = '__'
+RELATION_SPLITTER = "___"
+OPERATOR_SPLITTER = "__"
 
-DESC_PREFIX = '-'
+DESC_PREFIX = "-"
 
 
 class ModelNotFoundError(ValueError):
@@ -28,13 +28,13 @@ class ModelNotFoundError(ValueError):
 def _flatten_filter_keys(filters):
     """
     :type filters: dict|list
-    Flatten the nested filters, extracting keys where they correspond 
-    to smart_query paths, e.g. 
+    Flatten the nested filters, extracting keys where they correspond
+    to smart_query paths, e.g.
     {or_: {'id__gt': 1000, and_ : {
         'id__lt': 500,
-        'related___property__in': (1,2,3) 
+        'related___property__in': (1,2,3)
     }}}
-    
+
     Yields:
 
     'id__gt', 'id__lt', 'related___property__in'
@@ -109,111 +109,115 @@ def _parse_path_and_make_aliases(entity, entity_path, attrs, aliases):
         aliases[path] = alias, relationship
         _parse_path_and_make_aliases(alias, path, nested_attrs, aliases)
 
+
 def _get_root_cls(query):
     # sqlalchemy < 1.4.0
-    if hasattr(query, '_entity_zero'):
+    if hasattr(query, "_entity_zero"):
         return query._entity_zero().class_
 
     # sqlalchemy >= 1.4.0
     else:
-        if hasattr(query, '_entity_from_pre_ent_zero'):
+        if hasattr(query, "_entity_from_pre_ent_zero"):
             return query._entity_from_pre_ent_zero().class_
-        
+
         # sqlalchemy 2.x
         else:
             if query.__dict__["_propagate_attrs"]["plugin_subject"].class_:
                 return query.__dict__["_propagate_attrs"]["plugin_subject"].class_
 
-    raise ValueError('Cannot get a root class from`{}`'
-                     .format(query))
-    
-    
+    raise ValueError("Cannot get a root class from`{}`".format(query))
+
+
 def filter_expr(model, **filters):
-        """
-        forms expressions like [Product.age_from = 5,
-                                Product.subject_ids.in_([1,2])]
-        from filters like {'age_from': 5, 'subject_ids__in': [1,2]}
+    """
+    forms expressions like [Product.age_from = 5,
+                            Product.subject_ids.in_([1,2])]
+    from filters like {'age_from': 5, 'subject_ids__in': [1,2]}
 
-        Example 1:
-            db.query(Product).filter(
-                *Product.filter_expr(age_from = 5, subject_ids__in=[1, 2]))
+    Example 1:
+        db.query(Product).filter(
+            *Product.filter_expr(age_from = 5, subject_ids__in=[1, 2]))
 
-        Example 2:
-            filters = {'age_from': 5, 'subject_ids__in': [1,2]}
-            db.query(Product).filter(*Product.filter_expr(**filters))
+    Example 2:
+        filters = {'age_from': 5, 'subject_ids__in': [1,2]}
+        db.query(Product).filter(*Product.filter_expr(**filters))
 
 
-        ### About alias ###:
-        If we will use alias:
-            alias = aliased(Product) # table name will be product_1
-        we can't just write query like
-            db.query(alias).filter(*Product.filter_expr(age_from=5))
-        because it will be compiled to
-            SELECT * FROM product_1 WHERE product.age_from=5
-        which is wrong: we select from 'product_1' but filter on 'product'
-        such filter will not work
+    ### About alias ###:
+    If we will use alias:
+        alias = aliased(Product) # table name will be product_1
+    we can't just write query like
+        db.query(alias).filter(*Product.filter_expr(age_from=5))
+    because it will be compiled to
+        SELECT * FROM product_1 WHERE product.age_from=5
+    which is wrong: we select from 'product_1' but filter on 'product'
+    such filter will not work
 
-        We need to obtain
-            SELECT * FROM product_1 WHERE product_1.age_from=5
-        For such case, we can call filter_expr ON ALIAS:
-            alias = aliased(Product)
-            db.query(alias).filter(*alias.filter_expr(age_from=5))
+    We need to obtain
+        SELECT * FROM product_1 WHERE product_1.age_from=5
+    For such case, we can call filter_expr ON ALIAS:
+        alias = aliased(Product)
+        db.query(alias).filter(*alias.filter_expr(age_from=5))
 
-        Alias realization details:
-          * we allow to call this method
-            either ON ALIAS (say, alias.filter_expr())
-            or on class (Product.filter_expr())
-          * when method is called on alias, we need to generate SQL using
-            aliased table (say, product_1), but we also need to have a real
-            class to call methods on (say, Product.relations)
-          * so, we have 'mapper' that holds table name
-            and 'cls' that holds real class
+    Alias realization details:
+      * we allow to call this method
+        either ON ALIAS (say, alias.filter_expr())
+        or on class (Product.filter_expr())
+      * when method is called on alias, we need to generate SQL using
+        aliased table (say, product_1), but we also need to have a real
+        class to call methods on (say, Product.relations)
+      * so, we have 'mapper' that holds table name
+        and 'cls' that holds real class
 
-            when we call this method ON ALIAS, we will have:
-                mapper = <product_1 table>
-                cls = <Product>
-            when we call this method ON CLASS, we will simply have:
-                mapper = <Product> (or we could write <Product>.__mapper__.
-                                    It doesn't matter because when we call
-                                    <Product>.getattr, SA will magically
-                                    call <Product>.__mapper__.getattr())
-                cls = <Product>
-        """
-        if isinstance(model, AliasedClass):
-            mapper, cls = model, inspect(model).mapper.class_
+        when we call this method ON ALIAS, we will have:
+            mapper = <product_1 table>
+            cls = <Product>
+        when we call this method ON CLASS, we will simply have:
+            mapper = <Product> (or we could write <Product>.__mapper__.
+                                It doesn't matter because when we call
+                                <Product>.getattr, SA will magically
+                                call <Product>.__mapper__.getattr())
+            cls = <Product>
+    """
+    if isinstance(model, AliasedClass):
+        mapper, cls = model, inspect(model).mapper.class_
+    else:
+        mapper = cls = model
+
+    expressions = []
+    valid_attributes = filterable_attributes(model)
+    for attr, value in filters.items():
+        # if attribute is filtered by method, call this method
+        if attr in hybrid_methods(model):
+            method = getattr(cls, attr)
+            expressions.append(method(value, mapper=mapper))
+        # else just add simple condition (== for scalars or IN for lists)
         else:
-            mapper = cls = model
-
-        expressions = []
-        valid_attributes =filterable_attributes(model)
-        for attr, value in filters.items():
-            # if attribute is filtered by method, call this method
-            if attr in hybrid_methods(model):
-                method = getattr(cls, attr)
-                expressions.append(method(value, mapper=mapper))
-            # else just add simple condition (== for scalars or IN for lists)
+            # determine attrbitute name and operator
+            # if they are explicitly set (say, id___between), take them
+            if OPERATOR_SPLITTER in attr:
+                attr_name, op_name = attr.rsplit(OPERATOR_SPLITTER, 1)
+                if op_name not in _operators:
+                    raise KeyError(
+                        "Expression `{}` has incorrect "
+                        "operator `{}`".format(attr, op_name)
+                    )
+                op = _operators[op_name]
+            # assume equality operator for other cases (say, id=1)
             else:
-                # determine attrbitute name and operator
-                # if they are explicitly set (say, id___between), take them
-                if OPERATOR_SPLITTER in attr:
-                    attr_name, op_name = attr.rsplit(OPERATOR_SPLITTER, 1)
-                    if op_name not in _operators:
-                        raise KeyError('Expression `{}` has incorrect '
-                                       'operator `{}`'.format(attr, op_name))
-                    op = _operators[op_name]
-                # assume equality operator for other cases (say, id=1)
-                else:
-                    attr_name, op = attr, operators.eq
+                attr_name, op = attr, operators.eq
 
-                if attr_name not in valid_attributes:
-                    raise KeyError('Expression `{}` '
-                                   'has incorrect attribute `{}`'
-                                   .format(attr, attr_name))
+            if attr_name not in valid_attributes:
+                raise KeyError(
+                    "Expression `{}` "
+                    "has incorrect attribute `{}`".format(attr, attr_name)
+                )
 
-                column = getattr(mapper, attr_name)
-                expressions.append(op(column, value))
+            column = getattr(mapper, attr_name)
+            expressions.append(op(column, value))
 
-        return expressions
+    return expressions
+
 
 def smart_query(query, filters=None, sort_attrs=None, schema=None):
     """
@@ -236,21 +240,22 @@ def smart_query(query, filters=None, sort_attrs=None, schema=None):
     # sqlalchemy >= 1.4.0, should probably a. check something else to determine if we need to convert
     # AppenderQuery to a query, b. probably not hack it like this
     # noinspection PyProtectedMember
-    if type(query).__name__ == 'AppenderQuery' and query._statement:
+    if type(query).__name__ == "AppenderQuery" and query._statement:
         sess = query.session
         # noinspection PyProtectedMember
         query = query._statement
         query.session = sess
 
     root_cls = _get_root_cls(query)  # for example, User or Post
-    attrs = list(_flatten_filter_keys(filters)) + \
-        list(map(lambda s: s.lstrip(DESC_PREFIX), sort_attrs))
+    attrs = list(_flatten_filter_keys(filters)) + list(
+        map(lambda s: s.lstrip(DESC_PREFIX), sort_attrs)
+    )
     aliases = OrderedDict({})
-    _parse_path_and_make_aliases(root_cls, '', attrs, aliases)
+    _parse_path_and_make_aliases(root_cls, "", attrs, aliases)
 
     loaded_paths = []
     for path, al in aliases.items():
-        relationship_path = path.replace(RELATION_SPLITTER, '.')
+        relationship_path = path.replace(RELATION_SPLITTER, ".")
         query = query.outerjoin(al[0], al[1])
         loaded_paths.append(relationship_path)
 
@@ -280,7 +285,7 @@ def smart_query(query, filters=None, sort_attrs=None, schema=None):
 
     for attr in sort_attrs:
         if RELATION_SPLITTER in attr:
-            prefix = ''
+            prefix = ""
             if attr.startswith(DESC_PREFIX):
                 prefix = DESC_PREFIX
                 attr = attr.lstrip(DESC_PREFIX)
@@ -310,6 +315,7 @@ def _flatten_schema(schema):
     """
     :type schema: dict
     """
+
     def _flatten(schema, parent_path, result):
         """
         :type schema: dict
@@ -320,7 +326,6 @@ def _flatten_schema(schema):
             attr = path
             path = path.key
 
-
             if isinstance(value, tuple):
                 join_method, inner_schema = value[0], value[1]
             elif isinstance(value, dict):
@@ -328,14 +333,14 @@ def _flatten_schema(schema):
             else:
                 join_method, inner_schema = value, None
 
-            full_path = parent_path + '.' + path if parent_path else path
+            full_path = parent_path + "." + path if parent_path else path
             result[attr] = join_method
 
             if inner_schema:
                 _flatten(inner_schema, full_path, result)
 
     result = {}
-    _flatten(schema, '', result)
+    _flatten(schema, "", result)
     return result
 
 
@@ -350,9 +355,9 @@ def _eager_expr_from_flat_schema(flat_schema):
         elif join_method == SUBQUERY:
             result.append(subqueryload(path))
         else:
-            raise ValueError('Bad join method `{}` in `{}`'
-                             .format(join_method, path))
+            raise ValueError("Bad join method `{}` in `{}`".format(join_method, path))
     return result
+
 
 def _eager_expr_from_schema(schema):
     def _get_expr(schema, result):
@@ -360,11 +365,15 @@ def _eager_expr_from_schema(schema):
             if isinstance(value, tuple):
                 join_method, inner_schema = value[0], value[1]
                 load_option = _create_eager_load_option(path, join_method)
-                result.append(load_option.options(*_eager_expr_from_schema(inner_schema)))
+                result.append(
+                    load_option.options(*_eager_expr_from_schema(inner_schema))
+                )
             elif isinstance(value, dict):
                 join_method, inner_schema = JOINED, value
                 load_option = _create_eager_load_option(path, join_method)
-                result.append(load_option.options(*_eager_expr_from_schema(inner_schema)))
+                result.append(
+                    load_option.options(*_eager_expr_from_schema(inner_schema))
+                )
                 # load_option = _create_eager_load_option(path, value)
             else:
                 result.append(_create_eager_load_option(path, value))
@@ -373,122 +382,121 @@ def _eager_expr_from_schema(schema):
     _get_expr(schema, result)
     return result
 
+
 def _create_eager_load_option(path, join_method):
     if join_method == JOINED:
         return joinedload(path)
     elif join_method == SUBQUERY:
         return subqueryload(path)
     else:
-        raise ValueError('Bad join method `{}` in `{}`'
-                         .format(join_method, path))
+        raise ValueError("Bad join method `{}` in `{}`".format(join_method, path))
+
 
 _operators = {
-    'isnull': lambda c, v: (c == None) if v else (c != None),
-    'exact': operators.eq,
-    'ne': operators.ne,  # not equal or is not (for None)
-
-    'gt': operators.gt,  # greater than , >
-    'ge': operators.ge,  # greater than or equal, >=
-    'lt': operators.lt,  # lower than, <
-    'le': operators.le,  # lower than or equal, <=
-
-    'in': operators.in_op,
-    'notin': operators.notin_op,
-    'between': lambda c, v: c.between(v[0], v[1]),
-
-    'like': operators.like_op,
-    'ilike': operators.ilike_op,
-    'startswith': operators.startswith_op,
-    'istartswith': lambda c, v: c.ilike(v + '%'),
-    'endswith': operators.endswith_op,
-    'iendswith': lambda c, v: c.ilike('%' + v),
-    'contains': lambda c, v: c.ilike('%{v}%'.format(v=v)),
-
-    'year': lambda c, v: extract('year', c) == v,
-    'year_ne': lambda c, v: extract('year', c) != v,
-    'year_gt': lambda c, v: extract('year', c) > v,
-    'year_ge': lambda c, v: extract('year', c) >= v,
-    'year_lt': lambda c, v: extract('year', c) < v,
-    'year_le': lambda c, v: extract('year', c) <= v,
-
-    'month': lambda c, v: extract('month', c) == v,
-    'month_ne': lambda c, v: extract('month', c) != v,
-    'month_gt': lambda c, v: extract('month', c) > v,
-    'month_ge': lambda c, v: extract('month', c) >= v,
-    'month_lt': lambda c, v: extract('month', c) < v,
-    'month_le': lambda c, v: extract('month', c) <= v,
-
-    'day': lambda c, v: extract('day', c) == v,
-    'day_ne': lambda c, v: extract('day', c) != v,
-    'day_gt': lambda c, v: extract('day', c) > v,
-    'day_ge': lambda c, v: extract('day', c) >= v,
-    'day_lt': lambda c, v: extract('day', c) < v,
-    'day_le': lambda c, v: extract('day', c) <= v,
+    "isnull": lambda c, v: (c == None) if v else (c != None),
+    "exact": operators.eq,
+    "ne": operators.ne,  # not equal or is not (for None)
+    "gt": operators.gt,  # greater than , >
+    "ge": operators.ge,  # greater than or equal, >=
+    "lt": operators.lt,  # lower than, <
+    "le": operators.le,  # lower than or equal, <=
+    "in": operators.in_op,
+    "notin": operators.notin_op,
+    "between": lambda c, v: c.between(v[0], v[1]),
+    "like": operators.like_op,
+    "ilike": operators.ilike_op,
+    "startswith": operators.startswith_op,
+    "istartswith": lambda c, v: c.ilike(v + "%"),
+    "endswith": operators.endswith_op,
+    "iendswith": lambda c, v: c.ilike("%" + v),
+    "contains": lambda c, v: c.ilike("%{v}%".format(v=v)),
+    "year": lambda c, v: extract("year", c) == v,
+    "year_ne": lambda c, v: extract("year", c) != v,
+    "year_gt": lambda c, v: extract("year", c) > v,
+    "year_ge": lambda c, v: extract("year", c) >= v,
+    "year_lt": lambda c, v: extract("year", c) < v,
+    "year_le": lambda c, v: extract("year", c) <= v,
+    "month": lambda c, v: extract("month", c) == v,
+    "month_ne": lambda c, v: extract("month", c) != v,
+    "month_gt": lambda c, v: extract("month", c) > v,
+    "month_ge": lambda c, v: extract("month", c) >= v,
+    "month_lt": lambda c, v: extract("month", c) < v,
+    "month_le": lambda c, v: extract("month", c) <= v,
+    "day": lambda c, v: extract("day", c) == v,
+    "day_ne": lambda c, v: extract("day", c) != v,
+    "day_gt": lambda c, v: extract("day", c) > v,
+    "day_ge": lambda c, v: extract("day", c) >= v,
+    "day_lt": lambda c, v: extract("day", c) < v,
+    "day_le": lambda c, v: extract("day", c) <= v,
 }
 
 
 def columns(model):
     return inspect(model).columns.keys()
 
+
 def primary_keys_full(model):
     """Get primary key properties for a SQLAlchemy cls.
     Taken from marshmallow_sqlalchemy
     """
     mapper = model.__mapper__
-    return [
-        mapper.get_property_by_column(column)
-        for column in mapper.primary_key
-    ]
+    return [mapper.get_property_by_column(column) for column in mapper.primary_key]
+
 
 def primary_keys(model):
     return [pk.key for pk in primary_keys_full(model)]
 
+
 def relations(model):
-    """Return a `list` of relationship names or the given model
-    """
-    return [c.key for c in model.__mapper__.attrs
-            if isinstance(c, RelationshipProperty)]
+    """Return a `list` of relationship names or the given model"""
+    return [
+        c.key for c in model.__mapper__.attrs if isinstance(c, RelationshipProperty)
+    ]
+
 
 def settable_relations(model):
-    """Return a `list` of relationship names or the given model
-    """
-    return [r for r in model.relations
-            if getattr(model, r).property.viewonly is False]
+    """Return a `list` of relationship names or the given model"""
+    return [r for r in model.relations if getattr(model, r).property.viewonly is False]
+
 
 def hybrid_properties(model):
     items = inspect(model).all_orm_descriptors
-    return [item.__name__ for item in items
-            if isinstance(item, hybrid_property)]
+    return [item.__name__ for item in items if isinstance(item, hybrid_property)]
+
 
 def hybrid_methods_full(model):
     items = inspect(model).all_orm_descriptors
-    return {item.func.__name__: item
-            for item in items if type(item) == hybrid_method}
+    return {item.func.__name__: item for item in items if type(item) == hybrid_method}
+
 
 def hybrid_methods(model):
     return list(hybrid_methods_full(model).keys())
 
 
 def filterable_attributes(model):
-    return relations(model) + columns(model) + \
-            hybrid_properties(model) + hybrid_methods(model)
+    return (
+        relations(model)
+        + columns(model)
+        + hybrid_properties(model)
+        + hybrid_methods(model)
+    )
+
 
 def sortable_attributes(model):
     return columns(model) + hybrid_properties(model)
+
 
 def settable_attributes(model):
     return sortable_attributes(model) + settable_relations(model)
 
 
 class QueryBuilder:
-
     def __init__(self, model: M) -> None:
         self.model = model
-    
+
     @property
     def query(self):
         return select(self.model)
-    
 
     def with_(self, schema):
         """
@@ -506,13 +514,12 @@ class QueryBuilder:
         """
         return self.query.options(*eager_expr(schema or {}))
 
-
     def with_joined(self, *paths):
         """
         Eagerload for simple cases where we need to just
          joined load some relations
         You can only load direct relationships.
-         
+
         :type paths: *List[QueryableAttribute]
 
         Example 1:
@@ -520,7 +527,6 @@ class QueryBuilder:
         """
         options = [joinedload(path) for path in paths]
         return self.query.options(*options)
-
 
     def with_subquery(self, *paths):
         """
@@ -535,7 +541,6 @@ class QueryBuilder:
         """
         options = [subqueryload(path) for path in paths]
         return self.query.options(*options)
-    
 
     def order_expr(self, *columns):
         """
@@ -556,15 +561,13 @@ class QueryBuilder:
 
         expressions = []
         for attr in columns:
-            fn, attr = (desc, attr[1:]) if attr.startswith(DESC_PREFIX) \
-                        else (asc, attr)
+            fn, attr = (desc, attr[1:]) if attr.startswith(DESC_PREFIX) else (asc, attr)
             if attr not in sortable_attributes(self.model):
-                raise KeyError('Cant order {} by {}'.format(self.model, attr))
+                raise KeyError("Cant order {} by {}".format(self.model, attr))
 
             expr = fn(getattr(self.model, attr))
             expressions.append(expr)
         return expressions
-
 
     def smart_query(self, filters=None, sort_attrs=None, schema=None):
         """
@@ -594,7 +597,6 @@ class QueryBuilder:
           Post.where(public=True, user___name__startswith='Bi').all()
         """
         return self.smart_query(filters)
-
 
     def sort(self, *columns):
         """
@@ -643,8 +645,7 @@ class QueryBuilder:
     # async def update_or_create(self, **kwargs):
     #     fill = await self.fill(**kwargs)
     #     return await self.save(fill)
-    
-            
+
     # def create(self, **kwargs):
     #     query = self.model(**kwargs)
     #     with self.async_session() as session:
@@ -653,7 +654,6 @@ class QueryBuilder:
     #         session.refresh(query)
     #         return query
 
-
     # def update(self, uid: str, **kwargs):
     #     with self.async_session() as session:
     #         existing = self.query.filter(self.model.uid == uid)
@@ -661,7 +661,6 @@ class QueryBuilder:
     #         session.commit()
     #         session.refresh(existing)
     #         return self.find(uid)
-    
 
     # async def delete(self, model):
     #     """Removes the model from the current entity session and mark for deletion.
@@ -674,19 +673,16 @@ class QueryBuilder:
     #         async with self.session() as session:
     #             await session.rollback()
     #             raise
-    
-    
+
     # async def all(self):
     #     async with self.async_session() as session:
     #         result = await session.execute(self.query)
     #         return result.scalars().all()
 
-
     # async def first(self):
     #     async with self.async_session() as session:
     #         result = await session.execute(self.query)
     #         return result.scalars().first()
-
 
     # async def find(self, id_):
     #     """Find record by the id
@@ -694,7 +690,6 @@ class QueryBuilder:
     #     """
     #     async with self.async_session() as session:
     #         return await session.get(self.model, id_)
-        
 
     # async def find_or_fail(self, id_):
     #     # assume that query has custom get_or_fail method
@@ -704,7 +699,3 @@ class QueryBuilder:
     #     else:
     #         raise ModelNotFoundError("{} with id '{}' was not found"
     #                                  .format(self.model.__name__, id_))
-            
-            
-
-

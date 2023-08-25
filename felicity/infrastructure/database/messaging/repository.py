@@ -1,14 +1,11 @@
 from domain.messaging.ports.repository import (
     IMessageThreadRepository,
-    IMessageRepository
+    IMessageRepository,
 )
 from domain.shared.ports.persistance import PersistenceProtocol
 from infrastructure.database.repository.base import BaseRepository
 
-from infrastructure.database.messaging.entities import (
-    MessageThread,
-    Message
-)
+from infrastructure.database.messaging.entities import MessageThread, Message
 
 
 class MessageThreadRespository(BaseRepository[MessageThread], IMessageThreadRepository):

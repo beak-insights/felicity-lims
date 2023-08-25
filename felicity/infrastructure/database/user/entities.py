@@ -29,7 +29,7 @@ permission_groups = Table(
 
 class User(AbstractBaseUser):
     __tablename__ = "user"
-    
+
     groups = relationship(
         "Group", secondary=user_groups, back_populates="members", lazy="selectin"
     )
@@ -76,6 +76,7 @@ department_preference = Table(
 
 class UserPreference(DBModel):
     """Preferences for System Personalisation"""
+
     __tablename__ = "user_preference"
 
     expanded_menu = Column(Boolean(), default=False)

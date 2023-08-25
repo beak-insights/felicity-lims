@@ -140,7 +140,7 @@ class ReflexBrainBase(BaseAuditModel):
 
 # Additional properties to return via API
 class ReflexBrain(ReflexBrainBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -167,13 +167,13 @@ class ReflexActionBase(BaseAuditModel):
     reflex_rule: Optional[ReflexRule]
     brains: Optional[List[ReflexBrain]]
     analyses: Optional[List[Analysis]]
-    sample_type_uid: str| None
+    sample_type_uid: str | None
     sample_type: Optional[SampleType]
 
 
 # Additional properties to return via API
 class ReflexAction(ReflexActionBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

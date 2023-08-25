@@ -23,16 +23,15 @@ class Database:
             future=True,
         )
         self._async_session_factory = sessionmaker(
-            bind=self._async_engine, 
-            expire_on_commit=False, 
-            autoflush=False, 
-            class_=AsyncSession
+            bind=self._async_engine,
+            expire_on_commit=False,
+            autoflush=False,
+            class_=AsyncSession,
         )
-    
-    
+
     def async_session(self) -> sessionmaker[AsyncSession]:
         return self._async_session_factory
-    
+
     def async_scoped_session(self) -> async_scoped_session[AsyncSession]:
         return async_scoped_session(self._async_session_factory, scopefunc=current_task)
 

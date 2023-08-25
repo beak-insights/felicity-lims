@@ -18,7 +18,7 @@ class ReferralLaboratoryBase(BaseModel):
 
 
 class ReferralLaboratoryBaseInDB(ReferralLaboratoryBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -69,7 +69,7 @@ class ShipmentBase(BaseModel):
 
 
 class ShipmentBaseInDB(ShipmentBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -105,7 +105,7 @@ class ShippedSampleBase(BaseModel):
 
 
 class ShippedSampleBaseInDB(ShippedSampleBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

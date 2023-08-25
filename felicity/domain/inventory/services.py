@@ -1,6 +1,6 @@
 
 from domain.shared.services import BaseService
-from domain.exceptions import NoFoundError, AleadyExistsError
+from domain.exceptions import NoFoundError, AlreadyExistsError
 from domain.inventory.ports.service import (
     IStockItemService,
     IStockCategoryService,
@@ -223,7 +223,7 @@ from domain.inventory.schemas import (
         )
 
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def create_stock_item(
         self, info, payload: StockItemInputType
     ) -> StockItemResponse:
@@ -251,7 +251,7 @@ from domain.inventory.schemas import (
         stock_item: models.StockItem = await models.StockItem.create(obj_in)
         return types.StockItemType(**stock_item.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def update_stock_item(
         self, info, uid: str, payload: StockItemInputType
     ) -> StockItemResponse:
@@ -286,7 +286,7 @@ from domain.inventory.schemas import (
         stock_item = await stock_item.update(obj_in)
         return types.StockItemType(**stock_item.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def create_stock_category(
         self, info, payload: StockCategoryInputType
     ) -> StockCategoryResponse:
@@ -314,7 +314,7 @@ from domain.inventory.schemas import (
         stock_category: models.StockCategory = await models.StockCategory.create(obj_in)
         return types.StockCategoryType(**stock_category.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def update_stock_category(
         self, info, uid: str, payload: StockCategoryInputType
     ) -> StockCategoryResponse:
@@ -349,7 +349,7 @@ from domain.inventory.schemas import (
         stock_category = await stock_category.update(obj_in)
         return types.StockCategoryType(**stock_category.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def create_hazard(self, info, payload: HazardInputType) -> HazardResponse:
         is_authenticated, felicity_user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
@@ -375,7 +375,7 @@ from domain.inventory.schemas import (
         hazard: models.Hazard = await models.Hazard.create(obj_in)
         return types.HazardType(**hazard.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def update_hazard(
         self, info, uid: str, payload: HazardInputType
     ) -> HazardResponse:
@@ -410,7 +410,7 @@ from domain.inventory.schemas import (
         hazard = await hazard.update(obj_in)
         return types.HazardType(**hazard.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def create_stock_unit(
         self, info, payload: StockUnitInputType
     ) -> StockUnitResponse:
@@ -438,7 +438,7 @@ from domain.inventory.schemas import (
         stock_unit: models.StockUnit = await models.StockUnit.create(obj_in)
         return types.StockUnitType(**stock_unit.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def update_stock_unit(
         self, info, uid: str, payload: StockUnitInputType
     ) -> StockUnitResponse:
@@ -473,7 +473,7 @@ from domain.inventory.schemas import (
         stock_unit = await stock_unit.update(obj_in)
         return types.StockUnitType(**stock_unit.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def create_stock_packaging(
         self, info, payload: StockPackagingInputType
     ) -> StockPackagingResponse:
@@ -503,7 +503,7 @@ from domain.inventory.schemas import (
         )
         return types.StockPackagingType(**stock_packaging.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def update_stock_packaging(
         self, info, uid: str, payload: StockPackagingInputType
     ) -> StockPackagingResponse:
@@ -540,7 +540,7 @@ from domain.inventory.schemas import (
         stock_packaging = await stock_packaging.update(obj_in)
         return types.StockPackagingType(**stock_packaging.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def create_stock_product(
         self, info, payload: StockProductInputType
     ) -> StockProductResponse:
@@ -567,7 +567,7 @@ from domain.inventory.schemas import (
         stock_product: models.StockProduct = await models.StockProduct.create(obj_in)
         return types.StockProductType(**stock_product.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def update_stock_product(
         self, info, uid: str, payload: StockProductInputType
     ) -> StockProductResponse:
@@ -602,7 +602,7 @@ from domain.inventory.schemas import (
         stock_product = await stock_product.update(obj_in)
         return types.StockProductType(**stock_product.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def create_stock_order(
         self, info, payload: StockOrderInputType
     ) -> StockOrderResponse:
@@ -647,7 +647,7 @@ from domain.inventory.schemas import (
             stock_order=stock_order, order_products=order_products
         )
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def update_stock_order(
         self, info, uid: str, payload: StockOrderInputType
     ) -> StockOrderResponse:
@@ -706,7 +706,7 @@ from domain.inventory.schemas import (
 
         return StockOrderLineType(stock_order=stock_order, order_products=o_products)
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def submit_stock_order(self, info, uid: str) -> StockOrderResponse:
         is_authenticated, felicity_user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
@@ -728,7 +728,7 @@ from domain.inventory.schemas import (
         )  # noqa
         return types.StockOrderType(**stock_order.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def approve_stock_order(
         self, info, uid: str, payload: StockOrderApprovalInputType
     ) -> StockOrderResponse:
@@ -752,7 +752,7 @@ from domain.inventory.schemas import (
         )  # noqa
         return types.StockOrderType(**stock_order.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def issue_stock_order(
         self, info, uid: str, payload: List[StockOrderProductLineInputType]
     ) -> StockOrderResponse:
@@ -802,7 +802,7 @@ from domain.inventory.schemas import (
         o_products = await models.StockOrderProduct.get_all(order_uid=uid)
         return StockOrderLineType(stock_order=stock_order, order_products=o_products)
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def delete_stock_order(self, info, uid: str) -> StockOrderResponse:
         is_authenticated, felicity_user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
@@ -828,7 +828,7 @@ from domain.inventory.schemas import (
         await stock_order.delete()
         return types.StockOrderType(**stock_order.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def create_stock_transaction(
         self, info, payload: StockTransactionInputType
     ) -> StockTransactionResponse:
@@ -871,7 +871,7 @@ from domain.inventory.schemas import (
 
         return types.StockTransactionType(**stock_transaction.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def create_stock_adjustment(
         self, info, payload: StockAdjustmentInputType
     ) -> StockAdjustmentResponse:

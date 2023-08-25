@@ -19,6 +19,7 @@ class AnalysisResult(Auditable, BaseMPTT):
     Number of analysis results per sample will be directly proportional to
     the number of linked sample_analyses at minimum :)
     """
+
     __tablename__ = "analysis_result"
 
     sample_uid = Column(String, ForeignKey("sample.uid"), nullable=False)
@@ -36,7 +37,7 @@ class AnalysisResult(Auditable, BaseMPTT):
     submitted_by = relationship(
         "User", foreign_keys=[submitted_by_uid], lazy="selectin"
     )
-    
+
     submitted_by_name = Column(String, nullable=True)
     date_submitted = Column(DateTime, nullable=True)
     verified_by = relationship("User", secondary=result_verification, lazy="selectin")
@@ -71,9 +72,9 @@ class AnalysisResult(Auditable, BaseMPTT):
         return self.analysis.keyword
 
 
-
 class ResultMutation(BaseAuditDBModel):
     """Result Mutations tracker"""
+
     __tablename__ = "result_mutation"
 
     result_uid = Column(String, ForeignKey("analysis_result.uid"), nullable=False)

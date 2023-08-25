@@ -11,7 +11,7 @@ class ErrorLogBase(BaseModel):
 
 
 class ErrorLog(ErrorLogBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

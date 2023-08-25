@@ -1,12 +1,11 @@
-
 from domain.shared.services import BaseService
-from domain.exceptions import NoFoundError, AleadyExistsError
+from domain.exceptions import NoFoundError, AlreadyExistsError
 from domain.instrument.ports.service import (
     ICalibrationCertificateService,
     IMethodService,
     IInstrumentTypeService,
     IInstrumentService,
-    IInstrumentCalibrationService  
+    IInstrumentCalibrationService,
 )
 from domain.instrument.schemas import (
     CalibrationCertificate,
@@ -14,9 +13,8 @@ from domain.instrument.schemas import (
     Method,
     InstrumentType,
     Instrument,
-    InstrumentCalibration  
+    InstrumentCalibration,
 )
-
 
 
 async def get_all_instrument_types(
@@ -139,10 +137,7 @@ async def get_all_methods(
     return MethodCursorPage(
         total_count=total_count, edges=edges, items=items, page_info=page_info
     )
-    
-    
-    
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+
     async def create_instrument_type(
         self, info, payload: InstrumentTypeInputType
     ) -> InstrumentTypeResponse:  # noqa
@@ -164,7 +159,6 @@ async def get_all_methods(
         inst_type: models.InstrumentType = await models.InstrumentType.create(obj_in)
         return InstrumentTypeType(**inst_type.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_instrument_type(
         self, info, uid: str, payload: InstrumentTypeInputType
     ) -> InstrumentTypeResponse:  # noqa
@@ -190,7 +184,6 @@ async def get_all_methods(
         inst_type = await inst_type.update(obj_in)
         return InstrumentTypeType(**inst_type.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_instrument(
         self, info, payload: InstrumentInputType
     ) -> InstrumentResponse:  # noqa
@@ -220,7 +213,6 @@ async def get_all_methods(
         instrument: models.Instrument = await models.Instrument.create(obj_in)
         return InstrumentType(**instrument.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_instrument(
         self, info, uid: str, payload: InstrumentInputType
     ) -> InstrumentResponse:  # noqa
@@ -253,7 +245,6 @@ async def get_all_methods(
         instrument = await instrument.update(obj_in)
         return InstrumentType(**instrument.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_instrument_caliberation(
         self, info, payload: InstrumentCalibrationInput
     ) -> InstrumentCalibrationResponse:  # noqa
@@ -268,7 +259,6 @@ async def get_all_methods(
         )
         return InstrumentCalibrationType(**calib.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_instrument_caliberation(
         self, info, uid: str, payload: InstrumentInputType
     ) -> InstrumentCalibrationResponse:  # noqa
@@ -294,7 +284,6 @@ async def get_all_methods(
         caliberation = await caliberation.update(obj_in)
         return InstrumentCalibrationType(**caliberation.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_caliberation_certificate(
         self, info, payload: CalibrationCertificateInput
     ) -> CalibrationCertificateResponse:  # noqa
@@ -309,7 +298,6 @@ async def get_all_methods(
         )
         return CalibrationCertificateType(**certificate.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_caliberation_certificate(
         self, info, uid: str, payload: CalibrationCertificateInput
     ) -> CalibrationCertificateResponse:  # noqa
@@ -335,7 +323,6 @@ async def get_all_methods(
         certificate = await certificate.update(obj_in)
         return CalibrationCertificateType(**certificate.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_method(
         self, info, payload: MethodInputType
     ) -> MethodResponse:  # noqa
@@ -402,7 +389,6 @@ async def get_all_methods(
 
         return MethodType(**method.marshal_simple(exclude=["instruments", "analyses"]))
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_method(
         self, info, uid: str, payload: MethodInputType
     ) -> MethodResponse:  # noqa
@@ -476,16 +462,27 @@ async def get_all_methods(
         return MethodType(**method.marshal_simple())
 
 
-class CalibrationCertificateService(BaseService[CalibrationCertificate], ICalibrationCertificateService): ...
-
-class MethodService(BaseService[Method], IMethodService): ...
-
-class InstrumentTypeService(BaseService[InstrumentType], IInstrumentTypeService): ...
-
-class InstrumentService(BaseService[Instrument], IInstrumentService): ...
+class CalibrationCertificateService(
+    BaseService[CalibrationCertificate], ICalibrationCertificateService
+):
+    ...
 
 
-class InstrumentCalibrationService(BaseService[InstrumentCalibration], IInstrumentCalibrationService):
+class MethodService(BaseService[Method], IMethodService):
+    ...
+
+
+class InstrumentTypeService(BaseService[InstrumentType], IInstrumentTypeService):
+    ...
+
+
+class InstrumentService(BaseService[Instrument], IInstrumentService):
+    ...
+
+
+class InstrumentCalibrationService(
+    BaseService[InstrumentCalibration], IInstrumentCalibrationService
+):
     async def create(
         cls, obj_in: schemas.InstrumentCalibrationCreate
     ) -> schemas.InstrumentCalibration:

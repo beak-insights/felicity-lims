@@ -3,7 +3,8 @@
     - This is important to register felicity in sanic registry
 """
 from sanic import Sanic
+
 felicity = Sanic("felicity-hex")
 from adapters.application import register_felicity
-register_felicity(felicity)
 
+register_felicity(felicity)

@@ -1,7 +1,4 @@
-from domain.client.ports.repository import (
-    IClientRepository, 
-    IClientContactRepository
-)
+from domain.client.ports.repository import IClientRepository, IClientContactRepository
 from domain.shared.ports.persistance import PersistenceProtocol
 from infrastructure.database.repository.base import BaseRepository
 

@@ -27,7 +27,7 @@ from domain.setup.schemas import Department
         return list(notices)
 
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def create_notice(self, info, payload: NoticeInputType) -> NoticeResponse:
 
         is_authenticated, felicity_user = await auth_from_info(info)
@@ -75,7 +75,7 @@ from domain.setup.schemas import Department
         notice: models.Notice = await models.Notice.create(obj_in)
         return NoticeType(**notice.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def update_notice(
         self, info, uid: str, payload: NoticeInputType
     ) -> NoticeResponse:
@@ -124,7 +124,7 @@ from domain.setup.schemas import Department
         notice = await notice.update(notice_in)
         return NoticeType(**notice.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def view_notice(
         self, info, uid: str, viewer: str
     ) -> NoticeType:
@@ -145,7 +145,7 @@ from domain.setup.schemas import Department
         notice = await notice.add_viewer(_viewer)
         return NoticeType(**notice.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def delete_notice(self, info, uid: str) -> DeleteResponse:
 
         is_authenticated, felicity_user = await auth_from_info(info)

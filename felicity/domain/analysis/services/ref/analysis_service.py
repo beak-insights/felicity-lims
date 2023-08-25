@@ -27,12 +27,12 @@ class AnalysisInputType:
     methods: Optional[List[str]] = field(default_factory=list)
     category_uid: str | None = None
     unit_uid: str | None = None
-    internal_use: bool| None = False
+    internal_use: bool | None = False
     tat_length_minutes: int = None
     precision: int = None
     required_verifications: int = 1
-    self_verification: bool| None = False
-    active: bool| None = True
+    self_verification: bool | None = False
+    active: bool | None = True
 
 
 ProfilesServiceResponse = strawberry.union(
@@ -46,7 +46,8 @@ AnalysisMappingResponse = strawberry.union(
     (a_types.AnalysisMappingType, OperationError),  # noqa
     description="Union of possible outcomes when adding a new notice",
 )
-    
+
+
 @strawberry.input
 class AnalysisMappingInputType:
     analysis_uid: str
@@ -56,7 +57,6 @@ class AnalysisMappingInputType:
     description: str | None = None
 
 
-@strawberry.mutation(permission_classes=[IsAuthenticated])
 async def create_analysis(info, payload: AnalysisInputType) -> ProfilesServiceResponse:
 
     is_authenticated, felicity_user = await auth_from_info(info)
@@ -106,7 +106,6 @@ async def create_analysis(info, payload: AnalysisInputType) -> ProfilesServiceRe
     return a_types.AnalysisWithProfiles(**analysis.marshal_simple(), profiles=profiles)
 
 
-@strawberry.mutation(permission_classes=[IsAuthenticated])
 async def update_analysis(
     info, uid: str, payload: AnalysisInputType
 ) -> ProfilesServiceResponse:
@@ -157,9 +156,9 @@ async def update_analysis(
     return a_types.AnalysisWithProfiles(**analysis.marshal_simple(), profiles=profiles)
 
 
-
-@strawberry.mutation(permission_classes=[IsAuthenticated])
-async def create_analysis_mapping(info, payload: AnalysisMappingInputType) -> AnalysisMappingResponse:
+async def create_analysis_mapping(
+    info, payload: AnalysisMappingInputType
+) -> AnalysisMappingResponse:
 
     is_authenticated, felicity_user = await auth_from_info(info)
     verify_user_auth(
@@ -180,13 +179,12 @@ async def create_analysis_mapping(info, payload: AnalysisMappingInputType) -> An
         incoming[k] = v
 
     obj_in = schemas.AnalysisCodingCreate(**incoming)
-    analysis_mapping: analysis_models.AnalysisCoding = await analysis_models.AnalysisCoding.create(
-        obj_in
+    analysis_mapping: analysis_models.AnalysisCoding = (
+        await analysis_models.AnalysisCoding.create(obj_in)
     )
     return a_types.AnalysisMappingType(**analysis_mapping.marshal_simple())
 
 
-@strawberry.mutation(permission_classes=[IsAuthenticated])
 async def update_analysis_mapping(
     info, uid: str, payload: AnalysisMappingInputType
 ) -> AnalysisMappingResponse:

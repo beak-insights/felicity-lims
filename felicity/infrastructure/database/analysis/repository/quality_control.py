@@ -2,7 +2,7 @@ from domain.analysis.ports.repository.quality_control import (
     IQCSetRepository,
     IQCReferenceRepository,
     IQCLevelRepository,
-    IQCTemplateRepository
+    IQCTemplateRepository,
 )
 from domain.shared.ports.persistance import PersistenceProtocol
 from infrastructure.database.repository.base import BaseRepository
@@ -11,7 +11,7 @@ from infrastructure.database.analysis.entities.quality_control import (
     QCSet,
     QCReference,
     QCLevel,
-    QCTemplate
+    QCTemplate,
 )
 
 

@@ -1,7 +1,7 @@
 import os
 from typing import Any
 
-from pydantic import AnyHttpUrl , EmailStr, field_validator, ConfigDict
+from pydantic import AnyHttpUrl, EmailStr, field_validator, ConfigDict
 from pydantic_core.core_schema import FieldValidationInfo
 from pydantic_settings import BaseSettings
 
@@ -22,8 +22,7 @@ def getenv_value(value, default_value=None):
 
 
 class Settings(BaseSettings):
-    BASE_DIR: str = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), ".."))
+    BASE_DIR: str = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
     STATIC_DIR: str = os.path.join(BASE_DIR, "static")
 
@@ -36,20 +35,24 @@ class Settings(BaseSettings):
     SERVER_NAME: str = getenv_value("SERVER_NAME", "felicity")
     SERVER_HOST: AnyHttpUrl = getenv_value("SERVER_HOST", "https://localhost")
     CORS_ORIGINS: list[str] = [
-        "http://localhost:5173","http://localhost:3000",
+        "http://localhost:5173",
+        "http://localhost:3000",
     ]
     CORS_SUPPORTS_CREDENTIALS: bool = True
     CORS_ALLOW_HEADERS: list[str] = [
-        'Authorization', 'access-control-allow-methods', 'content-type', 
-        'access-control-allow-origin', 'access-control-allow-headers'
+        "Authorization",
+        "access-control-allow-methods",
+        "content-type",
+        "access-control-allow-origin",
+        "access-control-allow-headers",
     ]
-    
+
     TESTING: bool = getenv_boolean("TESTING", False)
     RETAIN_TESTING_DB_DATA: bool = getenv_boolean("RETAIN_TESTING_DB_DATA", True)
 
     PROJECT_NAME: str = getenv_value("PROJECT_NAME", "FELLICITY LIMS")
 
-    POSTGRES_SERVER: str = getenv_value("POSTGRES_SERVER", "localhost") # felicity_db
+    POSTGRES_SERVER: str = getenv_value("POSTGRES_SERVER", "localhost")  # felicity_db
     POSTGRES_USER: str = getenv_value("POSTGRES_USER", "felicity")
     POSTGRES_PASSWORD: str = getenv_value("POSTGRES_PASSWORD", "felicity")
     POSTGRES_DB: str = getenv_value("POSTGRES_DB", "felicity_lims_db")
@@ -96,8 +99,7 @@ class Settings(BaseSettings):
     EMAILS_FROM_EMAIL: EmailStr | None = getenv_value(
         "EMAILS_FROM_EMAIL", "felicity@felicity.labs"
     )
-    EMAILS_FROM_NAME: str | None = getenv_value(
-        "EMAILS_FROM_NAME", "felicity")
+    EMAILS_FROM_NAME: str | None = getenv_value("EMAILS_FROM_NAME", "felicity")
 
     @field_validator("EMAILS_FROM_NAME")
     def get_project_name(cls, v: str | None, info: FieldValidationInfo) -> str:
@@ -121,8 +123,7 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER_EMAIL: EmailStr = getenv_value(
         "FIRST_SUPERUSER", "admin@felicitylabs.com"
     )
-    FIRST_SEPERUSER_USERNAME: str = getenv_value(
-        "FIRST_SEPERUSER_USERNAME", "admin")
+    FIRST_SEPERUSER_USERNAME: str = getenv_value("FIRST_SEPERUSER_USERNAME", "admin")
     FIRST_SUPERUSER_PASSWORD: str = getenv_value(
         "FIRST_SUPERUSER_PASSWORD", "!Felicity#100"
     )
@@ -138,7 +139,8 @@ class Settings(BaseSettings):
     # Tracing
     RUN_OPEN_TRACING: bool = getenv_boolean("RUN_OPEN_TRACING", False)
     OTLP_SPAN_EXPORT_URL: str = getenv_value(
-        "OTLP_SPAN_EXPORT_URL", "http://localhost:4317")
+        "OTLP_SPAN_EXPORT_URL", "http://localhost:4317"
+    )
 
     model_config = ConfigDict(case_sensitive=True)
 

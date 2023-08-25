@@ -1,16 +1,13 @@
 from domain.setup.ports.repository.location import (
     ICountryRepository,
     IProvinceRepository,
-    IDistrictRepository
+    IDistrictRepository,
 )
 from domain.shared.ports.persistance import PersistenceProtocol
 from infrastructure.database.repository.base import BaseRepository
 
-from infrastructure.database.setup.entities import (
-    Country,
-    Province,
-    District
-)
+from infrastructure.database.setup.entities import Country, Province, District
+
 
 class CountryRespository(BaseRepository[Country], ICountryRepository):
     def __init__(self, db: PersistenceProtocol) -> None:

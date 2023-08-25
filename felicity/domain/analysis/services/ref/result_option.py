@@ -27,7 +27,6 @@ ResultOptionResponse = strawberry.union(
 )
 
 
-@strawberry.mutation(permission_classes=[IsAuthenticated])
 async def create_result_option(
     info, payload: ResultOptionInputType
 ) -> ResultOptionResponse:
@@ -65,7 +64,6 @@ async def create_result_option(
     return a_types.ResultOptionType(**result_option.marshal_simple())
 
 
-@strawberry.mutation(permission_classes=[IsAuthenticated])
 async def update_result_option(
     info, uid: str, payload: ResultOptionInputType
 ) -> ResultOptionResponse:

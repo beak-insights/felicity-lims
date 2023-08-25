@@ -32,7 +32,7 @@ class IsSuperUser(BasePermission):
         user = info.context.user
         if not user:
             return False
-        
+
         if not user.is_active:
             return False
 

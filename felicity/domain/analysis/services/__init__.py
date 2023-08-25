@@ -76,7 +76,7 @@ AnalysisRequest
             total_count=total_count, edges=edges, items=items, page_info=page_info
         )
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def samples_for_shipment_assign(
         self,
         info,
@@ -132,25 +132,25 @@ AnalysisRequest
         )
     
     # awaiting deprecation since sample_all can now achieve this
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def sample_search(
         self, info, status: str, text: str, client_uid: str
     ) -> List[a_types.SampleType]:
         return await sample_search(status, text, client_uid)
 
     # awaiting deprecation since sample_all can now achieve this
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def sample_count(
         self, info, status: str, text: str, client_uid: str
     ) -> int:
         combined = await sample_search(status, text, client_uid)
         return len(combined)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def sample_by_uid(self, info, uid: str) -> a_types.SampleType:
         return await a_models.Sample.get(uid=uid)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def sample_by_parent_id(
         self, info, parent_id: str, text: str | None = None
     ) -> List[a_types.SampleType]:
@@ -164,43 +164,43 @@ AnalysisRequest
 
         return samples
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def samples_by_uids(
         self, info, sample_uids: list[str] = []
     ) -> List[r_types.SamplesWithResults]:
         """Samples for publishing/ report printing"""
         return await a_models.Sample.get_all(uid__in=sample_uids)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def samples_by_storage_container_uid(
         self, info, uid: str
     ) -> List[a_types.SampleType]:
         """Retrieve stored samples for a given container uid"""
         return await a_models.Sample.get_all(storage_container_uid=uid)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def profile_all(self, info) -> List[a_types.ProfileType]:
         return await a_models.Profile.all()
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def profile_by_uid(self, info, uid: str) -> a_types.ProfileType:
         return await a_models.Profile.get(uid=uid)
     
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def profile_mappings_by_profile(self, info, profile_uid: str) -> list[a_types.ProfileMappingType]:
         return await a_models.ProfileCoding.get_all(profile_uid=profile_uid)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_category_all(self, info) -> List[a_types.AnalysisCategoryType]:
         return await a_models.AnalysisCategory.all()
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_category_by_uid(
         self, info, uid: str
     ) -> a_types.AnalysisCategoryType:
         return await a_models.AnalysisCategory.get(uid=uid)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_all(
         self,
         info,
@@ -243,15 +243,15 @@ AnalysisRequest
             total_count=total_count, edges=edges, items=items, page_info=page_info
         )
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_by_uid(self, info, uid: str) -> a_types.AnalysisType:
         return await a_models.Analysis.get(uid=uid)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_mappings_by_analysis(self, info, analysis_uid: str) -> list[a_types.AnalysisMappingType]:
         return await a_models.AnalysisCoding.get_all(analysis_uid=analysis_uid)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_without_profile(self, info) -> List[a_types.AnalysisType]:
         async with async_session_factory() as session:
             result = await session.execute(sa.text("select * from analysis_profile"))
@@ -259,7 +259,7 @@ AnalysisRequest
         a_uids = list(set([ids[0] for ids in result.all()]))
         return await a_models.Analysis.get_all(uid__notin=a_uids)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_request_all(
         self,
         info,
@@ -306,37 +306,37 @@ AnalysisRequest
             total_count=total_count, edges=edges, items=items, page_info=page_info
         )
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_request_by_uid(
         self, info, uid: str
     ) -> a_types.AnalysisRequestWithSamples:
         return await a_models.AnalysisRequest.get(uid=uid)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_requests_by_patient_uid(
         self, info, uid: str
     ) -> List[a_types.AnalysisRequestWithSamples]:
         return await a_models.AnalysisRequest.get_all(patient_uid__exact=uid)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_requests_by_client_uid(
         self, info, uid: str
     ) -> List[a_types.AnalysisRequestWithSamples]:
         return await a_models.AnalysisRequest.get_all(client_uid__exact=uid)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_result_by_uid(
         self, info, uid: str
     ) -> r_types.AnalysisResultType:
         return await r_models.AnalysisResult.get(uid=uid)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_result_by_sample_uid(
         self, info, uid: str
     ) -> List[r_types.AnalysisResultType]:
         return await r_models.AnalysisResult.get_all(sample_uid__exact=uid)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_results_for_ws_assign(
         self,
         info,
@@ -390,65 +390,65 @@ AnalysisRequest
             total_count=total_count, edges=edges, items=items, page_info=page_info
         )
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_interim_all(self, info) -> List[a_types.AnalysisInterimType]:
         return await a_models.AnalysisInterim.all()
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_interim_by_uid(
         self, info, uid: str
     ) -> a_types.AnalysisInterimType:
         return await a_models.AnalysisInterim.get(uid=uid)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_correction_factor_all(
         self, info
     ) -> List[a_types.AnalysisCorrectionFactorType]:
         return await a_models.AnalysisCorrectionFactor.all()
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_correction_factor_by_uid(
         self, info, uid: str
     ) -> a_types.AnalysisCorrectionFactorType:
         return await a_models.AnalysisCorrectionFactor.get(uid=uid)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_uncertainty_all(
         self, info
     ) -> List[a_types.AnalysisUncertaintyType]:
         return await a_models.AnalysisUncertainty.all()
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_uncertainty_by_uid(
         self, info, uid: str
     ) -> a_types.AnalysisUncertaintyType:
         return await a_models.AnalysisUncertainty.get(uid=uid)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_detection_limit_all(
         self, info
     ) -> List[a_types.AnalysisDetectionLimitType]:
         return await a_models.AnalysisDetectionLimit.all()
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_detection_limit_by_uid(
         self, info, uid: str
     ) -> a_types.AnalysisDetectionLimitType:
         return await a_models.AnalysisUncertainty.get(uid=uid)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_specification_all(
         self, info
     ) -> List[a_types.AnalysisSpecificationType]:
         return await a_models.AnalysisSpecification.all()
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def analysis_specification_uid(
         self, info, uid: str
     ) -> a_types.AnalysisSpecificationType:
         return await a_models.AnalysisSpecification.get(uid=uid)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def qc_set_all(
         self,
         info,

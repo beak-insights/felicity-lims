@@ -1,10 +1,10 @@
 
 from domain.shared.services import BaseService
-from domain.exceptions import NoFoundError, AleadyExistsError
+from domain.exceptions import NoFoundError, AlreadyExistsError
 from domain.client.ports.service import IClientContactService, IClientService
 from domain.client.schemas import Client, ClientContact
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def client_all(
         self,
         info: Info,
@@ -52,7 +52,7 @@ from domain.client.schemas import Client, ClientContact
             total_count=total_count, edges=edges, items=items, page_info=page_info
         )
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def client_search(self, info, query_string: str) -> List[ClientType]:
         filters = ["name__ilike", "code__ilike"]
         combined = set()
@@ -66,7 +66,7 @@ from domain.client.schemas import Client, ClientContact
   
   
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def create_client(
         self, info: Info, payload: ClientInputType
     ) -> ClientResponse:
@@ -102,7 +102,7 @@ from domain.client.schemas import Client, ClientContact
         client: models.Client = await models.Client.create(obj_in)
         return ClientType(**client.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def update_client(
         self, info, uid: str, payload: ClientInputType
     ) -> ClientResponse:
@@ -134,7 +134,7 @@ from domain.client.schemas import Client, ClientContact
         client = await client.update(obj_in)
         return ClientType(**client.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def create_client_contact(
         self, info, payload: ClientContactInputType
     ) -> ClientContactResponse:
@@ -175,7 +175,7 @@ from domain.client.schemas import Client, ClientContact
         client_contact: models.ClientContact = await models.ClientContact.create(obj_in)
         return ClientContactType(**client_contact.marshal_simple(exclude=["is_superuser", "auth_uid"]))
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def update_client_contact(
         self, info, uid: str, payload: ClientContactInputType
     ) -> ClientContactResponse:
@@ -207,7 +207,7 @@ from domain.client.schemas import Client, ClientContact
         client_contact = await client_contact.update(obj_in)
         return ClientContactType(**client_contact.marshal_simple(exclude=["is_superuser", "auth_uid"]))
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def delete_client_contact(self, info, uid: str) -> DeleteContactResponse:
 
         is_authenticated, felicity_user = await auth_from_info(info)

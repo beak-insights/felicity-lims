@@ -14,11 +14,11 @@ from pydantic import BaseModel, ConfigDict
 class InstrumentTypeBase(BaseAuditModel):
     name: str | None = None
     description: str | None = None
-    active: bool| None = True
+    active: bool | None = True
 
 
 class InstrumentTypeBaseInDB(InstrumentTypeBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -62,12 +62,12 @@ class InstrumentBase(BaseModel):
 
 # Properties to receive via API on creation
 class InstrumentCreate(InstrumentBase):
-    supplier_uid: str| None = None
+    supplier_uid: str | None = None
 
 
 # Properties to receive via API on update
 class InstrumentUpdate(InstrumentBase):
-    supplier_uid: str| None = None
+    supplier_uid: str | None = None
 
 
 class InstrumentInDBBase(InstrumentBase):
@@ -212,4 +212,3 @@ class Method(MethodInDBBase):
 # Additional properties stored in DB
 class MethodInDB(MethodInDBBase):
     pass
-

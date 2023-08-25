@@ -17,21 +17,21 @@ class LocationBase(BaseAuditDBModel):
 
 class District(LocationBase):
     __tablename__ = "district"
-    
+
     province_uid = Column(String, ForeignKey("province.uid"))
     province = relationship("Province", backref="districts", lazy="selectin")
 
 
 class Province(LocationBase):
     __tablename__ = "province"
-    
+
     country_uid = Column(String, ForeignKey("country.uid"))
     country = relationship("Country", backref="provinces", lazy="selectin")
 
 
 class Country(BaseAuditDBModel):
     __tablename__ = "country"
-    
+
     name = Column(String, default="Zimbabwe")
     code = Column(String, index=True, unique=True, nullable=True)
     active = Column(Boolean(), default=False)

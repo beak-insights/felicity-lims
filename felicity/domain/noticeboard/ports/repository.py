@@ -3,4 +3,5 @@ from abc import ABC
 from domain.shared.ports.repository import IBaseRepository
 
 
-class NoticeRepository(IBaseRepository, ABC): ...
+class NoticeRepository(IBaseRepository, ABC):
+    ...

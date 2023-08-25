@@ -37,7 +37,7 @@ class SimpleAuditMixin(object):
         return Column(String, nullable=True)
 
 
-class AbstractBaseUser(BaseAuditDBModel): # (SimpleAuditMixin, DBModel)
+class AbstractBaseUser(BaseAuditDBModel):  # (SimpleAuditMixin, DBModel)
     __abstract__ = True
     first_name = Column(String, index=True)
     last_name = Column(String, index=True)

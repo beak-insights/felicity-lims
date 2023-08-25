@@ -1,4 +1,3 @@
-
 from sqlalchemy import Column, DateTime, ForeignKey, String, Table
 from sqlalchemy.orm import relationship
 
@@ -17,7 +16,8 @@ analysis_reports = Table(
 
 class ReportMeta(BaseAuditDBModel):
     """Generated Reports Metadata"""
-    __tablename__ = 'report_meta'
+
+    __tablename__ = "report_meta"
 
     report_type = Column(String)
     analyses = relationship("Analysis", secondary=analysis_reports, lazy="selectin")

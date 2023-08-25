@@ -11,15 +11,14 @@ from infrastructure.database.user.entities import UserAuth
 
 class Client(Auditable):
     """Client/Facility"""
-    __tablename__ = 'client'
+
+    __tablename__ = "client"
 
     name = Column(String, nullable=False)
     code = Column(String, index=True, unique=True, nullable=False)
-    district_uid = Column(String, ForeignKey(
-        "district.uid"), nullable=True)
+    district_uid = Column(String, ForeignKey("district.uid"), nullable=True)
     district = relationship(District, backref="clients", lazy="selectin")
-    province_uid = Column(String, ForeignKey(
-        "province.uid"), nullable=True)
+    province_uid = Column(String, ForeignKey("province.uid"), nullable=True)
     province = relationship(Province, backref="clients", lazy="selectin")
     email = Column(String, nullable=True)
     email_cc = Column(String, nullable=True)
@@ -28,8 +27,8 @@ class Client(Auditable):
     phone_business = Column(String, nullable=True)
     consent_sms = Column(Boolean(), default=False)
     internal_use = Column(Boolean(), default=False)  # e.g Test Client
-    active = Column(Boolean(), default=False)    
-    
+    active = Column(Boolean(), default=False)
+
     @property
     def get_province(self):
         if self.district:
@@ -50,11 +49,12 @@ class Client(Auditable):
 
 
 class ClientContact(AbstractBaseUser):
-    __tablename__ = 'client_contact'
-    
+    __tablename__ = "client_contact"
+
     auth_uid = Column(String, ForeignKey("userauth.uid"), nullable=True)
-    auth = relationship(UserAuth, backref=backref(
-        UserType.CLIENT_CONTACT, uselist=False))
+    auth = relationship(
+        UserAuth, backref=backref(UserType.CLIENT_CONTACT, uselist=False)
+    )
     email = Column(String, unique=False, index=True, nullable=True)
     email_cc = Column(String, nullable=True)
     consent_sms = Column(Boolean(), default=False)
@@ -67,7 +67,7 @@ class ClientContact(AbstractBaseUser):
         ),
         lazy="selectin",
     )
-    
+
     @property
     def user_type(self):
         return UserType.CLIENT_CONTACT

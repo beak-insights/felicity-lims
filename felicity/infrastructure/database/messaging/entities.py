@@ -27,6 +27,7 @@ message_thread_delete = Table(
 
 class MessageThread(BaseAuditDBModel):
     """MessageThread"""
+
     __tablename__ = "message_thread"
 
     broadcast = Column(Boolean, nullable=False)
@@ -35,7 +36,6 @@ class MessageThread(BaseAuditDBModel):
         "User", secondary=message_thread_recipient, lazy="selectin"
     )
     deleted_by = relationship("User", secondary=message_thread_delete, lazy="selectin")
-
 
 
 """
@@ -61,6 +61,7 @@ message_delete = Table(
 
 class Message(BaseAuditDBModel, BaseMPTT):
     """Message"""
+
     __tablename__ = "message"
 
     thread_uid = Column(String, ForeignKey("message_thread.uid"), nullable=True)

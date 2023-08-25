@@ -5,31 +5,32 @@ from pydantic import BaseModel, ConfigDict
 M = TypeVar("M")
 PydanticModel = TypeVar("PydanticModel", bound=BaseModel)
 
+
 class IBaseService(Generic[M], ABC):
-    @abstractmethod  
+    @abstractmethod
     async def all(self) -> list[M]:
         pass
-    
-    @abstractmethod     
+
+    @abstractmethod
     async def get(self, **kwargs) -> M:
         pass
-    
-    @abstractmethod  
+
+    @abstractmethod
     async def get_all(self, **kwargs) -> list[M]:
         pass
-    
-    @abstractmethod  
+
+    @abstractmethod
     async def create(self, **kwargs) -> M:
         pass
-    
-    @abstractmethod  
+
+    @abstractmethod
     async def update(self, uid: str, **kwargs) -> M:
         pass
-    
-    @abstractmethod  
+
+    @abstractmethod
     async def delete(self, uid: str) -> None:
         pass
-    
+
     @abstractmethod
     def marshal(self, model: M, exclude: list[str] | None = None) -> dict:
         pass

@@ -1,4 +1,3 @@
-
 from domain.shared.services import BaseService
 from domain.analysis.ports.service.quality_control import (
     IQCSetService,

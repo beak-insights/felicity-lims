@@ -8,7 +8,7 @@ from infrastructure.database import DBModel
 
 class Job(DBModel):
     __tablename__ = "job"
-    
+
     action = Column(String)
     category = Column(String)
     priority = Column(Integer)

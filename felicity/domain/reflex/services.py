@@ -17,7 +17,7 @@ from domain.reflex.schemas import (
 )
 
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    
     async def reflex_rule_all(
         self,
         info,
@@ -55,7 +55,7 @@ from domain.reflex.schemas import (
         )
         
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def create_reflex_rule(
         self, info, payload: ReflexRuleInput
     ) -> ReflexRuleResponse:
@@ -85,7 +85,7 @@ from domain.reflex.schemas import (
         reflex: models.ReflexRule = await models.ReflexRule.create(obj_in)
         return ReflexRuleType(**reflex.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def update_reflex_rule(
         self, info, uid: str, payload: ReflexRuleInput
     ) -> ReflexRuleResponse:
@@ -120,7 +120,7 @@ from domain.reflex.schemas import (
         reflex_rule = await reflex_rule.update(obj_in)
         return ReflexRuleType(**reflex_rule.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def create_reflex_action(
         self, info, payload: ReflexActionInput
     ) -> ReflexActionResponse:
@@ -159,7 +159,7 @@ from domain.reflex.schemas import (
         action: models.ReflexAction = await models.ReflexAction.create(obj_in)
         return ReflexActionType(**action.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def update_reflex_action(
         self, info, uid: str, payload: ReflexActionInput
     ) -> ReflexActionResponse:
@@ -200,7 +200,7 @@ from domain.reflex.schemas import (
         reflex_action = await reflex_action.update(obj_in)
         return ReflexActionType(**reflex_action.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def create_reflex_brain(
         self, info, payload: ReflexBrainInput
     ) -> ReflexBrainResponse:
@@ -262,7 +262,7 @@ from domain.reflex.schemas import (
         )
         return ReflexBrainType(**brain.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    
     async def update_reflex_brain(
         self, info, uid: str, payload: ReflexBrainInput
     ) -> ReflexBrainResponse:

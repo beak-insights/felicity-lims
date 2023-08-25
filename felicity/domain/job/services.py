@@ -1,9 +1,7 @@
-
 from domain.shared.services import BaseService
-from domain.exceptions import NoFoundError, AleadyExistsError
+from domain.exceptions import NoFoundError, AlreadyExistsError
 from domain.job.ports.service import IJobService
 from domain.job.schemas import Job
-
 
 
 class JobService(BaseService[Job], IJobService):

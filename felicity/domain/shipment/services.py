@@ -1,5 +1,5 @@
 from domain.shared.services import BaseService
-from domain.exceptions import NoFoundError, AleadyExistsError
+from domain.exceptions import NoFoundError, AlreadyExistsError
 from domain.shipment.ports.service import (
     IReferralLaboratoryService,
     IShippedSampleService,
@@ -12,7 +12,9 @@ from domain.shipment.schemas import (
 )
 
 
-class ReferralLaboratoryService(BaseService[ReferralLaboratory], IReferralLaboratoryService):
+class ReferralLaboratoryService(
+    BaseService[ReferralLaboratory], IReferralLaboratoryService
+):
     ...
 
 
@@ -27,7 +29,11 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
         await self.save()
 
     async def get_samples(self):
-        return list(map(lambda ss: ss.sample, await ShippedSample.get_all(shipment_uid=self.uid)))
+        return list(
+            map(
+                lambda ss: ss.sample, await ShippedSample.get_all(shipment_uid=self.uid)
+            )
+        )
 
     async def change_state(self, state, updated_by_uid):
         self.state = state
@@ -51,7 +57,7 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
             await streamer.stream(saved, dispatcher, "dispatched", "shipment")
             return saved
         return self
-    
+
     async def shipment_all(
         self,
         info,
@@ -64,9 +70,7 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
         sort_by: list[str] | None = None,
     ) -> ShipmentCursorPage:
 
-        filters = [
-            {"incoming" : incoming }
-        ]
+        filters = [{"incoming": incoming}]
 
         _or_text_ = {}
         if has_value_or_is_truthy(text):
@@ -99,14 +103,9 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
         return ShipmentCursorPage(
             total_count=total_count, edges=edges, items=items, page_info=page_info
         )
-        
 
-
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_shipment(
-        self,
-        info,
-        payload: ShipmentInputType
+        self, info, payload: ShipmentInputType
     ) -> ShipmentsResponse:
 
         is_authenticated, felicity_user = await auth_from_info(info)
@@ -118,7 +117,7 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
 
         if not payload.courier:
             return OperationError(error="Courier Details are required")
-        
+
         incoming = {
             "incoming": False,
             "comment": payload.comment,
@@ -147,12 +146,8 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
             shipments=[(await models.Shipment.get(uid=sh.uid)) for sh in shipments]
         )
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_shipment(
-        self,
-        info,
-        uid: str,
-        payload: ShipmentUpdateInputType
+        self, info, uid: str, payload: ShipmentUpdateInputType
     ) -> ShipmentResponse:  # noqa
 
         is_authenticated, felicity_user = await auth_from_info(info)
@@ -163,21 +158,18 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
         )
 
         if not uid:
-            return OperationError(error="The uid for the update shipment was not provided")
-    
+            return OperationError(
+                error="The uid for the update shipment was not provided"
+            )
 
         # if not all(not getattr(payload, attr) for attr in dir(payload)):
         #     return OperationError(error="Either comment, courier or samples must be provided.")
 
-        shipment: Optional[models.Shipment] = await models.Shipment.get(
-            uid=uid
-        )
+        shipment: Optional[models.Shipment] = await models.Shipment.get(uid=uid)
 
         if not shipment:
-            return OperationError(
-                error=f"Shipment {uid} does not exist"
-            )
-        
+            return OperationError(error=f"Shipment {uid} does not exist")
+
         shipment_data = shipment.to_dict()
         for field in shipment_data:
             if field in payload.__dict__:
@@ -185,18 +177,14 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
                     setattr(shipment, field, payload.__dict__[field])
                 except Exception as e:
                     logger.warning(e)
-        
+
         shipment_in = schemas.ShipmentUpdate(**shipment.to_dict())
         shipment = await shipment.update(shipment_in)
 
         return ShipmentType(**shipment.marshal_simple())
 
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def action_shipment(
-        self,
-        info,
-        uid: str,
-        action: str
+        self, info, uid: str, action: str
     ) -> ShipmentResponse:  # noqa
 
         is_authenticated, felicity_user = await auth_from_info(info)
@@ -207,20 +195,19 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
         )
 
         if not uid or not action:
-            return OperationError(error="The uid/action for the update shipment was not provided")
-    
-        shipment: Optional[models.Shipment] = await models.Shipment.get(
-            uid=uid
-        )
+            return OperationError(
+                error="The uid/action for the update shipment was not provided"
+            )
+
+        shipment: Optional[models.Shipment] = await models.Shipment.get(uid=uid)
 
         if not shipment:
-            return OperationError(
-                error=f"Shipment {uid} does not exist"
-            )
-        
+            return OperationError(error=f"Shipment {uid} does not exist")
 
         if action == "dispatch":
-            shipment = await shipment.change_state(conf.shipment_states.AWAITING, felicity_user.uid)
+            shipment = await shipment.change_state(
+                conf.shipment_states.AWAITING, felicity_user.uid
+            )
 
             job_schema = job_schemas.JobCreate(
                 action=actions.SH_DISPATCH,
@@ -232,19 +219,14 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
                 data=None,
             )
             await job_models.Job.create(job_schema)
-            
+
         else:
             shipment = await action_shipment(uid, action, felicity_user)
 
         return ShipmentType(**shipment.marshal_simple())
 
-
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def shipment_manage_samples(
-        self,
-        info,
-        uid: str,
-        payload: ShipmentManageSamplesInput
+        self, info, uid: str, payload: ShipmentManageSamplesInput
     ) -> ShipmentResponse:
 
         is_authenticated, felicity_user = await auth_from_info(info)
@@ -278,7 +260,7 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
             )
             await job_models.Job.create(job_schema)
         elif payload.action == "recover":
-            await shipment_recover(shipment.uid, data, felicity_user.uid)            
+            await shipment_recover(shipment.uid, data, felicity_user.uid)
         elif payload.action == "recall":
             await shipment_recall(shipment.uid, data, felicity_user.uid)
         else:
@@ -287,9 +269,9 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
         shipment = await models.Shipment.get(uid=uid)
         return ShipmentType(**shipment.marshal_simple())
 
-
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
-    async def create_referral_laboratory(info, payload: ReferralLaboratoryInputType) -> ReferralLaboratoryResponse:
+    async def create_referral_laboratory(
+        info, payload: ReferralLaboratoryInputType
+    ) -> ReferralLaboratoryResponse:
 
         is_authenticated, felicity_user = await auth_from_info(info)
         verify_user_auth(
@@ -301,13 +283,14 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
         if not payload.name or not payload.code:
             return OperationError(error="Name and Code are mandatory")
 
-        stmt = models.ReferralLaboratory.smart_query(filters={ or_: {
-            'name__exact': payload.name, 
-            'code__exact': payload.code
-        }})
+        stmt = models.ReferralLaboratory.smart_query(
+            filters={or_: {"name__exact": payload.name, "code__exact": payload.code}}
+        )
         exists = await models.ReferralLaboratory.from_smart_query(stmt)
         if exists:
-            return OperationError(error=f"ReferralLaboratory: {payload.name}, {payload.code} already exists")
+            return OperationError(
+                error=f"ReferralLaboratory: {payload.name}, {payload.code} already exists"
+            )
 
         incoming = {
             "created_by_uid": felicity_user.uid,
@@ -317,13 +300,11 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
             incoming[k] = v
 
         obj_in = schemas.ReferralLaboratoryCreate(**incoming)
-        referral_laboratory: models.ReferralLaboratory = await models.ReferralLaboratory.create(
-            obj_in
+        referral_laboratory: models.ReferralLaboratory = (
+            await models.ReferralLaboratory.create(obj_in)
         )
         return types.ReferralLaboratoryType(**referral_laboratory.marshal_simple())
 
-
-    @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_referral_laboratory(
         info, uid: str, payload: ReferralLaboratoryInputType
     ) -> ReferralLaboratoryResponse:
@@ -337,7 +318,9 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
 
         referral_laboratory = await models.ReferralLaboratory.get(uid=uid)
         if not referral_laboratory:
-            return OperationError(error=f"ReferralLaboratory with uid {uid} does not exist")
+            return OperationError(
+                error=f"ReferralLaboratory with uid {uid} does not exist"
+            )
 
         st_data = referral_laboratory.to_dict()
         for field in st_data:
@@ -347,6 +330,8 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
                 except Exception as e:
                     logger.warning(e)
 
-        referral_laboratory_in = schemas.ReferralLaboratoryUpdate(**referral_laboratory.to_dict())
+        referral_laboratory_in = schemas.ReferralLaboratoryUpdate(
+            **referral_laboratory.to_dict()
+        )
         referral_laboratory = await referral_laboratory.update(referral_laboratory_in)
         return types.ReferralLaboratoryType(**referral_laboratory.marshal_simple())

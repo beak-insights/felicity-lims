@@ -14,17 +14,22 @@ from domain.reflex.schemas import (
 class IReflexRuleService(IBaseService[ReflexRule], ABC):
     ...
 
+
 class IReflexBrainAdditionService(IBaseService[ReflexBrainAddition], ABC):
     ...
+
 
 class IReflexBrainFinalService(IBaseService[ReflexBrainFinal], ABC):
     ...
 
+
 class IReflexBrainCriteriaService(IBaseService[ReflexBrainCriteria], ABC):
     ...
 
+
 class IReflexBrainService(IBaseService[ReflexBrain], ABC):
     ...
+
 
 class IReflexActionService(IBaseService[ReflexAction], ABC):
     ...

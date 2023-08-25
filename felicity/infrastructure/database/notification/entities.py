@@ -4,7 +4,6 @@ from sqlalchemy.orm import relationship
 from infrastructure.database import BaseAuditDBModel, DBModel
 
 
-
 """
  Many to Many Link between Users and ActivityFeed
 """
@@ -18,6 +17,7 @@ activity_feed_subscription = Table(
 
 class ActivityFeed(BaseAuditDBModel):
     """ActivityFeed"""
+
     __tablename__ = "activity_feed"
 
     name = Column(String, nullable=False)
@@ -56,6 +56,7 @@ class ActivityStream(BaseAuditDBModel):
     e.g. Aurthur (actor) verified (verb) worksheet ws20-1222 (action object) 20 on felicity lims (target) minutes ago
     ?? maybe target as feed
     """
+
     __tablename__ = "activity_stream"
 
     feeds = relationship(ActivityFeed, secondary=activity_stream_feed, lazy="selectin")
@@ -123,6 +124,7 @@ class Notification(BaseAuditDBModel):
         2 worksheets have no samples, consider populating or deleting them to avoid cluttering your dashboard
         ...
     """
+
     __tablename__ = "notification"
 
     # target audiences

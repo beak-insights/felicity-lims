@@ -15,7 +15,7 @@ from apps.shipment.tasks import (
     dispatch_shipment,
     shipment_receive,
     return_shipped_report,
-    process_shipped_report
+    process_shipped_report,
 )
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -25,10 +25,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # apscheduler
-log = logging.getLogger('apscheduler.executors.default')
+log = logging.getLogger("apscheduler.executors.default")
 log.setLevel(logging.WARNING)
 
 scheduler = AsyncIOScheduler()
+
 
 async def run_jobs_if_exists():
     async def unknown_action(action):
@@ -37,7 +38,7 @@ async def run_jobs_if_exists():
     jobs: list[job_models.Job] = await job_models.Job.fetch_sorted()
 
     # logging.info(f"There are {len(jobs)} Jobs pending running.")
-    
+
     if len(jobs) == 0:
         # felicity_pause_workforce()\
         pass
@@ -62,7 +63,7 @@ async def run_jobs_if_exists():
                 job_conf.actions.SH_DISPATCH: dispatch_shipment,
                 job_conf.actions.SH_RECEIVE: shipment_receive,
                 job_conf.actions.SHIPPED_REPORT: return_shipped_report,
-                job_conf.actions.DIAGNOSTIC_REPORT: process_shipped_report
+                job_conf.actions.DIAGNOSTIC_REPORT: process_shipped_report,
             },
         }
 

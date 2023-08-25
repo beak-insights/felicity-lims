@@ -37,6 +37,7 @@ class WorkSheetTemplate(WSBase):
     a template has a single analyses associated in order to avoid
     cases where multi analyses can be assigned to a single ws
     """
+
     __tablename__ = "worksheet_template"
 
     name = Column(String, unique=True, nullable=False)
@@ -57,10 +58,8 @@ class WorkSheetTemplate(WSBase):
 
 class WorkSheet(Auditable, WSBase):
     __tablename__ = "worksheet"
-    
-    template_uid = Column(
-        String, ForeignKey("worksheet_template.uid"), nullable=False
-    )
+
+    template_uid = Column(String, ForeignKey("worksheet_template.uid"), nullable=False)
     template = relationship("WorkSheetTemplate", lazy="selectin")
     analyst_uid = Column(String, ForeignKey("user.uid"), nullable=False)
     analyst = relationship(User, foreign_keys=[analyst_uid], lazy="selectin")

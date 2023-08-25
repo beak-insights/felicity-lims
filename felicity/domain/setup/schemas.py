@@ -18,7 +18,7 @@ class LaboratoryBase(BaseModel):
     email_cc: str | None = None
     mobile_phone: str | None = None
     business_phone: str | None = None
-    lab_manager_uid: str| None = None
+    lab_manager_uid: str | None = None
     address: str | None = ""
 
 
@@ -33,7 +33,7 @@ class LaboratoryUpdate(LaboratoryBase):
 
 
 class LaboratoryInDBBase(LaboratoryBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -49,17 +49,17 @@ class LaboratoryInDB(LaboratoryInDBBase):
 
 
 class LaboratorySettingBase(BaseAuditModel):
-    laboratory_uid: str| None = None
+    laboratory_uid: str | None = None
     laboratory: Optional[Laboratory] = None
-    allow_self_verification: bool| None = False
-    allow_patient_registration: bool| None = True
-    allow_sample_registration: bool| None = True
-    allow_worksheet_creation: bool| None = True
+    allow_self_verification: bool | None = False
+    allow_patient_registration: bool | None = True
+    allow_sample_registration: bool | None = True
+    allow_worksheet_creation: bool | None = True
     default_route: str | None = None
     password_lifetime: int | None = None
     inactivity_log_out: int | None = None
     default_theme: str | None = None
-    auto_receive_samples: bool| None = True
+    auto_receive_samples: bool | None = True
     sticker_copies: int | None = 2
 
 
@@ -72,7 +72,7 @@ class LaboratorySettingUpdate(LaboratorySettingBase):
 
 
 class LaboratorySetting(LaboratorySettingBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -232,11 +232,11 @@ class ManufacturerInDB(ManufacturerInDBBase):
 class CountryBase(BaseModel):
     name: str | None = None
     code: str | None = None
-    active: bool| None = True
+    active: bool | None = True
 
 
 class CountryBaseInDB(CountryBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -268,7 +268,7 @@ class CountryInDB(CountryBaseInDB):
 # Shared properties
 class ProvinceBase(BaseModel):
     name: str | None
-    country_uid: str| None
+    country_uid: str | None
     code: str | None = None
     email: str | None = None
     email_cc: str | None = None
@@ -276,11 +276,11 @@ class ProvinceBase(BaseModel):
     mobile_phone: str | None = None
     business_phone: str | None = None
     consent_sms: str | None = None
-    active: bool| None = True
+    active: bool | None = True
 
 
 class ProvinceBaseInDB(ProvinceBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -312,7 +312,7 @@ class ProvinceInDB(ProvinceBaseInDB):
 # Shared properties
 class DistrictBase(BaseModel):
     name: str | None
-    province_uid: str| None
+    province_uid: str | None
     code: str | None = None
     email: str | None = None
     email_cc: str | None = None
@@ -320,11 +320,11 @@ class DistrictBase(BaseModel):
     mobile_phone: str | None = None
     business_phone: str | None = None
     consent_sms: str | None = None
-    active: bool| None = True
+    active: bool | None = True
 
 
 class DistrictBaseInDB(DistrictBase):
-    uid: str| None = None
+    uid: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

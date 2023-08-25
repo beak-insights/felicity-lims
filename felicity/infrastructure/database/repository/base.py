@@ -16,12 +16,12 @@ M = TypeVar("M")
 
 class BaseRepository(Generic[M], IBaseRepository[M]):
     model: M = None
-    
+
     def __init__(self, db: PersistenceProtocol) -> None:
         self._db = db
         self.async_session = self._db.async_session()
         self._qb = QueryBuilder(model=self.model)
-        
+
     def fill(self, m: M, **kwargs):
         for name in kwargs.keys():
             if name in settable_attributes(m):
@@ -29,8 +29,8 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
             else:
                 raise KeyError("Attribute '{}' doesn't exist".format(name))
         return m
-        
-    async def save(self, m: M) -> M: 
+
+    async def save(self, m: M) -> M:
         async with self.async_session() as session:
             try:
                 session.add(m)
@@ -40,40 +40,40 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
                 await session.rollback()
                 raise
         return m
-    
+
     async def create(self, **kwargs):
-        cls = self.model() # self.model.__class__()
+        cls = self.model()  # self.model.__class__()
         filled = self.fill(cls, **kwargs)
         return await self.save(filled)
-        
+
     async def update(self, model: M, **kwargs):
         filled = self.fill(model, **kwargs)
         return await self.save(filled)
-        
+
     async def update_by_uid(self, uid: str, **kwargs):
         update = await self.get(uid=uid)
         filled = self.fill(update, **kwargs)
         return await self.save(filled)
-        
+
     async def get(self, **kwargs):
         stmt = self._qb.where(**kwargs)
         async with self.async_session() as session:
             results = await session.execute(stmt)
             found = results.scalars().first()
         return found
-    
+
     async def get_all(self, **kwargs):
         stmt = self._qb.where(**kwargs)
         async with self.async_session() as session:
             results = await session.execute(stmt)
             found = results.scalars().all()
         return found
-    
+
     async def all(self):
         async with self.async_session() as session:
             results = await session.execute(select(self.model))
         return results.scalars().all()
-        
+
     async def bulk_update_with_mappings(self, mappings: list) -> None:
         """
         @param mappings a List of dictionary update values with pks.
@@ -96,13 +96,14 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
                 binds[key] = bindparam(key)
 
         stmt = query.values(binds).execution_options(
-            synchronize_session=None) # "fetch" not available
+            synchronize_session=None
+        )  # "fetch" not available
 
         async with self.async_session() as session:
             await session.execute(stmt, to_update)
             await session.flush()
             await session.commit()
-            
+
     async def delete(self, uid: str):
         obj = await self.get(uid=uid)
         async with self.async_session() as session:
@@ -110,20 +111,19 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
             await session.flush()
             await session.commit()
 
-    async def count_where(self, filters: dict):
+    async def count_where(self, filters: dict) -> int:
         """
         :param filters:
         :return: int
         """
         # filter_stmt = smart_query(query=select(cls), filters=filters) noqa
         filter_stmt = self._qb.smart_query(filters=filters)
-        count_stmt = select(func.count(filter_stmt.c.uid)
-                            ).select_from(filter_stmt)
+        count_stmt = select(func.count(filter_stmt.c.uid)).select_from(filter_stmt)
         async with self.async_session() as session:
             res = await session.execute(count_stmt)
         count = res.scalars().one()
         return count
-    
+
     async def paginate(
         self,
         page_size: int | None,
@@ -220,5 +220,8 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
             }
         )
 
-    def decode_cursor(self, cursor): return cursor
-    def encode_cursor(self, identifier: Any): return identifier
+    def decode_cursor(self, cursor):
+        return cursor
+
+    def encode_cursor(self, identifier: Any):
+        return identifier

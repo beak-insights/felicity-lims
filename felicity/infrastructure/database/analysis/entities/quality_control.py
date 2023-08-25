@@ -9,6 +9,7 @@ class QCSet(BaseAuditDBModel):
     """A Set/Group of QC Samples that are run together.
     - e.g a Viral Load Rack the QCLevels are a set i.e Negative Control, Low Pos Control, High Pos Control
     """
+
     __tablename__ = "qc_set"
 
     name = Column(String, nullable=False)
@@ -34,6 +35,7 @@ class QCReference(BaseAuditDBModel):
               InActive awaiting activation
               Depleted
     """
+
     __tablename__ = "qc_reference"
 
     name = Column(String, nullable=False)
@@ -70,6 +72,7 @@ class QCLevel(BaseAuditDBModel):
     - HIV Low Positive Control
     - HIV High Positive Control
     """
+
     __tablename__ = "qc_level"
 
     level = Column(String, nullable=False)
@@ -84,7 +87,6 @@ class QCLevel(BaseAuditDBModel):
     # max_value = Column(Float, nullable=True)
     # allowable_error = Column(Float, nullable=True)
 
- 
 
 """
 Many to Many Link between QCTemplate and Department
@@ -118,6 +120,7 @@ class QCTemplate(BaseAuditDBModel):
         - Negative Control
         - Positive COntrol
     """
+
     __tablename__ = "qc_template"
 
     name = Column(String, nullable=False)

@@ -21,19 +21,25 @@ class StoreRoomRespository(BaseRepository[StoreRoom], IStoreRoomRepository):
         super().__init__(db)
 
 
-class StorageLocationRespository(BaseRepository[StorageLocation], IStorageLocationRepository):
+class StorageLocationRespository(
+    BaseRepository[StorageLocation], IStorageLocationRepository
+):
     def __init__(self, db: PersistenceProtocol) -> None:
         self.model = StorageLocation
         super().__init__(db)
 
 
-class StorageSectionRespository(BaseRepository[StorageSection], IStorageSectionRepository):
+class StorageSectionRespository(
+    BaseRepository[StorageSection], IStorageSectionRepository
+):
     def __init__(self, db: PersistenceProtocol) -> None:
         self.model = StorageSection
         super().__init__(db)
 
 
-class StorageContainerRespository(BaseRepository[StorageContainer], IStorageContainerRepository):
+class StorageContainerRespository(
+    BaseRepository[StorageContainer], IStorageContainerRepository
+):
     def __init__(self, db: PersistenceProtocol) -> None:
         self.model = StorageContainer
         super().__init__(db)

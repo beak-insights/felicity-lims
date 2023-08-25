@@ -4,7 +4,7 @@ from domain.reflex.ports.repository import (
     IReflexBrainFinalRespository,
     IReflexBrainCriteriaRespository,
     IReflexBrainRespository,
-    IReflexActionRespository
+    IReflexActionRespository,
 )
 from domain.shared.ports.persistance import PersistenceProtocol
 from infrastructure.database.repository.base import BaseRepository
@@ -15,7 +15,7 @@ from infrastructure.database.reflex.entities import (
     ReflexBrainFinal,
     ReflexBrainCriteria,
     ReflexBrain,
-    ReflexAction
+    ReflexAction,
 )
 
 
@@ -25,19 +25,25 @@ class ReflexRuleRespository(BaseRepository[ReflexRule], IReflexRuleRepository):
         super().__init__(db)
 
 
-class ReflexBrainAdditionRespository(BaseRepository[ReflexBrainAddition], IReflexBrainAdditionRepository):
+class ReflexBrainAdditionRespository(
+    BaseRepository[ReflexBrainAddition], IReflexBrainAdditionRepository
+):
     def __init__(self, db: PersistenceProtocol) -> None:
         self.model = ReflexBrainAddition
         super().__init__(db)
 
 
-class ReflexBrainFinalRespository(BaseRepository[ReflexBrainFinal], IReflexBrainFinalRepository):
+class ReflexBrainFinalRespository(
+    BaseRepository[ReflexBrainFinal], IReflexBrainFinalRepository
+):
     def __init__(self, db: PersistenceProtocol) -> None:
         self.model = ReflexBrainFinal
         super().__init__(db)
 
 
-class ReflexBrainCriteriaRespository(BaseRepository[ReflexBrainCriteria], IReflexBrainCriteriaRepository):
+class ReflexBrainCriteriaRespository(
+    BaseRepository[ReflexBrainCriteria], IReflexBrainCriteriaRepository
+):
     def __init__(self, db: PersistenceProtocol) -> None:
         self.model = ReflexBrainCriteria
         super().__init__(db)

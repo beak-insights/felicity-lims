@@ -3,7 +3,7 @@ from domain.instrument.ports.repository import (
     IInstrumentRepository,
     IInstrumentTypeRepository,
     IInstrumentCalibrationRepository,
-    ICalibrationCertificateRepository
+    ICalibrationCertificateRepository,
 )
 from domain.shared.ports.persistance import PersistenceProtocol
 from infrastructure.database.repository.base import BaseRepository
@@ -13,7 +13,7 @@ from infrastructure.database.instrument.entities import (
     Instrument,
     InstrumentType,
     InstrumentCalibration,
-    CalibrationCertificate
+    CalibrationCertificate,
 )
 
 
@@ -33,19 +33,25 @@ class InstrumentRespository(BaseRepository[Instrument], IInstrumentRepository):
         super().__init__(db)
 
 
-class InstrumentTypeRespository(BaseRepository[InstrumentType], IInstrumentTypeRepository):
+class InstrumentTypeRespository(
+    BaseRepository[InstrumentType], IInstrumentTypeRepository
+):
     def __init__(self, db: PersistenceProtocol) -> None:
         self.model = InstrumentType
         super().__init__(db)
 
 
-class InstrumentCalibrationRespository(BaseRepository[InstrumentCalibration], IInstrumentCalibrationRepository):
+class InstrumentCalibrationRespository(
+    BaseRepository[InstrumentCalibration], IInstrumentCalibrationRepository
+):
     def __init__(self, db: PersistenceProtocol) -> None:
         self.model = InstrumentCalibration
         super().__init__(db)
 
 
-class CalibrationCertificateRespository(BaseRepository[CalibrationCertificate], ICalibrationCertificateRepository):
+class CalibrationCertificateRespository(
+    BaseRepository[CalibrationCertificate], ICalibrationCertificateRepository
+):
     def __init__(self, db: PersistenceProtocol) -> None:
         self.model = CalibrationCertificate
         super().__init__(db)
