@@ -17,7 +17,7 @@ from domain.user.schemas import User
 
 @strawberry.type
 class UserQuery:
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    @strawberry.field()
     async def user_all(
         self,
         info,
@@ -30,7 +30,7 @@ class UserQuery:
         filters = {}
 
         _or_ = dict()
-        if has_value_or_is_truthy(text):
+        if text:
             arg_list = [
                 "first_name__ilike",
                 "last_name__ilike",
@@ -68,7 +68,7 @@ class UserQuery:
     async def user_by_email(self, info: Info, email: str) -> UserType | None:
         return await info.context.user_service.get_by_email(email=email)
 
-    @strawberry.field(permission_classes=[IsAuthenticated])
+    @strawberry.field()
     async def group_all(self, info: Info) -> List[GroupType]:
         return await info.context.group_service.all()
 

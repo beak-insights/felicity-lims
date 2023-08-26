@@ -13,6 +13,8 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
 from adapters.graphql.dependencies import IDependencyService
+from dependency_injector.wiring import inject, Provide
+from .container import Container
 
 
 def register_configs(app: Sanic):
@@ -58,14 +60,21 @@ def register_job_runner(app: Sanic):
         scheduler.start()
 
 
+@inject
+def trial_jobber(worker: JobWorker = Provide[Container.worker_service]):
+    print(worker.run_jobs_if_exists())
+
 
 def register_felicity():
+    container = Container()
     app = Sanic("felicity-hexagonal")
+    app.ctx.container = container
 
     register_configs(app)
     register_dependencies(app)
     register_blueprints(app)
     register_graphql(app)
     register_job_runner(app)
+    # trial_jobber()
 
     return app

@@ -19,7 +19,7 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
 
     def __init__(self, db: PersistenceProtocol) -> None:
         self._db = db
-        self.async_session = self._db.async_session()
+        self.async_session = self._db.async_session
         self._qb = QueryBuilder(model=self.model)
 
     def fill(self, m: M, **kwargs):

@@ -4,10 +4,10 @@ from contextlib import AbstractContextManager
 from typing import Callable
 
 from core.setting import settings
-from sqlalchemy.ext.asyncio import (
-    AsyncSession,
-    create_async_engine, async_sessionmaker,
-)
+from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.orm import sessionmaker
 from core.uid_gen import get_flake_uid
 
 
@@ -18,15 +18,18 @@ class Database:
             pool_pre_ping=True,
             echo=False,
             future=True,
+            pool_size=30,
+            max_overflow=120
         )
-        self._async_session_factory = async_sessionmaker(
+        self._async_session = async_sessionmaker(
             bind=self._async_engine,
             expire_on_commit=False,
             autoflush=False,
+            class_=AsyncSession
         )
 
     def async_session(self) -> Callable[..., AbstractContextManager[AsyncSession]]:
-        return self._async_session_factory
+        return self._async_session()
 
 
 class DBModel(DeclarativeBase):

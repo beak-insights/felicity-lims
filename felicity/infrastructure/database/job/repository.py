@@ -25,4 +25,4 @@ class JobRepository(BaseRepository[Job], IJobRepository):
         async with self.async_session() as session:
             results = await session.execute(stmt)
             jobs = results.scalars().all()
-            return list(filter(lambda job: job.is_ready_for_execution, jobs))
+        return list(filter(lambda job: job.is_ready_for_execution, jobs))
