@@ -3,7 +3,6 @@ from domain.user.ports.repository import (
     IUserRepository,
     IPermissionRepository,
     IGroupRepository,
-    IUserPreferenceRepository,
 )
 from domain.shared.ports.persistance import PersistenceProtocol
 from infrastructure.database.repository.base import BaseRepository
@@ -11,7 +10,6 @@ from infrastructure.database.user.entities import (
     User,
     Permission,
     Group,
-    UserPreference,
 )
 from domain.shared.ports.paginator.cursor import PageCursor
 
@@ -65,10 +63,3 @@ class GroupRespository(BaseRepository[Group], IGroupRepository):
         self.model = Group
         super().__init__(db)
 
-
-class UserPreferenceRespository(
-    BaseRepository[UserPreference], IUserPreferenceRepository
-):
-    def __init__(self, db: PersistenceProtocol) -> None:
-        self.model = UserPreference
-        super().__init__(db)

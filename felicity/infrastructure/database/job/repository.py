@@ -12,7 +12,7 @@ class JobRepository(BaseRepository[Job], IJobRepository):
         super().__init__(db)
 
     async def fetch_sorted(self):
-        _jobs = self._qb.smart_query(
+        stmt = self._qb.smart_query(
             filters={
                 "status__notin": [
                     JobStates.FINISHED,
@@ -23,6 +23,6 @@ class JobRepository(BaseRepository[Job], IJobRepository):
             sort_attrs=["-priority"],
         )
         async with self.async_session() as session:
-            results = session.ecxecute(_jobs)
-        jobs = results.scalars().all()
-        return list(filter(lambda job: job.is_ready_for_execution, jobs))
+            results = await session.execute(stmt)
+            jobs = results.scalars().all()
+            return list(filter(lambda job: job.is_ready_for_execution, jobs))

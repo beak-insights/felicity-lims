@@ -81,29 +81,6 @@ class GroupPermission(BaseModel):
 
 
 #
-#  User Preferences
-#
-class UserPreferenceBase(BaseAuditModel):
-    expanded_menu: bool | None = False
-    departments: Optional[List["Department"]]
-    theme: str | None = Themes.LIGHT
-
-
-class UserPreference(UserPreferenceBase):
-    uid: str | None = None
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class UserPreferenceCreate(UserPreferenceBase):
-    pass
-
-
-class UserPreferenceUpdate(UserPreferenceBase):
-    pass
-
-
-#
 #  User Schema
 #
 

@@ -42,9 +42,12 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
         return m
 
     async def create(self, **kwargs) -> M:
-        cls = self.model()  # self.model.__class__()
+        cls = self.model()
         filled = self.fill(cls, **kwargs)
         return await self.save(filled)
+
+    async def bulk_create(self, bulk: list[dict]) -> list[M]:
+        pass
 
     async def update(self, model: M, **kwargs) -> M:
         filled = self.fill(model, **kwargs)

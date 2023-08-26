@@ -3,7 +3,6 @@ from sqlalchemy.orm import relationship
 
 from infrastructure.database.sqlalchemy import DBModel
 from infrastructure.database.user.abstract import AbstractBaseUser
-from domain.user.conf import Themes
 
 
 """
@@ -33,10 +32,6 @@ class User(AbstractBaseUser):
     groups = relationship(
         "Group", secondary=user_groups, back_populates="members", lazy="selectin"
     )
-    preference_uid = Column(String, ForeignKey("user_preference.uid"))
-    preference = relationship(
-        "UserPreference", foreign_keys=[preference_uid], lazy="selectin"
-    )
     avatar = Column(String, nullable=True)
     bio = Column(String, nullable=True)
     default_route = Column(Boolean(), nullable=True)
@@ -64,23 +59,3 @@ class Group(DBModel):
     )
     pages = Column(String, nullable=True)
     active = Column(Boolean(), default=True)
-
-
-department_preference = Table(
-    "department_preference",
-    DBModel.metadata,
-    Column("department_uid", ForeignKey("department.uid"), primary_key=True),
-    Column("preference_uid", ForeignKey("user_preference.uid"), primary_key=True),
-)
-
-
-class UserPreference(DBModel):
-    """Preferences for System Personalisation"""
-
-    __tablename__ = "user_preference"
-
-    expanded_menu = Column(Boolean(), default=False)
-    departments = relationship(
-        "Department", secondary=department_preference, lazy="selectin"
-    )
-    theme = Column(String, default=Themes.LIGHT)  # dark, light

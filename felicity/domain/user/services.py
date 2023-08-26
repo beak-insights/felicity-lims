@@ -12,7 +12,6 @@ from domain.user.ports.service import (
     IUserService,
     IGroupService,
     IPermissionService,
-    IUserPreferenceService,
 )
 from domain.user.schemas import (
     User,
@@ -23,7 +22,6 @@ from domain.user.schemas import (
     GroupCreate,
     Permission,
     GroupPermission,
-    UserPreferenceCreate,
 )
 from domain.user.ports.repository import IUserRepository, IGroupRepository
 from domain.shared.services import BaseService
@@ -47,12 +45,10 @@ class UserService(BaseService[User], IUserService):
     def __init__(
         self,
         repository: IUserRepository,
-        user_preference_service: IUserPreferenceService,
         group_service: IGroupService,
         permission_service: IPermissionService,
     ) -> None:
         self.repository = repository
-        self.user_preference_service = user_preference_service
         self.group_service = group_service
         self.permission_service = permission_service
         super().__init__(self.repository)
@@ -128,14 +124,6 @@ class UserService(BaseService[User], IUserService):
         group = await self.group_service.get(uid=group_uid)
         user.groups.append(group)
         return await self.repository.update(user, **self.marshal(user))
-
-    async def add_preferences(self, user: User) -> User:
-        pref_in = UserPreferenceCreate(
-            **{"expanded_menu": False, "departments": [], "theme": Themes.LIGHT}
-        )
-        preference = await self.user_preference_service.create(**self.marshal(pref_in))
-        update_in = UserUpdate(**{"preference_uid": preference.uid})
-        return await self.repository.update(user, **self.marshal(update_in))
 
     async def update(
         self,
@@ -321,6 +309,3 @@ class GroupService(BaseService[Group], IGroupService):
 class PermissionService(BaseService[Permission], IPermissionService):
     ...
 
-
-class UserPreferenceService(BaseService[Permission], IUserPreferenceService):
-    ...

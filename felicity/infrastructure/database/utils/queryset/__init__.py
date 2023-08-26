@@ -294,7 +294,7 @@ def smart_query(query, filters=None, sort_attrs=None, schema=None):
         else:
             entity, attr_name = root_cls, attr
         try:
-            query = query.order_by(*entity.order_expr(attr_name))
+            query = query.order_by(*order_expr(entity, attr_name))
         except KeyError as e:
             raise KeyError("Incorrect order path `{}`: {}".format(attr, e))
 
@@ -390,6 +390,34 @@ def _create_eager_load_option(path, join_method):
         return subqueryload(path)
     else:
         raise ValueError("Bad join method `{}` in `{}`".format(join_method, path))
+
+
+def order_expr(model, *columns):
+    """
+    Forms expressions like [desc(User.first_name), asc(User.phone)]
+      from list like ['-first_name', 'phone']
+
+    Example for 1 column:
+      db.query(User).order_by(*User.order_expr('-first_name'))
+      # will compile to ORDER BY user.first_name DESC
+
+    Example for multiple columns:
+      columns = ['-first_name', 'phone']
+      db.query(User).order_by(*User.order_expr(*columns))
+      # will compile to ORDER BY user.first_name DESC, user.phone ASC
+
+    About cls_or_alias, mapper, cls: read in filter_expr method description
+    """
+
+    expressions = []
+    for attr in columns:
+        fn, attr = (desc, attr[1:]) if attr.startswith(DESC_PREFIX) else (asc, attr)
+        if attr not in sortable_attributes(model):
+            raise KeyError("Cant order {} by {}".format(model, attr))
+
+        expr = fn(getattr(model, attr))
+        expressions.append(expr)
+    return expressions
 
 
 _operators = {
@@ -542,32 +570,6 @@ class QueryBuilder:
         options = [subqueryload(path) for path in paths]
         return self.query.options(*options)
 
-    def order_expr(self, *columns):
-        """
-        Forms expressions like [desc(User.first_name), asc(User.phone)]
-          from list like ['-first_name', 'phone']
-
-        Example for 1 column:
-          db.query(User).order_by(*User.order_expr('-first_name'))
-          # will compile to ORDER BY user.first_name DESC
-
-        Example for multiple columns:
-          columns = ['-first_name', 'phone']
-          db.query(User).order_by(*User.order_expr(*columns))
-          # will compile to ORDER BY user.first_name DESC, user.phone ASC
-
-        About cls_or_alias, mapper, cls: read in filter_expr method description
-        """
-
-        expressions = []
-        for attr in columns:
-            fn, attr = (desc, attr[1:]) if attr.startswith(DESC_PREFIX) else (asc, attr)
-            if attr not in sortable_attributes(self.model):
-                raise KeyError("Cant order {} by {}".format(self.model, attr))
-
-            expr = fn(getattr(self.model, attr))
-            expressions.append(expr)
-        return expressions
 
     def smart_query(self, filters=None, sort_attrs=None, schema=None):
         """

@@ -6,7 +6,6 @@ from domain.user.schemas import (
     Permission,
     AuthenticatedUser,
     GroupPermission,
-    UserPreference,
 )
 from domain.shared.schemas import Message
 from domain.shared.ports.service import IBaseService
@@ -64,6 +63,3 @@ class IGroupService(IBaseService[Group], ABC):
 class IPermissionService(IBaseService[Permission], ABC):
     ...
 
-
-class IUserPreferenceService(IBaseService[UserPreference], ABC):
-    ...

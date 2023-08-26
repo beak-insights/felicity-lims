@@ -24,7 +24,7 @@ class JobService(BaseService[Job], IJobService):
         await self.repository.update(job, **self.marshal(job))
 
     async def fetch_sorted(self):
-        return self.repository.fetch_sorted()
+        return await self.repository.fetch_sorted()
 
     async def change_status(self, job: Job, new_status, change_reason=""):
         job.status = new_status

@@ -1,9 +1,10 @@
-from typing import Protocol, AsyncContextManager
+from typing import Protocol
+from contextlib import contextmanager, AbstractContextManager
+from typing import Callable
 
 
 class PersistenceProtocol(Protocol):
-    def async_scoped_session(self) -> AsyncContextManager:
-        ...
 
-    def async_session(self) -> AsyncContextManager:
+    @contextmanager
+    def async_session(self) -> Callable[..., AbstractContextManager]:
         ...

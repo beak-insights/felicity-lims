@@ -1,16 +1,13 @@
-from datetime import datetime
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import Column, String
-
-from asyncio import current_task
+from contextlib import AbstractContextManager
+from typing import Callable
 
 from core.setting import settings
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
-    async_scoped_session,
-    create_async_engine,
+    create_async_engine, async_sessionmaker,
 )
-from sqlalchemy.orm import sessionmaker
 from core.uid_gen import get_flake_uid
 
 
@@ -22,18 +19,14 @@ class Database:
             echo=False,
             future=True,
         )
-        self._async_session_factory = sessionmaker(
+        self._async_session_factory = async_sessionmaker(
             bind=self._async_engine,
             expire_on_commit=False,
             autoflush=False,
-            class_=AsyncSession,
         )
 
-    def async_session(self) -> sessionmaker[AsyncSession]:
+    def async_session(self) -> Callable[..., AbstractContextManager[AsyncSession]]:
         return self._async_session_factory
-
-    def async_scoped_session(self) -> async_scoped_session[AsyncSession]:
-        return async_scoped_session(self._async_session_factory, scopefunc=current_task)
 
 
 class DBModel(DeclarativeBase):
