@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, ForeignKey, String, Table
 from sqlalchemy.orm import relationship
 
-from infrastructure.database.sqlalchemy import DBModel
+from infrastructure.database import DBModel
 from infrastructure.database.user.abstract import AbstractBaseUser
 
 

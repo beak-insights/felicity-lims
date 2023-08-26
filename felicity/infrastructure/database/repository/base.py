@@ -1,15 +1,15 @@
 from typing import Generic, TypeVar, Any, List
-from datetime import datetime
 from sqlalchemy import update
 from sqlalchemy import select
 from sqlalchemy.sql import func
 from sqlalchemy.sql.expression import bindparam
 from sqlalchemy import or_ as sa_or_
 
-from domain.shared.ports.persistance import PersistenceProtocol
 from domain.shared.ports.repository import IBaseRepository
 from domain.shared.ports.paginator.cursor import PageCursor, EdgeNode, PageInfo
 from infrastructure.database.utils.queryset import QueryBuilder, settable_attributes
+from infrastructure.database.repository.session import async_session
+
 
 M = TypeVar("M")
 
@@ -17,9 +17,8 @@ M = TypeVar("M")
 class BaseRepository(Generic[M], IBaseRepository[M]):
     model: M = None
 
-    def __init__(self, db: PersistenceProtocol) -> None:
-        self._db = db
-        self.async_session = self._db.async_session
+    def __init__(self) -> None:
+        self.async_session = async_session
         self._qb = QueryBuilder(model=self.model)
 
     def fill(self, m: M, **kwargs):

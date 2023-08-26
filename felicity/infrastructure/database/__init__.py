@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 
 from infrastructure.database.audit.mixin import AuditableMixin
 from infrastructure.database.utils.hooks import EventHookMixin
-from infrastructure.database.sqlalchemy import DBModel
+from infrastructure.database.entity.base import DBModel
 from infrastructure.database.utils.sqlalchemy_mptt import BaseNestedSets
 
 

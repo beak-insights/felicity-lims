@@ -5,7 +5,7 @@ from sanic.response import json
 from adapters.graphql.schema import schema
 from adapters.graphql.view import AppGraphQLView, Request
 from adapters.graphql.dependencies import IDependencyService, register_dependencies
-from adapters.baje.worker import JobWorker
+from adapters.baje.service import JobWorker
 
 from core.setting import settings
 
@@ -13,8 +13,6 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
 from adapters.graphql.dependencies import IDependencyService
-from dependency_injector.wiring import inject, Provide
-from .container import Container
 
 
 def register_configs(app: Sanic):
@@ -49,7 +47,7 @@ def register_job_runner(app: Sanic):
 
     def invoke_task_runner():
         from requests import post
-        post("http://localhost:8000/job-runner", json={"run": True})
+        post("http://localhost:8001/job-runner", json={"run": True})
 
     @app.listener("after_server_start")
     async def run_jons(app, loop):
@@ -60,15 +58,8 @@ def register_job_runner(app: Sanic):
         scheduler.start()
 
 
-@inject
-def trial_jobber(worker: JobWorker = Provide[Container.worker_service]):
-    print(worker.run_jobs_if_exists())
-
-
 def register_felicity():
-    container = Container()
     app = Sanic("felicity-hexagonal")
-    app.ctx.container = container
 
     register_configs(app)
     register_dependencies(app)

@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sqlalchemy import Column, Integer, String, DateTime
 
-from infrastructure.database.sqlalchemy import DBModel
+from infrastructure.database import DBModel
 
 
 class IdSequence(DBModel):

@@ -7,13 +7,12 @@ from sanic.request import Request
 from strawberry.http.temporal_response import TemporalResponse
 from strawberry.types.info import Info as StrawberryInfo, RootValueType
 
-from adapters.baje.worker import JobWorker
+from adapters.baje.service import JobWorker
 from adapters.shared import BaseDependencyService
 from domain.job.ports.repository import IJobRepository
 from domain.job.ports.service import IJobService
 from domain.job.services import JobService
 
-from domain.shared.ports.persistance import PersistenceProtocol
 from domain.user.services import (
     IUserService,
     UserService,
@@ -32,7 +31,7 @@ from infrastructure.database.user.repository import (
     PermissionRespository,
 )
 from domain.user.schemas import User
-from infrastructure.database.sqlalchemy import Database
+# from infrastructure.database.sqlalchemy import Database
 from infrastructure.database.repository.base import BaseRepository, IBaseRepository
 
 
@@ -74,8 +73,6 @@ class DependencyService(BaseDependencyService):
 
 
 def register_dependencies(app: Sanic):
-    # database
-    app.ext.add_dependency(PersistenceProtocol, Database)
     # bases
     app.ext.add_dependency(IBaseRepository, BaseRepository)
     # user

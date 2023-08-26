@@ -1,15 +1,14 @@
 from domain.job.conf import JobStates
 from domain.job.ports.repository import IJobRepository
-from domain.shared.ports.persistance import PersistenceProtocol
 from infrastructure.database.repository.base import BaseRepository
 
 from infrastructure.database.job.entities import Job
 
 
 class JobRepository(BaseRepository[Job], IJobRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = Job
-        super().__init__(db)
+        super().__init__()
 
     async def fetch_sorted(self):
         stmt = self._qb.smart_query(

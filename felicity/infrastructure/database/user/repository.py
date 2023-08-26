@@ -4,7 +4,6 @@ from domain.user.ports.repository import (
     IPermissionRepository,
     IGroupRepository,
 )
-from domain.shared.ports.persistance import PersistenceProtocol
 from infrastructure.database.repository.base import BaseRepository
 from infrastructure.database.user.entities import (
     User,
@@ -15,9 +14,9 @@ from domain.shared.ports.paginator.cursor import PageCursor
 
 
 class UserRespository(BaseRepository[User], IUserRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = User
-        super().__init__(db)
+        super().__init__()
 
     async def paginate_with_cursors(
         self,
@@ -53,13 +52,13 @@ class UserRespository(BaseRepository[User], IUserRepository):
 
 
 class PermissionRespository(BaseRepository[Permission], IPermissionRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = Permission
-        super().__init__(db)
+        super().__init__()
 
 
 class GroupRespository(BaseRepository[Group], IGroupRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = Group
-        super().__init__(db)
+        super().__init__()
 

@@ -1,8 +1,6 @@
 import json
-
 from sqlalchemy import Column, Integer, String, UnicodeText
-
-from infrastructure.database.sqlalchemy import DBModel
+from infrastructure.database.entity.base import DBModel
 
 
 class AuditLog(DBModel):
