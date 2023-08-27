@@ -10,7 +10,7 @@ from domain.inventory.ports.repository import (
     IStockTransactionRepository,
     IStockAdjustmentRepository,
 )
-from domain.shared.ports.persistance import PersistenceProtocol
+
 from infrastructure.database.repository.base import BaseRepository
 
 from infrastructure.database.inventory.entities import (
@@ -27,69 +27,69 @@ from infrastructure.database.inventory.entities import (
 )
 
 
-class StockItemRespository(BaseRepository[StockItem], IStockItemRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class StockItemRepository(BaseRepository[StockItem], IStockItemRepository):
+    def __init__(self) -> None:
         self.model = StockItem
-        super().__init__(db)
+        super().__init__()
 
 
-class StockCategoryRespository(BaseRepository[StockCategory], IStockCategoryRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class StockCategoryRepository(BaseRepository[StockCategory], IStockCategoryRepository):
+    def __init__(self) -> None:
         self.model = StockCategory
-        super().__init__(db)
+        super().__init__()
 
 
-class HazardRespository(BaseRepository[Hazard], IHazardRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class HazardRepository(BaseRepository[Hazard], IHazardRepository):
+    def __init__(self) -> None:
         self.model = Hazard
-        super().__init__(db)
+        super().__init__()
 
 
-class StockUnitRespository(BaseRepository[StockUnit], IStockUnitRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class StockUnitRepository(BaseRepository[StockUnit], IStockUnitRepository):
+    def __init__(self) -> None:
         self.model = StockUnit
-        super().__init__(db)
+        super().__init__()
 
 
-class StockPackagingRespository(
+class StockPackagingRepository(
     BaseRepository[StockPackaging], IStockPackagingRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = StockPackaging
-        super().__init__(db)
+        super().__init__()
 
 
-class StockProductRespository(BaseRepository[StockProduct], IStockProductRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class StockProductRepository(BaseRepository[StockProduct], IStockProductRepository):
+    def __init__(self) -> None:
         self.model = StockProduct
-        super().__init__(db)
+        super().__init__()
 
 
-class StockOrderRespository(BaseRepository[StockOrder], IStockOrderRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class StockOrderRepository(BaseRepository[StockOrder], IStockOrderRepository):
+    def __init__(self) -> None:
         self.model = StockOrder
-        super().__init__(db)
+        super().__init__()
 
 
-class StockOrderProductRespository(
+class StockOrderProductRepository(
     BaseRepository[StockOrderProduct], IStockOrderProductRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = StockOrderProduct
-        super().__init__(db)
+        super().__init__()
 
 
-class StockTransactionRespository(
+class StockTransactionRepository(
     BaseRepository[StockTransaction], IStockTransactionRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = StockTransaction
-        super().__init__(db)
+        super().__init__()
 
 
-class StockAdjustmentRespository(
+class StockAdjustmentRepository(
     BaseRepository[StockAdjustment], IStockAdjustmentRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = StockAdjustment
-        super().__init__(db)
+        super().__init__()

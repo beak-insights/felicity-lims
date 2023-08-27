@@ -24,13 +24,14 @@ from domain.user.services import (
 from infrastructure.database.job.repository import JobRepository
 from infrastructure.database.user.repository import (
     IUserRepository,
-    UserRespository,
+    UserRepository,
     IGroupRepository,
-    GroupRespository,
+    GroupRepository,
     IPermissionRepository,
-    PermissionRespository,
+    PermissionRepository,
 )
 from domain.user.schemas import User
+
 # from infrastructure.database.sqlalchemy import Database
 from infrastructure.database.repository.base import BaseRepository, IBaseRepository
 
@@ -76,9 +77,9 @@ def register_dependencies(app: Sanic):
     # bases
     app.ext.add_dependency(IBaseRepository, BaseRepository)
     # user
-    app.ext.add_dependency(IUserRepository, UserRespository)
-    app.ext.add_dependency(IGroupRepository, GroupRespository)
-    app.ext.add_dependency(IPermissionRepository, PermissionRespository)
+    app.ext.add_dependency(IUserRepository, UserRepository)
+    app.ext.add_dependency(IGroupRepository, GroupRepository)
+    app.ext.add_dependency(IPermissionRepository, PermissionRepository)
     app.ext.add_dependency(IUserService, UserService)
     app.ext.add_dependency(IGroupService, GroupService)
     app.ext.add_dependency(IPermissionService, PermissionService)

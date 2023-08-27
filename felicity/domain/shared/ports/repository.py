@@ -1,5 +1,6 @@
-from typing import Generic, TypeVar
 from abc import ABC, abstractmethod
+from typing import Generic, TypeVar
+
 from domain.shared.ports.paginator.cursor import PageCursor
 
 M = TypeVar("M")
@@ -19,6 +20,14 @@ class IBaseRepository(Generic[M], ABC):
         pass
 
     @abstractmethod
+    async def get_by_uids(self, uids: list[str]) -> list[M]:
+        pass
+
+    @abstractmethod
+    async def get_related(self, uid: str, related: list[str]) -> M:
+        pass
+
+    @abstractmethod
     async def create(self, **kwargs) -> M:
         pass
 
@@ -35,7 +44,7 @@ class IBaseRepository(Generic[M], ABC):
         pass
 
     @abstractmethod
-    async def bulk_update_with_mappings(self, mappings: list[dict]) -> None:
+    async def bulk_update_with_mappings(self, mappings: list[dict]) -> list[M]:
         pass
 
     @abstractmethod
@@ -48,14 +57,14 @@ class IBaseRepository(Generic[M], ABC):
 
     @abstractmethod
     async def paginate_with_cursors(
-        self,
-        page_size: int | None,
-        after_cursor: str | None,
-        before_cursor: str | None,
-        filters: dict | list[dict] | None,
-        text: str | None,
-        sort_by: list[str] | None,
-        **kwargs
+            self,
+            page_size: int | None,
+            after_cursor: str | None,
+            before_cursor: str | None,
+            filters: dict | list[dict] | None,
+            text: str | None,
+            sort_by: list[str] | None,
+            **kwargs
     ) -> PageCursor:
         pass
 

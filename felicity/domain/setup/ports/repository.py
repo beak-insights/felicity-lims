@@ -3,37 +3,37 @@ from abc import ABC, abstractmethod
 from domain.shared.ports.repository import IBaseRepository
 
 
-class LaboratorySettingRepository(IBaseRepository, ABC):
+class ILaboratorySettingRepository(IBaseRepository, ABC):
     ...
 
 
-class SupplierRepository(IBaseRepository, ABC):
+class ISupplierRepository(IBaseRepository, ABC):
     ...
 
 
-class ManufacturerRepository(IBaseRepository, ABC):
+class IManufacturerRepository(IBaseRepository, ABC):
     ...
 
 
-class DepartmentRepository(IBaseRepository, ABC):
+class IDepartmentRepository(IBaseRepository, ABC):
     ...
 
 
-class UnitRepository(IBaseRepository, ABC):
+class IUnitRepository(IBaseRepository, ABC):
     ...
 
 
-class LaboratoryRepository(IBaseRepository, ABC):
+class ILaboratoryRepository(IBaseRepository, ABC):
     ...
 
 
-class DistrictRepository(IBaseRepository, ABC):
+class IDistrictRepository(IBaseRepository, ABC):
     ...
 
 
-class ProvinceRepository(IBaseRepository, ABC):
+class IProvinceRepository(IBaseRepository, ABC):
     ...
 
 
-class CountryRepository(IBaseRepository, ABC):
+class ICountryRepository(IBaseRepository, ABC):
     ...

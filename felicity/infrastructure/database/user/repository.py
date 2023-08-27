@@ -13,7 +13,7 @@ from infrastructure.database.user.entities import (
 from domain.shared.ports.paginator.cursor import PageCursor
 
 
-class UserRespository(BaseRepository[User], IUserRepository):
+class UserRepository(BaseRepository[User], IUserRepository):
     def __init__(self) -> None:
         self.model = User
         super().__init__()
@@ -51,14 +51,13 @@ class UserRespository(BaseRepository[User], IUserRepository):
         )
 
 
-class PermissionRespository(BaseRepository[Permission], IPermissionRepository):
+class PermissionRepository(BaseRepository[Permission], IPermissionRepository):
     def __init__(self) -> None:
         self.model = Permission
         super().__init__()
 
 
-class GroupRespository(BaseRepository[Group], IGroupRepository):
+class GroupRepository(BaseRepository[Group], IGroupRepository):
     def __init__(self) -> None:
         self.model = Group
         super().__init__()
-

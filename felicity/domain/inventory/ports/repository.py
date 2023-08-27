@@ -3,41 +3,41 @@ from abc import ABC, abstractmethod
 from domain.shared.ports.repository import IBaseRepository
 
 
-class StockItemRepository(IBaseRepository, ABC):
+class IStockItemRepository(IBaseRepository, ABC):
     ...
 
 
-class StockCategoryRepository(IBaseRepository, ABC):
+class IStockCategoryRepository(IBaseRepository, ABC):
     ...
 
 
-class HazardRepository(IBaseRepository, ABC):
+class IHazardRepository(IBaseRepository, ABC):
     ...
 
 
-class StockUnitRepository(IBaseRepository, ABC):
+class IStockUnitRepository(IBaseRepository, ABC):
     ...
 
 
-class StockPackagingRepository(IBaseRepository, ABC):
+class IStockPackagingRepository(IBaseRepository, ABC):
     ...
 
 
-class StockProductRepository(IBaseRepository, ABC):
+class IStockProductRepository(IBaseRepository, ABC):
     ...
 
 
-class StockOrderProductRepository(IBaseRepository, ABC):
+class IStockOrderProductRepository(IBaseRepository, ABC):
     ...
 
 
-class StockTransactionRepository(IBaseRepository, ABC):
+class IStockTransactionRepository(IBaseRepository, ABC):
     ...
 
 
-class StockAdjustmentRepository(IBaseRepository, ABC):
+class IStockAdjustmentRepository(IBaseRepository, ABC):
     ...
 
 
-class StockOrderRepository(IBaseRepository, ABC):
+class IStockOrderRepository(IBaseRepository, ABC):
     ...

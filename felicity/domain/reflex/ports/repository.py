@@ -3,25 +3,25 @@ from abc import ABC, abstractmethod
 from domain.shared.ports.repository import IBaseRepository
 
 
-class ReflexRuleRepository(IBaseRepository, ABC):
+class IReflexRuleRepository(IBaseRepository, ABC):
     ...
 
 
-class ReflexBrainAdditionRepository(IBaseRepository, ABC):
+class IReflexBrainAdditionRepository(IBaseRepository, ABC):
     ...
 
 
-class ReflexBrainFinalRepository(IBaseRepository, ABC):
+class IReflexBrainFinalRepository(IBaseRepository, ABC):
     ...
 
 
-class ReflexBrainCriteriaRepository(IBaseRepository, ABC):
+class IReflexBrainCriteriaRepository(IBaseRepository, ABC):
     ...
 
 
-class ReflexBrainRepository(IBaseRepository, ABC):
+class IReflexBrainRepository(IBaseRepository, ABC):
     ...
 
 
-class ReflexActionRepository(IBaseRepository, ABC):
+class IReflexActionRepository(IBaseRepository, ABC):
     ...

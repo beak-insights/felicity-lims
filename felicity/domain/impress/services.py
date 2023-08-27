@@ -1,12 +1,11 @@
-from domain.shared.services import BaseService
-from domain.exceptions import NoFoundError, AlreadyExistsError
 from domain.impress.ports.service import IReportImpressService
 from domain.impress.schemas import ReportImpress
+from domain.shared.services import BaseService
 
 
 class ReportImpressService(BaseService[ReportImpress], IReportImpressService):
     async def impress_reports_download(
-        self, info, uids: List[str]
+            self, info, uids: List[str]
     ) -> BytesScalar | None:
         """Fetch Latest report given sample id"""
         items = await ReportImpress.get_all(sample_uid__in=uids)

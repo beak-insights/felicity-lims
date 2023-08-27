@@ -1,5 +1,16 @@
-
+from domain.analysis.conf import SampleStates
+from domain.analysis.ports.service.analysis import ISampleService
+from domain.analysis.schemas import Sample
+from domain.exceptions import *
 from domain.shared.services import BaseService
+from domain.shared.utils.serialisers import marshal
+from domain.storage.ports import StoreSampleIn
+from domain.storage.ports.repository import (
+    IStoreRoomRepository,
+    IStorageLocationRepository,
+    IStorageSectionRepository,
+    IStorageContainerRepository,
+)
 from domain.storage.ports.service import (
     IStoreRoomService,
     IStorageLocationService,
@@ -11,26 +22,30 @@ from domain.storage.schemas import (
     StorageLocation,
     StorageSection,
     StorageContainer,
+    StoreRoomCreate,
+    StoreRoomUpdate,
+    StorageLocationCreate,
+    StorageLocationUpdate,
+    StorageSectionCreate,
+    StorageSectionUpdate,
+    StorageContainerCreate,
+    StorageContainerUpdate,
 )
+from domain.user.schemas import User
 
 
+class StoreRoomService(BaseService[StoreRoom], IStoreRoomService):
+    def __init__(self, repository: IStoreRoomRepository):
+        self.repository = repository
 
-    
-    async def create_store_room(
-        self, info, payload: StoreRoomInputType
-    ) -> StoreRoomResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
-        auth_success, auth_error = verify_user_auth(
-            is_authenticated,
-            felicity_user,
-            "Only Authenticated user can create store rooms",
-        )
-        if not auth_success:
-            return auth_error
+    async def create(
+            self, name: str, description: str, felicity_user: User
+    ) -> StoreRoom:
+        payload = locals()
 
-        exists = await models.StoreRoom.get(name=payload.name)
+        exists = await self.get(name=name)
         if exists:
-            return OperationError(error=f"StoreRoom with this name already exists")
+            raise AlreadyExistsError(f"StoreRoom with this name {name} already exists")
 
         incoming: dict = {
             "created_by_uid": felicity_user.uid,
@@ -39,32 +54,21 @@ from domain.storage.schemas import (
         for k, v in payload.__dict__.items():
             incoming[k] = v
 
-        obj_in = schemas.StoreRoomCreate(**incoming)
-        store_room: models.StoreRoom = await models.StoreRoom.create(obj_in)
-        return types.StoreRoomType(**store_room.marshal_simple())
+        obj_in = StoreRoomCreate(**incoming)
+        return await super().create(**marshal(obj_in))
 
-    
-    async def update_store_room(
-        self, info, uid: str, payload: StoreRoomInputType
-    ) -> StoreRoomResponse:
+    async def update(
+            self, info, uid: str, name: str, description: str, felicity_user: User
+    ) -> StoreRoom:
+        payload = locals()
 
-        is_authenticated, felicity_user = await auth_from_info(info)
-        verify_user_auth(
-            is_authenticated,
-            felicity_user,
-            "Only Authenticated user can update store rooms",
-        )
-
-        if not uid:
-            return OperationError(error="No uid provided to identity update obj")
-
-        store_room: models.StoreRoom = await models.StoreRoom.get(uid=uid)
+        store_room = await self.get(uid=uid)
         if not store_room:
-            return OperationError(
-                error=f"store_room with uid {uid} not found. Cannot update obj ..."
+            raise AlreadyExistsError(
+                f"store_room with uid {uid} not found. Cannot update obj ..."
             )
 
-        obj_data = store_room.to_dict()
+        obj_data = marshal(store_room)
         for field in obj_data:
             if field in payload.__dict__:
                 try:
@@ -74,34 +78,29 @@ from domain.storage.schemas import (
 
         setattr(store_room, "updated_by_uid", felicity_user.uid)
 
-        obj_in = schemas.StoreRoomUpdate(**store_room.to_dict())
-        store_room = await store_room.update(obj_in)
-        return types.StoreRoomType(**store_room.marshal_simple())
+        obj_in = StoreRoomUpdate(**marshal(store_room))
+        return await super().update(store_room, **marshal(obj_in))
 
-    
-    async def create_storage_location(
-        self, info, payload: StorageLocationInputType
-    ) -> StorageLocationResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
-        auth_success, auth_error = verify_user_auth(
-            is_authenticated,
-            felicity_user,
-            "Only Authenticated user can create storage locations",
-        )
-        if not auth_success:
-            return auth_error
 
-        exists = await models.StorageLocation.get(name=payload.name)
+class StorageLocationService(BaseService[StorageLocation], IStorageLocationService):
+    def __init__(
+            self,
+            repository: IStorageLocationRepository,
+            store_room_service: IStoreRoomService,
+    ):
+        self.repository = repository
+        self.store_room_service = store_room_service
+
+    async def create(
+            self, name: str, description: str, store_room_uid: str, felicity_user: User
+    ) -> StorageLocation:
+        payload = locals()
+
+        exists = await self.get(name=name)
         if exists:
-            return OperationError(
-                error=f"StorageLocation with this name already exists"
-            )
+            raise AlreadyExistsError(f"StorageLocation with name {name} already exists")
 
-        store_room = await models.StoreRoom.get(uid=payload.store_room_uid)
-        if not store_room:
-            return OperationError(
-                error=f"StorageRoom with uid {payload.store_room_uid} does not exists"
-            )
+        store_room = await self.store_room_service.get(uid=store_room_uid)
 
         incoming: dict = {
             "created_by_uid": felicity_user.uid,
@@ -110,34 +109,21 @@ from domain.storage.schemas import (
         for k, v in payload.__dict__.items():
             incoming[k] = v
 
-        obj_in = schemas.StorageLocationCreate(**incoming)
-        storage_location: models.StorageLocation = await models.StorageLocation.create(
-            obj_in
-        )
-        return types.StorageLocationType(**storage_location.marshal_simple())
+        obj_in = StorageLocationCreate(**incoming)
+        return await super().create(**marshal(obj_in))
 
-    
-    async def update_storage_location(
-        self, info, uid: str, payload: StorageLocationInputType
-    ) -> StorageLocationResponse:
+    async def update(
+            self,
+            info,
+            uid: str,
+            name: str,
+            description: str | None,
+            store_room_uid: str,
+            felicity_user: User,
+    ) -> StorageLocation:
+        payload = locals()
 
-        is_authenticated, felicity_user = await auth_from_info(info)
-        verify_user_auth(
-            is_authenticated,
-            felicity_user,
-            "Only Authenticated user can update storage locations",
-        )
-
-        if not uid:
-            return OperationError(error="No uid provided to identity update obj")
-
-        storage_location: models.StorageLocation = await models.StorageLocation.get(
-            uid=uid
-        )
-        if not storage_location:
-            return OperationError(
-                error=f"storage_location with uid {uid} not found. Cannot update obj ..."
-            )
+        storage_location = await self.get(uid=uid)
 
         obj_data = storage_location.to_dict()
         for field in obj_data:
@@ -149,34 +135,35 @@ from domain.storage.schemas import (
 
         setattr(storage_location, "updated_by_uid", felicity_user.uid)
 
-        obj_in = schemas.StorageLocationUpdate(**storage_location.to_dict())
-        storage_location = await storage_location.update(obj_in)
-        return types.StorageLocationType(**storage_location.marshal_simple())
+        obj_in = StorageLocationUpdate(**marshal(storage_location))
+        return await super().update(storage_location, **marshal(obj_in))
 
-    
-    async def create_storage_section(
-        self, info, payload: StorageSectionInputType
-    ) -> StorageSectionResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
-        auth_success, auth_error = verify_user_auth(
-            is_authenticated,
-            felicity_user,
-            "Only Authenticated user can create storage sections",
-        )
-        if not auth_success:
-            return auth_error
 
-        exists = await models.StorageSection.get(name=payload.name)
+class StorageSectionService(BaseService[StorageSection], IStorageSectionService):
+    def __init__(
+            self,
+            repository: IStorageSectionRepository,
+            storage_location_service: IStorageLocationService,
+    ):
+        self.repository = repository
+        self.storage_location_service = storage_location_service
+
+    async def create(
+            self,
+            name: str,
+            description: str | None,
+            storage_location_uid: str,
+            felicity_user: User,
+    ) -> StorageSection:
+        payload = locals()
+
+        exists = await self.get(name=name)
         if exists:
-            return OperationError(error=f"StorageSection with this name already exists")
+            raise AlreadyExistsError(f"StorageSection with name {name} already exists")
 
-        storage_location = await models.StorageLocation.get(
-            uid=payload.storage_location_uid
+        storage_location = await self.storage_location_service.get(
+            uid=storage_location_uid
         )
-        if not storage_location:
-            return OperationError(
-                error=f"storage_location with uid {payload.storage_location_uid} does not exists"
-            )
 
         incoming: dict = {
             "created_by_uid": felicity_user.uid,
@@ -185,34 +172,21 @@ from domain.storage.schemas import (
         for k, v in payload.__dict__.items():
             incoming[k] = v
 
-        obj_in = schemas.StorageSectionCreate(**incoming)
-        storage_section: models.StorageSection = await models.StorageSection.create(
-            obj_in
-        )
-        return types.StorageSectionType(**storage_section.marshal_simple())
+        obj_in = StorageSectionCreate(**incoming)
+        return await super().create(**marshal(obj_in))
 
-    
-    async def update_storage_section(
-        self, info, uid: str, payload: StorageSectionInputType
-    ) -> StorageSectionResponse:
+    async def update(
+            self,
+            info,
+            uid: str,
+            name: str,
+            description: str | None,
+            storage_location_uid: str,
+            felicity_user: User,
+    ) -> StorageSection:
+        payload = locals()
 
-        is_authenticated, felicity_user = await auth_from_info(info)
-        verify_user_auth(
-            is_authenticated,
-            felicity_user,
-            "Only Authenticated user can update storage sections",
-        )
-
-        if not uid:
-            return OperationError(error="No uid provided to identity update obj")
-
-        storage_section: models.StorageSection = await models.StorageSection.get(
-            uid=uid
-        )
-        if not storage_section:
-            return OperationError(
-                error=f"StorageSection with uid {uid} not found. Cannot update obj ..."
-            )
+        storage_section = await self.get(uid=uid)
 
         obj_data = storage_section.to_dict()
         for field in obj_data:
@@ -224,28 +198,42 @@ from domain.storage.schemas import (
 
         setattr(storage_section, "updated_by_uid", felicity_user.uid)
 
-        obj_in = schemas.StorageSectionUpdate(**storage_section.to_dict())
-        storage_section = await storage_section.update(obj_in)
-        return types.StorageSectionType(**storage_section.marshal_simple())
+        obj_in = StorageSectionUpdate(**marshal(storage_section))
+        return await super().update(storage_section, **marshal(obj_in))
 
-    
-    async def create_storage_container(
-        self, info, payload: StorageContainerInputType
-    ) -> StorageContainerResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
-        auth_success, auth_error = verify_user_auth(
-            is_authenticated,
-            felicity_user,
-            "Only Authenticated user can create storage containers",
+
+class StorageContainerService(BaseService[StorageContainer], IStorageContainerService):
+    def __init__(
+            self, repository: IStorageContainerRepository, sample_service: ISampleService
+    ):
+        self.repository = repository
+        self.sample_service = sample_service
+
+    async def get_samples(self, storage_container_uid: str) -> list[Sample]:
+        return await self.sample_service.get_all(
+            storage_container_uid=storage_container_uid
         )
-        if not auth_success:
-            return auth_error
 
-        exists = await models.StorageContainer.get(name=payload.name)
-        if exists:
-            return OperationError(
-                error=f"StorageContainer with this name already exists"
-            )
+    async def reset_stored_count(self, storage_container) -> None:
+        samples = await self.get_samples(storage_container.uid)
+        count = len(samples)
+        storage_container.stored_count = count
+        await super().update(storage_container, **marshal(storage_container))
+
+    async def create(
+            self,
+            name: str,
+            description: str | None,
+            storage_section_uid: str,
+            grid: bool | None,
+            row_wise: bool | None,
+            cols: int | None,
+            rows: int | None,
+            felicity_user: User,
+    ) -> StorageContainer:
+        payload = locals()
+
+        exists = await self.get(name=name)
 
         incoming: dict = {
             "created_by_uid": felicity_user.uid,
@@ -255,38 +243,25 @@ from domain.storage.schemas import (
         for k, v in payload.__dict__.items():
             incoming[k] = v
 
-        obj_in = schemas.StorageContainerCreate(**incoming)
-        storage_container: models.StorageContainer = (
-            await models.StorageContainer.create(obj_in)
-        )
+        obj_in = StorageContainerCreate(**incoming)
+        storage_container = await super().create(**marshal(obj_in))
+        return await self.get(uid=storage_container.uid)
 
-        storage_container = await models.StorageContainer.get(uid=storage_container.uid)
-        return types.StorageContainerType(
-            **storage_container.marshal_simple(exclude=["samples"])
-        )
+    async def update(
+            self,
+            uid: str,
+            name: str,
+            description: str | None,
+            storage_section_uid: str,
+            grid: bool | None,
+            row_wise: bool | None,
+            cols: int | None,
+            rows: int | None,
+            felicity_user: User,
+    ) -> StorageContainer:
+        payload = locals()
 
-    
-    async def update_storage_container(
-        self, info, uid: str, payload: StorageContainerInputType
-    ) -> StorageContainerResponse:
-
-        is_authenticated, felicity_user = await auth_from_info(info)
-        verify_user_auth(
-            is_authenticated,
-            felicity_user,
-            "Only Authenticated user can update storage container",
-        )
-
-        if not uid:
-            return OperationError(error="No uid provided to identity update obj")
-
-        storage_container: models.StorageContainer = await models.StorageContainer.get(
-            uid=uid
-        )
-        if not storage_container:
-            return OperationError(
-                error=f"StorageContainer with uid {uid} not found. Cannot update obj ..."
-            )
+        storage_container = await self.get(uid=uid)
 
         obj_data = storage_container.to_dict()
         for field in obj_data:
@@ -298,46 +273,30 @@ from domain.storage.schemas import (
 
         setattr(storage_container, "updated_by_uid", felicity_user.uid)
 
-        obj_in = schemas.StorageContainerUpdate(**storage_container.to_dict())
-        storage_container = await storage_container.update(obj_in)
-        return types.StorageContainerType(
-            **storage_container.marshal_simple(exclude=["samples"])
-        )
+        obj_in = StorageContainerUpdate(**marshal(storage_container))
+        return await super().update(storage_container, **marshal(obj_in))
 
-    
     async def store_samples(
-        info, payload: List[StoreSamplesInputType]
-    ) -> StoreSampleResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
-        verify_user_auth(
-            is_authenticated,
-            felicity_user,
-            "Only Authenticated user can submit analysis results",
-        )
-
-        if len(payload) == 0:
-            return OperationError(error=f"No Samples to store are provided!")
+            self, payload: list[StoreSampleIn], felicity_user: User
+    ) -> list[Sample]:
 
         # group by container
         container_uids = set()
         for s_item in payload:
-            container_uids.add(s_item.storage_container_uid)
+            container_uids.add(s_item.get("storage_container_uid"))
 
         for container_uid in container_uids:
             sample_data = list(
-                filter(lambda x: x.storage_container_uid ==
-                       container_uid, payload)
+                filter(lambda x: x.storage_container_uid == container_uid, payload)
             )
-            samples = await an_models.Sample.get_by_uids(
+            samples = await self.sample_service.get_by_uids(
                 uids=[s.sample_uid for s in sample_data]
             )
-            container: models.StorageContainer = await models.StorageContainer.get(
-                uid=container_uid
-            )
+            container = await self.get(uid=container_uid)
 
             if len(samples) > container.slots:
-                return OperationError(
-                    error=f"Selected samples ({len(samples)}) is more than available slots ({container.slots})"
+                raise GenericError(
+                    f"Selected samples ({len(samples)}) is more than available slots ({container.slots})"
                 )
 
             for idx, _sample in enumerate(samples):
@@ -348,73 +307,29 @@ from domain.storage.schemas import (
                     "storage_container_uid": container_uid,
                     "storage_slot": sample_datum.storage_slot,
                     "storage_slot_index": sample_datum.storage_slot_index,
-                    "status": analysis_states.sample.STORED,
+                    "status": SampleStates.STORED,
                     "stored_by_uid": felicity_user.uid,
                 }
-                await _sample.update(obj_in=storage_object)
+                await self.sample_service.update(_sample, **storage_object)
 
-            await container.reset_stored_count()
+            await self.reset_stored_count(container)
 
-        samples = await an_models.Sample.get_by_uids(
-            uids=[s.sample_uid for s in payload]
+        return await self.sample_service.get_by_uids(
+            uids=[s.get("sample_uid") for s in payload]
         )
 
-        return StoredSamplesType(samples=samples)
+    async def recover_samples(self, sample_uids: list[str]) -> list[Sample]:
+        samples = await self.sample_service.get_by_uids(uids=sample_uids)
 
-    
-    async def recover_samples(
-        info, sample_uids: List[str]
-    ) -> StoreSampleResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
-        verify_user_auth(
-            is_authenticated,
-            felicity_user,
-            "Only Authenticated user can recover stored samples",
-        )
-
-        if len(sample_uids) == 0:
-            return OperationError(error=f"No Samples to recover are provided!")
-
-        samples = await an_models.Sample.get_by_uids(uids=sample_uids)
-
-        await an_models.Sample.bulk_update_with_mappings(
+        await self.sample_service.bulk_update_with_mappings(
             [
                 {
                     "uid": _sample.uid,
                     "storage_container_uid": None,
                     "storage_slot": None,
-                    "status": analysis_states.sample.RECEIVED,
+                    "status": SampleStates.RECEIVED,
                 }
                 for idx, _sample in enumerate(samples)
             ]
         )
-
-        samples = await an_models.Sample.get_by_uids(uids=sample_uids)
-        return StoredSamplesType(samples=samples)
-
-
-
-
-class StoreRoomService(BaseService[StoreRoom], IStoreRoomService):
-    ...
-
-
-class StorageLocationService(BaseService[StorageLocation], IStorageLocationService):
-    ...
-
-
-class StorageSectionService(BaseService[StorageSection], IStorageSectionService):
-    ...
-
-
-class StorageContainerService(BaseService[StorageContainer], IStorageContainerService):
-    async def get_samples(self) -> list[Sample]:
-        return await Sample.get_all(storage_container_uid=self.uid)
-
-    async def reset_stored_count(self) -> None:
-        samples = await self.get_samples()
-        count = len(samples)
-        self.stored_count = count
-        await self.save()
-        
-
+        return await self.sample_service.get_by_uids(uids=sample_uids)

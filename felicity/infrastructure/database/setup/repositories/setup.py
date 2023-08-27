@@ -1,12 +1,12 @@
 from domain.setup.ports.repository.setup import (
-    IDepartmentRespository,
-    ILaboratoryRespository,
-    ILaboratorySettingRespository,
-    IManufacturerRespository,
-    ISupplierRespository,
-    IUnitRespository,
+    IDepartmentRepository,
+    ILaboratoryRepository,
+    ILaboratorySettingRepository,
+    IManufacturerRepository,
+    ISupplierRepository,
+    IUnitRepository,
 )
-from domain.shared.ports.persistance import PersistenceProtocol
+
 from infrastructure.database.repository.base import BaseRepository
 
 from infrastructure.database.setup.entities import (
@@ -19,39 +19,39 @@ from infrastructure.database.setup.entities import (
 )
 
 
-class DepartmentRespository(BaseRepository[Department], IDepartmentRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class DepartmentRepository(BaseRepository[Department], IDepartmentRepository):
+    def __init__(self) -> None:
         self.model = Department
-        super().__init__(db)
+        super().__init__()
 
 
-class LaboratoryRespository(BaseRepository[Laboratory], ILaboratoryRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class LaboratoryRepository(BaseRepository[Laboratory], ILaboratoryRepository):
+    def __init__(self) -> None:
         self.model = Laboratory
-        super().__init__(db)
+        super().__init__()
 
 
-class LaboratorySettingRespository(
+class LaboratorySettingRepository(
     BaseRepository[LaboratorySetting], ILaboratorySettingRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = LaboratorySetting
-        super().__init__(db)
+        super().__init__()
 
 
-class ManufacturerRespository(BaseRepository[Manufacturer], IManufacturerRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class ManufacturerRepository(BaseRepository[Manufacturer], IManufacturerRepository):
+    def __init__(self) -> None:
         self.model = Manufacturer
-        super().__init__(db)
+        super().__init__()
 
 
-class SupplierRespository(BaseRepository[Supplier], ISupplierRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class SupplierRepository(BaseRepository[Supplier], ISupplierRepository):
+    def __init__(self) -> None:
         self.model = Supplier
-        super().__init__(db)
+        super().__init__()
 
 
-class UnitRespository(BaseRepository[Unit], IUnitRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class UnitRepository(BaseRepository[Unit], IUnitRepository):
+    def __init__(self) -> None:
         self.model = Unit
-        super().__init__(db)
+        super().__init__()

@@ -3,7 +3,7 @@ from domain.notification.ports.repository import (
     IActivityStreamRepository,
     INotificationRepository,
 )
-from domain.shared.ports.persistance import PersistenceProtocol
+
 from infrastructure.database.repository.base import BaseRepository
 
 from infrastructure.database.notification.entities import (
@@ -13,21 +13,21 @@ from infrastructure.database.notification.entities import (
 )
 
 
-class ActivityFeedRespository(BaseRepository[ActivityFeed], IActivityFeedRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class ActivityFeedRepository(BaseRepository[ActivityFeed], IActivityFeedRepository):
+    def __init__(self) -> None:
         self.model = ActivityFeed
-        super().__init__(db)
+        super().__init__()
 
 
-class ActivityStreamRespository(
+class ActivityStreamRepository(
     BaseRepository[ActivityStream], IActivityStreamRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = ActivityStream
-        super().__init__(db)
+        super().__init__()
 
 
-class NotificationRespository(BaseRepository[Notification], INotificationRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class NotificationRepository(BaseRepository[Notification], INotificationRepository):
+    def __init__(self) -> None:
         self.model = Notification
-        super().__init__(db)
+        super().__init__()

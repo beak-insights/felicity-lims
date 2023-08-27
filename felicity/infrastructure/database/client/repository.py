@@ -1,16 +1,16 @@
 from domain.client.ports.repository import IClientRepository, IClientContactRepository
 from domain.shared.ports.paginator.cursor import PageCursor
-from domain.shared.ports.persistance import PersistenceProtocol
+
 from infrastructure.database.repository.base import BaseRepository
 
 from infrastructure.database.client.entities import Client, ClientContact
 import sqlalchemy as sa
 
 
-class ClientRespository(BaseRepository[Client], IClientRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class ClientRepository(BaseRepository[Client], IClientRepository):
+    def __init__(self) -> None:
         self.model = Client
-        super().__init__(db)
+        super().__init__()
 
     async def paginate_with_cursors(
         self,
@@ -49,7 +49,7 @@ class ClientRespository(BaseRepository[Client], IClientRepository):
         )
 
 
-class ClientContactRespository(BaseRepository[ClientContact], IClientContactRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class ClientContactRepository(BaseRepository[ClientContact], IClientContactRepository):
+    def __init__(self) -> None:
         self.model = ClientContact
-        super().__init__(db)
+        super().__init__()

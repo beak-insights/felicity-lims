@@ -3,17 +3,17 @@ from abc import ABC, abstractmethod
 from domain.shared.ports.repository import IBaseRepository
 
 
-class QCSetRepository(IBaseRepository, ABC):
+class IQCSetRepository(IBaseRepository, ABC):
     ...
 
 
-class QCReferenceRepository(IBaseRepository, ABC):
+class IQCReferenceRepository(IBaseRepository, ABC):
     ...
 
 
-class QCLevelRepository(IBaseRepository, ABC):
+class IQCLevelRepository(IBaseRepository, ABC):
     ...
 
 
-class QCTemplateRepository(IBaseRepository, ABC):
+class IQCTemplateRepository(IBaseRepository, ABC):
     ...

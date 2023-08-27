@@ -1,8 +1,5 @@
 from domain.client.ports.repository import IClientRepository, IClientContactRepository
-from domain.shared.services import BaseService
-from domain.exceptions import AlreadyExistsError
 from domain.client.ports.service import IClientContactService, IClientService
-from domain.user.schemas import User
 from domain.client.schemas import (
     Client,
     ClientCreate,
@@ -11,6 +8,10 @@ from domain.client.schemas import (
     ClientContactCreate,
     ClientContactUpdate,
 )
+from domain.exceptions import AlreadyExistsError
+from domain.shared.services import BaseService
+from domain.shared.utils.serialisers import marshal
+from domain.user.schemas import User
 
 
 class ClientService(BaseService[Client], IClientService):
@@ -22,19 +23,19 @@ class ClientService(BaseService[Client], IClientService):
         return await super().search(name=query, code=query)
 
     async def create(
-        self,
-        felicity_user: User,
-        name: str,
-        code: str,
-        district_uid: str | None = None,
-        email: str | None = None,
-        email_cc: str | None = None,
-        consent_email: bool | None = False,
-        phone_mobile: str | None = None,
-        phone_business: str | None = None,
-        consent_sms: bool | None = False,
-        internal_use: bool | None = False,
-        active: bool | None = True,
+            self,
+            felicity_user: User,
+            name: str,
+            code: str,
+            district_uid: str | None = None,
+            email: str | None = None,
+            email_cc: str | None = None,
+            consent_email: bool | None = False,
+            phone_mobile: str | None = None,
+            phone_business: str | None = None,
+            consent_sms: bool | None = False,
+            internal_use: bool | None = False,
+            active: bool | None = True,
     ) -> Client:
         payload = locals()
 
@@ -52,23 +53,23 @@ class ClientService(BaseService[Client], IClientService):
             incoming[k] = v
 
         obj_in = ClientCreate(**incoming)
-        return await self.create(**self.marshal(obj_in))
+        return await self.create(**marshal(obj_in))
 
     async def update(
-        self,
-        uid: str,
-        felicity_user: User,
-        name: str,
-        code: str,
-        district_uid: str | None = None,
-        email: str | None = None,
-        email_cc: str | None = None,
-        consent_email: bool | None = False,
-        phone_mobile: str | None = None,
-        phone_business: str | None = None,
-        consent_sms: bool | None = False,
-        internal_use: bool | None = False,
-        active: bool | None = True,
+            self,
+            uid: str,
+            felicity_user: User,
+            name: str,
+            code: str,
+            district_uid: str | None = None,
+            email: str | None = None,
+            email_cc: str | None = None,
+            consent_email: bool | None = False,
+            phone_mobile: str | None = None,
+            phone_business: str | None = None,
+            consent_sms: bool | None = False,
+            internal_use: bool | None = False,
+            active: bool | None = True,
     ) -> Client:
         payload = locals()
 
@@ -84,28 +85,28 @@ class ClientService(BaseService[Client], IClientService):
                     pass
 
         obj_in = ClientUpdate(**client.to_dict())
-        return await client.update(client, **self.marshal(obj_in))
+        return await client.update(client, **marshal(obj_in))
 
 
 class ClientContactService(BaseService[ClientContact], IClientContactService):
     def __init__(
-        self, repository: IClientContactRepository, client_service: IClientService
+            self, repository: IClientContactRepository, client_service: IClientService
     ):
         self.repository = repository
         self.client_service = client_service
         super().__init__(repository)
 
     async def create(
-        self,
-        felicity_user: User,
-        first_name: str,
-        client_uid: str,
-        last_name: str | None = None,
-        email: str | None = None,
-        email_cc: str | None = None,
-        mobile_phone: str | None = None,
-        consent_sms: bool | None = False,
-        is_active: bool = True,
+            self,
+            felicity_user: User,
+            first_name: str,
+            client_uid: str,
+            last_name: str | None = None,
+            email: str | None = None,
+            email_cc: str | None = None,
+            mobile_phone: str | None = None,
+            consent_sms: bool | None = False,
+            is_active: bool = True,
     ) -> ClientContact:
         payload = locals()
 
@@ -127,20 +128,20 @@ class ClientContactService(BaseService[ClientContact], IClientContactService):
             incoming[k] = v
 
         obj_in = ClientContactCreate(**incoming)
-        return await self.repository.create(**self.marshal(obj_in))
+        return await self.repository.create(**marshal(obj_in))
 
     async def update(
-        self,
-        felicity_user: User,
-        uid: str,
-        first_name: str,
-        client_uid: str,
-        last_name: str | None = None,
-        email: str | None = None,
-        email_cc: str | None = None,
-        mobile_phone: str | None = None,
-        consent_sms: bool | None = False,
-        is_active: bool = True,
+            self,
+            felicity_user: User,
+            uid: str,
+            first_name: str,
+            client_uid: str,
+            last_name: str | None = None,
+            email: str | None = None,
+            email_cc: str | None = None,
+            mobile_phone: str | None = None,
+            consent_sms: bool | None = False,
+            is_active: bool = True,
     ) -> ClientContact:
         payload = locals()
 
@@ -156,7 +157,7 @@ class ClientContactService(BaseService[ClientContact], IClientContactService):
                     pass
 
         obj_in = ClientContactUpdate(**client_contact.to_dict())
-        return await self.repository.update(client_contact, **self.marshal(obj_in))
+        return await self.repository.update(client_contact, **marshal(obj_in))
 
     async def delete(self, uid: str):
         client_contact = await self.get(uid=uid)
@@ -168,4 +169,4 @@ class ClientContactService(BaseService[ClientContact], IClientContactService):
             pass
 
         obj_in = ClientContactUpdate(**client_contact.to_dict())
-        await self.repository.update(client_contact, **self.marshal(obj_in))
+        await self.repository.update(client_contact, **marshal(obj_in))

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from domain.shared.ports.service import IBaseService
+from domain.analysis.schemas import AnalysisResult
 from domain.reflex.schemas import (
     ReflexRule,
     ReflexBrainAddition,
@@ -9,6 +9,7 @@ from domain.reflex.schemas import (
     ReflexBrain,
     ReflexAction,
 )
+from domain.shared.ports.service import IBaseService
 
 
 class IReflexRuleService(IBaseService[ReflexRule], ABC):
@@ -33,3 +34,33 @@ class IReflexBrainService(IBaseService[ReflexBrain], ABC):
 
 class IReflexActionService(IBaseService[ReflexAction], ABC):
     ...
+
+
+class IReflexEngineService(ABC):
+    @abstractmethod
+    async def set_reflex_actions(self, analysis_results: list[AnalysisResult]) -> None:
+        ...
+
+    @abstractmethod
+    async def do_reflex(self) -> None:
+        ...
+
+    @abstractmethod
+    async def decide(self, brain: ReflexBrain) -> None:
+        ...
+
+    @abstractmethod
+    async def siblings(self) -> list[AnalysisResult]:
+        ...
+
+    @abstractmethod
+    async def cousins(self) -> list[AnalysisResult]:
+        ...
+
+    @abstractmethod
+    async def create_analyte_for(self, analysis_uid) -> AnalysisResult:
+        ...
+
+    @abstractmethod
+    async def create_final_for(self, analysis_uid, value) -> AnalysisResult:
+        ...

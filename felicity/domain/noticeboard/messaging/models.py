@@ -3,7 +3,6 @@ import logging
 from apps import BaseAuditDBModel, DBModel
 from apps.common import BaseMPTT
 from apps.user.models import User
-
 from sqlalchemy import Boolean, Column, ForeignKey, String, Table
 from sqlalchemy.orm import relationship
 
@@ -49,9 +48,9 @@ class MessageThread(BaseAuditDBModel):
         return await super().create(**data)
 
     async def update(
-        self, obj_in: schemas.MessageThreadUpdate
+            self, obj_in: schemas.MessageThreadUpdate
     ) -> schemas.MessageThread:
-        data = self._import(obj_in)
+        data = marshal(obj_in)
         return await super().update(**data)
 
     async def get_last_message(self):
@@ -137,7 +136,7 @@ class Message(BaseAuditDBModel, BaseMPTT):
         return await super().create(**data)
 
     async def update(self, obj_in: schemas.MessageUpdate) -> schemas.Message:
-        data = self._import(obj_in)
+        data = marshal(obj_in)
         return await super().update(**data)
 
     async def add_deletion(self, user: User) -> schemas.Message:

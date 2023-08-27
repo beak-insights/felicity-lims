@@ -1,15 +1,16 @@
 from typing import Generic, TypeVar, Any, List
-from sqlalchemy import update
+
+from sqlalchemy import or_ as sa_or_
 from sqlalchemy import select
+from sqlalchemy import update
 from sqlalchemy.sql import func
 from sqlalchemy.sql.expression import bindparam
-from sqlalchemy import or_ as sa_or_
 
-from domain.shared.ports.repository import IBaseRepository
 from domain.shared.ports.paginator.cursor import PageCursor, EdgeNode, PageInfo
-from infrastructure.database.utils.queryset import QueryBuilder, settable_attributes
+from domain.shared.ports.repository import IBaseRepository
+from domain.shared.utils.serialisers import marshal
 from infrastructure.database.repository.session import async_session
-
+from infrastructure.database.utils.queryset import QueryBuilder, settable_attributes
 
 M = TypeVar("M")
 
@@ -71,6 +72,16 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
             found = results.scalars().all()
         return found
 
+    async def get_by_uids(self, uids: list[str]) -> list[M]:
+        stmt = self._qb.where(uid__in=uids)
+        async with self.async_session() as session:
+            results = await session.execute(stmt)
+            found = results.scalars().all()
+        return found
+
+    async def get_related(self, uid: str, related: list[str]) -> M:
+        pass
+
     async def all(self) -> list[M]:
         async with self.async_session() as session:
             results = await session.execute(select(self.model))
@@ -86,7 +97,7 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
         if len(mappings) == 0:
             return
 
-        to_update = [self._import(data) for data in mappings]
+        to_update = [marshal(data) for data in mappings]
         for item in to_update:
             item["_uid"] = item["uid"]
 
@@ -142,13 +153,13 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
         return list(combined)
 
     async def paginate_with_cursors(
-        self,
-        page_size: int | None,
-        after_cursor: str | None,
-        before_cursor: str | None,
-        filters: dict | list[dict] | None,
-        sort_by: list[str] | None,
-        **kwargs,
+            self,
+            page_size: int | None,
+            after_cursor: str | None,
+            before_cursor: str | None,
+            filters: dict | list[dict] | None,
+            sort_by: list[str] | None,
+            **kwargs,
     ) -> PageCursor:
         if not filters:
             filters = {}
@@ -222,11 +233,11 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
         return EdgeNode(**{"cursor": self.encode_cursor(item.uid), "node": item})
 
     def build_page_info(
-        self,
-        start_cursor: str = None,
-        end_cursor: str = None,
-        has_next_page: bool = False,
-        has_previous_page: bool = False,
+            self,
+            start_cursor: str = None,
+            end_cursor: str = None,
+            has_next_page: bool = False,
+            has_previous_page: bool = False,
     ) -> PageInfo:
         return PageInfo(
             **{

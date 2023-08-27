@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy.dialects.postgresql import insert
 
-from domain.shared.ports.persistance import PersistenceProtocol
+
 from domain.idsequence.ports.repository import IIdSequenceRepository
 from domain.idsequence.exception import SequenceGenerateError
 from infrastructure.database.repository.base import BaseRepository
@@ -12,9 +12,9 @@ SEQUENCE_CUTOFF = 10
 
 
 class IdSequenceRepository(BaseRepository[IdSequence], IIdSequenceRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = IdSequence
-        super().__init__(db)
+        super().__init__()
 
     async def next_number(self, prefix: str) -> int:
 

@@ -17,7 +17,7 @@ from domain.analysis.ports.repository.analysis import (
     IRejectionReasonRepository,
     ISampleRepository,
 )
-from domain.shared.ports.persistance import PersistenceProtocol
+
 from infrastructure.database.repository.base import BaseRepository
 
 from infrastructure.database.analysis.entities.analysis import (
@@ -41,125 +41,125 @@ from infrastructure.database.analysis.entities.analysis import (
 )
 
 
-class CodingStandardRespository(
+class CodingStandardRepository(
     BaseRepository[CodingStandard], ICodingStandardRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = CodingStandard
-        super().__init__(db)
+        super().__init__()
 
 
-class SampleTypeRespository(BaseRepository[SampleType], ISampleTypeRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class SampleTypeRepository(BaseRepository[SampleType], ISampleTypeRepository):
+    def __init__(self) -> None:
         self.model = SampleType
-        super().__init__(db)
+        super().__init__()
 
 
-class SampleTypeCodingRespository(
+class SampleTypeCodingRepository(
     BaseRepository[SampleTypeCoding], ISampleTypeCodingRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = SampleTypeCoding
-        super().__init__(db)
+        super().__init__()
 
 
-class ProfileRespository(BaseRepository[Profile], IProfileRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class ProfileRepository(BaseRepository[Profile], IProfileRepository):
+    def __init__(self) -> None:
         self.model = Profile
-        super().__init__(db)
+        super().__init__()
 
 
-class AnalysisCategoryRespository(
+class AnalysisCategoryRepository(
     BaseRepository[AnalysisCategory], IAnalysisCategoryRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = AnalysisCategory
-        super().__init__(db)
+        super().__init__()
 
 
-class ProfileCodingRespository(BaseRepository[ProfileCoding], IProfileCodingRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class ProfileCodingRepository(BaseRepository[ProfileCoding], IProfileCodingRepository):
+    def __init__(self) -> None:
         self.model = ProfileCoding
-        super().__init__(db)
+        super().__init__()
 
 
-class AnalysisRespository(BaseRepository[Analysis], IAnalysisRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class AnalysisRepository(BaseRepository[Analysis], IAnalysisRepository):
+    def __init__(self) -> None:
         self.model = Analysis
-        super().__init__(db)
+        super().__init__()
 
 
-class AnalysisCodingRespository(
+class AnalysisCodingRepository(
     BaseRepository[AnalysisCoding], IAnalysisCodingRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = AnalysisCoding
-        super().__init__(db)
+        super().__init__()
 
 
-class AnalysisInterimRespository(
+class AnalysisInterimRepository(
     BaseRepository[AnalysisInterim], IAnalysisInterimRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = AnalysisInterim
-        super().__init__(db)
+        super().__init__()
 
 
-class AnalysisCorrectionFactorRespository(
+class AnalysisCorrectionFactorRepository(
     BaseRepository[AnalysisCorrectionFactor], IAnalysisCorrectionFactorRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = AnalysisCorrectionFactor
-        super().__init__(db)
+        super().__init__()
 
 
-class AnalysisDetectionLimitRespository(
+class AnalysisDetectionLimitRepository(
     BaseRepository[AnalysisDetectionLimit], IAnalysisDetectionLimitRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = AnalysisDetectionLimit
-        super().__init__(db)
+        super().__init__()
 
 
-class AnalysisUncertaintyRespository(
+class AnalysisUncertaintyRepository(
     BaseRepository[AnalysisUncertainty], IAnalysisUncertaintyRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = AnalysisUncertainty
-        super().__init__(db)
+        super().__init__()
 
 
-class AnalysisSpecificationRespository(
+class AnalysisSpecificationRepository(
     BaseRepository[AnalysisSpecification], IAnalysisSpecificationRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = AnalysisSpecification
-        super().__init__(db)
+        super().__init__()
 
 
-class ResultOptionRespository(BaseRepository[ResultOption], IResultOptionRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class ResultOptionRepository(BaseRepository[ResultOption], IResultOptionRepository):
+    def __init__(self) -> None:
         self.model = ResultOption
-        super().__init__(db)
+        super().__init__()
 
 
-class AnalysisRequestRespository(
+class AnalysisRequestRepository(
     BaseRepository[AnalysisRequest], IAnalysisRequestRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = AnalysisRequest
-        super().__init__(db)
+        super().__init__()
 
 
-class RejectionReasonRespository(
+class RejectionReasonRepository(
     BaseRepository[RejectionReason], IRejectionReasonRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = RejectionReason
-        super().__init__(db)
+        super().__init__()
 
 
-class SampleRespository(BaseRepository[Sample], ISampleRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class SampleRepository(BaseRepository[Sample], ISampleRepository):
+    def __init__(self) -> None:
         self.model = Sample
-        super().__init__(db)
+        super().__init__()

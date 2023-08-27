@@ -4,69 +4,69 @@ from domain.shared.ports.paginator.cursor import PageCursor
 from domain.shared.ports.repository import IBaseRepository
 
 
-class CodingStandardRepository(IBaseRepository, ABC):
+class ICodingStandardRepository(IBaseRepository, ABC):
     ...
 
 
-class SampleTypeRepository(IBaseRepository, ABC):
+class ISampleTypeRepository(IBaseRepository, ABC):
     ...
 
 
-class SampleTypeCodingRepository(IBaseRepository, ABC):
+class ISampleTypeCodingRepository(IBaseRepository, ABC):
     ...
 
 
-class AnalysisCategoryRepository(IBaseRepository, ABC):
+class IAnalysisCategoryRepository(IBaseRepository, ABC):
     ...
 
 
-class ProfileRepository(IBaseRepository, ABC):
+class IProfileRepository(IBaseRepository, ABC):
     ...
 
 
-class ProfileCodingRepository(IBaseRepository, ABC):
+class IProfileCodingRepository(IBaseRepository, ABC):
     ...
 
 
-class AnalysisRepository(IBaseRepository, ABC):
+class IAnalysisRepository(IBaseRepository, ABC):
     ...
 
 
-class AnalysisCodingRepository(IBaseRepository, ABC):
+class IAnalysisCodingRepository(IBaseRepository, ABC):
     ...
 
 
-class AnalysisInterimRepository(IBaseRepository, ABC):
+class IAnalysisInterimRepository(IBaseRepository, ABC):
     ...
 
 
-class AnalysisCorrectionFactorRepository(IBaseRepository, ABC):
+class IAnalysisCorrectionFactorRepository(IBaseRepository, ABC):
     ...
 
 
-class AnalysisDetectionLimitRepository(IBaseRepository, ABC):
+class IAnalysisDetectionLimitRepository(IBaseRepository, ABC):
     ...
 
 
-class AnalysisUncertaintyRepository(IBaseRepository, ABC):
+class IAnalysisUncertaintyRepository(IBaseRepository, ABC):
     ...
 
 
-class AnalysisSpecificationRepository(IBaseRepository, ABC):
+class IAnalysisSpecificationRepository(IBaseRepository, ABC):
     ...
 
 
-class ResultOptionRepository(IBaseRepository, ABC):
+class IResultOptionRepository(IBaseRepository, ABC):
     ...
 
 
-class AnalysisRequestRepository(IBaseRepository, ABC):
+class IAnalysisRequestRepository(IBaseRepository, ABC):
     ...
 
 
-class RejectionReasonRepository(IBaseRepository, ABC):
+class IRejectionReasonRepository(IBaseRepository, ABC):
     ...
 
 
-class SampleRepository(IBaseRepository, ABC):
+class ISampleRepository(IBaseRepository, ABC):
     ...

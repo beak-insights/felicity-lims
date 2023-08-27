@@ -1,35 +1,70 @@
+import sqlalchemy as sa
+
 from domain.patient.ports.repository import (
     IPatientRepository,
     IIdentificationRepository,
     IPatientIdentificationRepository,
 )
-from domain.shared.ports.persistance import PersistenceProtocol
-from infrastructure.database.repository.base import BaseRepository
-
+from domain.shared.ports.paginator.cursor import PageCursor
 from infrastructure.database.patient.entities import (
     Patient,
     Identification,
     PatientIdentification,
 )
+from infrastructure.database.repository.base import BaseRepository
 
 
-class PatientRespository(BaseRepository[Patient], IPatientRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class PatientRepository(BaseRepository[Patient], IPatientRepository):
+    def __init__(self) -> None:
         self.model = Patient
-        super().__init__(db)
+        super().__init__()
+
+    async def paginate_with_cursors(
+            self,
+            page_size: int | None = None,
+            after_cursor: str | None = None,
+            before_cursor: str | None = None,
+            text: str | None = None,
+            sort_by: list[str] | None = None,
+            **kwargs,
+    ) -> PageCursor:
+        filters = {}
+
+        _or_ = dict()
+        if text:
+            arg_list = [
+                "first_name__ilike",
+                "last_name__ilike",
+                "middle_name__ilike",
+                "client_patient_id__ilike",
+                "patient_id__ilike",
+                "client___name__ilike",
+                "patient_id__ilike",
+                "email__ilike",
+                "phone_mobile__ilike",
+                "phone_home__ilike",
+            ]
+            for _arg in arg_list:
+                _or_[_arg] = f"%{text}%"
+
+            filters = {sa.or_: _or_}
+
+        return await super().paginate(
+            page_size, after_cursor, before_cursor, filters, sort_by
+        )
 
 
-class IdentificationRespository(
+class IdentificationRepository(
     BaseRepository[Identification], IIdentificationRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = Identification
-        super().__init__(db)
+        super().__init__()
 
 
-class PatientIdentificationRespository(
+class PatientIdentificationRepository(
     BaseRepository[PatientIdentification], IPatientIdentificationRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = PatientIdentification
-        super().__init__(db)
+        super().__init__()

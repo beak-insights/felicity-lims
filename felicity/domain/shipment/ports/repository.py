@@ -3,13 +3,13 @@ from abc import ABC, abstractmethod
 from domain.shared.ports.repository import IBaseRepository
 
 
-class ReferralLaboratoryRepository(IBaseRepository, ABC):
+class IReferralLaboratoryRepository(IBaseRepository, ABC):
     ...
 
 
-class ShippedSampleRepository(IBaseRepository, ABC):
+class IShippedSampleRepository(IBaseRepository, ABC):
     ...
 
 
-class ShipmentRepository(IBaseRepository, ABC):
+class IShipmentRepository(IBaseRepository, ABC):
     ...

@@ -1,14 +1,14 @@
-from typing import TypeVar
 from collections import abc, OrderedDict
+from typing import TypeVar
 
 from sqlalchemy import asc, desc, inspect, select
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import RelationshipProperty
-from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import aliased
+from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import subqueryload
 from sqlalchemy.orm.util import AliasedClass
 from sqlalchemy.sql import operators, extract
-from sqlalchemy.orm import subqueryload
 
 M = TypeVar("M")
 
@@ -503,10 +503,10 @@ def hybrid_methods(model):
 
 def filterable_attributes(model):
     return (
-        relations(model)
-        + columns(model)
-        + hybrid_properties(model)
-        + hybrid_methods(model)
+            relations(model)
+            + columns(model)
+            + hybrid_properties(model)
+            + hybrid_methods(model)
     )
 
 
@@ -570,7 +570,6 @@ class QueryBuilder:
         options = [subqueryload(path) for path in paths]
         return self.query.options(*options)
 
-
     def smart_query(self, filters=None, sort_attrs=None, schema=None):
         """
         Does magic Django-ish joins like post___user___name__startswith='Bob'
@@ -629,75 +628,3 @@ class QueryBuilder:
                 raise KeyError("Attribute '{}' doesn't exist".format(name))
 
         return model
-
-    # async def save(self, model):
-    #     """Saves the updated model to the current entity db.
-    #     """
-    #     try:
-    #         async with self.async_session() as session:
-    #             session.add(model)
-    #             await session.commit()
-    #             await session.refresh(model)
-    #             return model
-    #     except:
-    #         async with self.session() as session:
-    #             await session.rollback()
-    #             raise
-
-    # async def update_or_create(self, **kwargs):
-    #     fill = await self.fill(**kwargs)
-    #     return await self.save(fill)
-
-    # def create(self, **kwargs):
-    #     query = self.model(**kwargs)
-    #     with self.async_session() as session:
-    #         session.add(query)
-    #         session.commit()
-    #         session.refresh(query)
-    #         return query
-
-    # def update(self, uid: str, **kwargs):
-    #     with self.async_session() as session:
-    #         existing = self.query.filter(self.model.uid == uid)
-    #         existing = existing.update(kwargs)
-    #         session.commit()
-    #         session.refresh(existing)
-    #         return self.find(uid)
-
-    # async def delete(self, model):
-    #     """Removes the model from the current entity session and mark for deletion.
-    #     """
-    #     try:
-    #         async with self.async_session() as session:
-    #             session.delete(model)
-    #             await session.commit()
-    #     except:
-    #         async with self.session() as session:
-    #             await session.rollback()
-    #             raise
-
-    # async def all(self):
-    #     async with self.async_session() as session:
-    #         result = await session.execute(self.query)
-    #         return result.scalars().all()
-
-    # async def first(self):
-    #     async with self.async_session() as session:
-    #         result = await session.execute(self.query)
-    #         return result.scalars().first()
-
-    # async def find(self, id_):
-    #     """Find record by the id
-    #     :param id_: the primary key
-    #     """
-    #     async with self.async_session() as session:
-    #         return await session.get(self.model, id_)
-
-    # async def find_or_fail(self, id_):
-    #     # assume that query has custom get_or_fail method
-    #     result = await self.find(id_)
-    #     if result:
-    #         return result
-    #     else:
-    #         raise ModelNotFoundError("{} with id '{}' was not found"
-    #                                  .format(self.model.__name__, id_))

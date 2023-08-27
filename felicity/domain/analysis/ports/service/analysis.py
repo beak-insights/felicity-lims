@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 
-from domain.shared.ports.service import IBaseService
 from domain.analysis.schemas import (
     CodingStandard,
     SampleType,
@@ -20,6 +19,7 @@ from domain.analysis.schemas import (
     RejectionReason,
     Sample,
 )
+from domain.shared.ports.service import IBaseService
 
 
 class ICodingStandardService(IBaseService[CodingStandard], ABC):
@@ -110,7 +110,7 @@ class ISampleService(IBaseService[Sample], ABC):
         ...
 
     @abstractmethod
-    async def get_analysis_results(self):
+    async def get_analysis_results(self) -> list:
         ...
 
     @abstractmethod

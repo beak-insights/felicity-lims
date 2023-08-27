@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta
 
+from domain.job.conf import JobStates, JobPriorities
 from domain.job.ports.repository import IJobRepository
-from domain.shared.services import BaseService
 from domain.job.ports.service import IJobService
 from domain.job.schemas import Job
-from domain.job.conf import JobStates, JobPriorities
+from domain.shared.services import BaseService
+from domain.shared.utils.serialisers import marshal
 
 
 class JobService(BaseService[Job], IJobService):
@@ -21,7 +22,7 @@ class JobService(BaseService[Job], IJobService):
             job.reason = f"max retries have been exceeded: {max_retries}"
 
         job.retries += 1
-        await self.repository.update(job, **self.marshal(job))
+        await self.repository.update(job, **marshal(job))
 
     async def fetch_sorted(self):
         return await self.repository.fetch_sorted()
@@ -29,14 +30,14 @@ class JobService(BaseService[Job], IJobService):
     async def change_status(self, job: Job, new_status, change_reason=""):
         job.status = new_status
         job.reason = change_reason
-        await self.repository.update(job, **self.marshal(job))
+        await self.repository.update(job, **marshal(job))
 
     async def increase_priority(self, job: Job):
         if job.priority < JobPriorities.HIGH:
             job.priority += 1
-            await self.repository.update(job, **self.marshal(job))
+            await self.repository.update(job, **marshal(job))
 
     async def decrease_priority(self, job: Job):
         if job.priority > JobPriorities.NORMAL:
             job.priority -= 1
-            await self.repository.update(job, **self.marshal(job))
+            await self.repository.update(job, **marshal(job))

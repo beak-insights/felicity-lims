@@ -1,11 +1,11 @@
-from domain.audit.ports.repository import IAuditLogRepository
-from domain.shared.ports.persistance import PersistenceProtocol
+from domain.shared.ports.repository import IBaseRepository
+
 from infrastructure.database.repository.base import BaseRepository
 
 from infrastructure.database.audit.entities import AuditLog
 
 
-class AuditLogRespository(BaseRepository[AuditLog], IAuditLogRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class AuditLogRepository(BaseRepository[AuditLog], IBaseRepository):
+    def __init__(self) -> None:
         self.model = AuditLog
-        super().__init__(db)
+        super().__init__()

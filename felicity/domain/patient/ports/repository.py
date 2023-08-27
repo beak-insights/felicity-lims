@@ -1,16 +1,15 @@
 from abc import ABC, abstractmethod
 
-from domain.shared.ports.paginator.cursor import PageCursor
 from domain.shared.ports.repository import IBaseRepository
 
 
-class IdentificationRepository(IBaseRepository, ABC):
+class IIdentificationRepository(IBaseRepository, ABC):
     ...
 
 
-class PatientIdentificationRepository(IBaseRepository, ABC):
+class IPatientIdentificationRepository(IBaseRepository, ABC):
     ...
 
 
-class PatientRepository(IBaseRepository, ABC):
+class IPatientRepository(IBaseRepository, ABC):
     ...

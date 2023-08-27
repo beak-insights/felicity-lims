@@ -1,8 +1,8 @@
-from typing import TypeVar
 from abc import ABC, abstractmethod
+from typing import TypeVar
 
-from domain.shared.ports.service import IBaseService
 from domain.analysis.schemas import AnalysisResult
+from domain.shared.ports.service import IBaseService
 
 T = TypeVar("T")
 
@@ -21,7 +21,7 @@ class IAnalysisResultService(IBaseService[AnalysisResult], ABC):
 
     @abstractmethod
     async def assign(
-        self, result: AnalysisResult, ws_uid: str, position: int, instrument_uid: str
+            self, result: AnalysisResult, ws_uid: str, position: int, instrument_uid: str
     ):
         ...
 
@@ -50,16 +50,16 @@ class IAnalysisResultService(IBaseService[AnalysisResult], ABC):
         ...
 
     @abstractmethod
-    async def hide_report(self):
+    async def hide_report(self, result: AnalysisResult):
         ...
 
     @abstractmethod
     async def filter_for_worksheet(
-        cls,
-        analyses_status: str,
-        analysis_uid: str,
-        sample_type_uid: list[str],
-        limit: int,
+            cls,
+            analyses_status: str,
+            analysis_uid: str,
+            sample_type_uid: list[str],
+            limit: int,
     ) -> list[AnalysisResult]:
         ...
 

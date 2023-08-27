@@ -2,7 +2,7 @@ from domain.analysis.ports.repository.results import (
     IQCSetRepository,
     IResultMutationRepository,
 )
-from domain.shared.ports.persistance import PersistenceProtocol
+
 from infrastructure.database.repository.base import BaseRepository
 
 from infrastructure.database.analysis.entities.results import (
@@ -11,15 +11,15 @@ from infrastructure.database.analysis.entities.results import (
 )
 
 
-class QCSetRespository(BaseRepository[QCSet], IQCSetRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class QCSetRepository(BaseRepository[QCSet], IQCSetRepository):
+    def __init__(self) -> None:
         self.model = QCSet
-        super().__init__(db)
+        super().__init__()
 
 
-class ResultMutationRespository(
+class ResultMutationRepository(
     BaseRepository[ResultMutation], IResultMutationRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = ResultMutation
-        super().__init__(db)
+        super().__init__()

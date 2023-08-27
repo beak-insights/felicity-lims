@@ -5,7 +5,7 @@ from domain.instrument.ports.repository import (
     IInstrumentCalibrationRepository,
     ICalibrationCertificateRepository,
 )
-from domain.shared.ports.persistance import PersistenceProtocol
+
 from infrastructure.database.repository.base import BaseRepository
 
 from infrastructure.database.instrument.entities import (
@@ -21,37 +21,37 @@ SEQUENCE_BEGIN = 5
 SEQUENCE_CUTOFF = 10
 
 
-class MethodRespository(BaseRepository[Method], IMethodRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class MethodRepository(BaseRepository[Method], IMethodRepository):
+    def __init__(self) -> None:
         self.model = Method
-        super().__init__(db)
+        super().__init__()
 
 
-class InstrumentRespository(BaseRepository[Instrument], IInstrumentRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class InstrumentRepository(BaseRepository[Instrument], IInstrumentRepository):
+    def __init__(self) -> None:
         self.model = Instrument
-        super().__init__(db)
+        super().__init__()
 
 
-class InstrumentTypeRespository(
+class InstrumentTypeRepository(
     BaseRepository[InstrumentType], IInstrumentTypeRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = InstrumentType
-        super().__init__(db)
+        super().__init__()
 
 
-class InstrumentCalibrationRespository(
+class InstrumentCalibrationRepository(
     BaseRepository[InstrumentCalibration], IInstrumentCalibrationRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = InstrumentCalibration
-        super().__init__(db)
+        super().__init__()
 
 
-class CalibrationCertificateRespository(
+class CalibrationCertificateRepository(
     BaseRepository[CalibrationCertificate], ICalibrationCertificateRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = CalibrationCertificate
-        super().__init__(db)
+        super().__init__()

@@ -4,7 +4,7 @@ from domain.storage.ports.repository import (
     IStorageSectionRepository,
     IStorageContainerRepository,
 )
-from domain.shared.ports.persistance import PersistenceProtocol
+
 from infrastructure.database.repository.base import BaseRepository
 
 from infrastructure.database.storage.entities import (
@@ -15,31 +15,31 @@ from infrastructure.database.storage.entities import (
 )
 
 
-class StoreRoomRespository(BaseRepository[StoreRoom], IStoreRoomRepository):
-    def __init__(self, db: PersistenceProtocol) -> None:
+class StoreRoomRepository(BaseRepository[StoreRoom], IStoreRoomRepository):
+    def __init__(self) -> None:
         self.model = StoreRoom
-        super().__init__(db)
+        super().__init__()
 
 
-class StorageLocationRespository(
+class StorageLocationRepository(
     BaseRepository[StorageLocation], IStorageLocationRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = StorageLocation
-        super().__init__(db)
+        super().__init__()
 
 
-class StorageSectionRespository(
+class StorageSectionRepository(
     BaseRepository[StorageSection], IStorageSectionRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = StorageSection
-        super().__init__(db)
+        super().__init__()
 
 
-class StorageContainerRespository(
+class StorageContainerRepository(
     BaseRepository[StorageContainer], IStorageContainerRepository
 ):
-    def __init__(self, db: PersistenceProtocol) -> None:
+    def __init__(self) -> None:
         self.model = StorageContainer
-        super().__init__(db)
+        super().__init__()

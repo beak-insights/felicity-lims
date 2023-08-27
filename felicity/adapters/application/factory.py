@@ -4,7 +4,7 @@ from sanic.response import json
 
 from adapters.graphql.schema import schema
 from adapters.graphql.view import AppGraphQLView, Request
-from adapters.graphql.dependencies import IDependencyService, register_dependencies
+from adapters.graphql.dependencies import register_dependencies
 from adapters.baje.service import JobWorker
 
 from core.setting import settings
@@ -66,6 +66,5 @@ def register_felicity():
     register_blueprints(app)
     register_graphql(app)
     register_job_runner(app)
-    # trial_jobber()
 
     return app

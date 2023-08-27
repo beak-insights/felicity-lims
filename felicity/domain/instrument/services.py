@@ -1,5 +1,4 @@
 from domain.shared.services import BaseService
-from domain.exceptions import NoFoundError, AlreadyExistsError
 from domain.instrument.ports.service import (
     ICalibrationCertificateService,
     IMethodService,
@@ -483,8 +482,11 @@ class InstrumentService(BaseService[Instrument], IInstrumentService):
 class InstrumentCalibrationService(
     BaseService[InstrumentCalibration], IInstrumentCalibrationService
 ):
+    def __int__(self, repository: IInstrumentCalibrationRepository):
+        self.repository = repository
+
     async def create(
-        cls, obj_in: schemas.InstrumentCalibrationCreate
+        cls, obj_in: InstrumentCalibrationCreate
     ) -> schemas.InstrumentCalibration:
         data = cls._import(obj_in)
         data["calibration_id"] = (await IdSequence.get_next_number("ICAL"))[1]

@@ -1,99 +1,45 @@
+from datetime import datetime
 
-from domain.shared.services import BaseService
+from domain.client.ports.service import IClientService
+from domain.exceptions import *
+from domain.idsequence.ports.service import IIdSequenceService
+from domain.patient.ports import IdentificationIn
+from domain.patient.ports.repository import (
+    IPatientRepository,
+    IIdentificationRepository,
+    IPatientIdentificationRepository,
+)
 from domain.patient.ports.service import (
     IIdentificationService,
     IPatientIdentificationService,
-    IPatientService
+    IPatientService,
 )
 from domain.patient.schemas import (
     Identification,
     PatientIdentification,
-    Patient
+    Patient,
+    IdentificationCreate,
+    IdentificationUpdate,
+    PatientCreate,
+    PatientIdentificationCreate,
+    PatientUpdate,
+    PatientIdentificationUpdate,
 )
-    async def patient_all(
-        self,
-        info,
-        page_size: int | None = None,
-        after_cursor: str | None = None,
-        before_cursor: str | None = None,
-        text: str | None = None,
-        sort_by: list[str] | None = None,
-    ) -> PatientCursorPage:
-        filters = {}
-
-        _or_ = dict()
-        if has_value_or_is_truthy(text):
-            arg_list = [
-                "first_name__ilike",
-                "last_name__ilike",
-                "middle_name__ilike",
-                "client_patient_id__ilike",
-                "patient_id__ilike",
-                "client___name__ilike",
-                "patient_id__ilike",
-                "email__ilike",
-                "phone_mobile__ilike",
-                "phone_home__ilike",
-            ]
-            for _arg in arg_list:
-                _or_[_arg] = f"%{text}%"
-
-            filters = {sa.or_: _or_}
-
-        page = await models.Patient.paginate_with_cursors(
-            page_size=page_size,
-            after_cursor=after_cursor,
-            before_cursor=before_cursor,
-            filters=filters,
-            sort_by=sort_by,
-        )
-
-        total_count: int = page.total_count
-        edges: List[PatientEdge[PatientType]] = page.edges
-        items: List[PatientType] = page.items
-        page_info: PageInfo = page.page_info
-
-        return PatientCursorPage(
-            total_count=total_count, edges=edges, items=items, page_info=page_info
-        )
-
-    async def patient_search(self, info, query_string: str) -> List[PatientType]:
-        filters = [
-            "first_name__ilike",
-            "middle_name__ilike",
-            "last_name__ilike",
-            "patient_id__ilike",
-            "client_patient_id__ilike",
-            "phone_mobile__ilike",
-            "phone_home__ilike",
-        ]
-        combined = set()
-        for _filter in filters:
-            arg = dict()
-            arg[_filter] = f"%{query_string}%"
-            query = await models.Patient.get_all(**arg)
-            for item in query:
-                combined.add(item)
-        return list(combined)
+from domain.shared.services import BaseService
+from domain.shared.utils.serialisers import marshal
+from domain.user.schemas import User
 
 
-    
-    async def create_identification(info, name: str) -> IdentificationResponse:
+class IdentificationService(BaseService[Identification], IIdentificationService):
+    def __init__(self, repository: IIdentificationRepository):
+        self.repository = repository
 
-        is_authenticated, felicity_user = await auth_from_info(info)
-        verify_user_auth(
-            is_authenticated,
-            felicity_user,
-            "Only Authenticated user can create person identification",
-        )
+    async def create(self, name: str, felicity_user: User) -> Identification:
 
-        if not name:
-            return OperationError(error="name is mandatory")
-
-        exists = await models.Identification.get(name=name)
+        exists = await self.get(name=name)
         if exists:
-            return OperationError(
-                error=f"The Identfication name -> {name} <- already exists"
+            raise AlreadyExistsError(
+                f"The Identification name -> {name} <- already exists"
             )
 
         incoming = {
@@ -102,111 +48,172 @@ from domain.patient.schemas import (
             "updated_by_uid": felicity_user.uid,
         }
 
-        obj_in = schemas.IdentificationCreate(**incoming)
-        identification: models.Identification = await models.Identification.create(
-            obj_in
-        )
-        return IdentificationType(**identification.marshal_simple())
+        obj_in = IdentificationCreate(**incoming)
+        return await super().create(**marshal(obj_in))
 
-    
-    async def update_identification(
-        info, uid: str, name: str
-    ) -> IdentificationResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
-        verify_user_auth(
-            is_authenticated,
-            felicity_user,
-            "Only Authenticated user can update person identifications",
-        )
-
-        identification = await models.Identification.get(uid=uid)
-        if not identification:
-            return OperationError(error=f"identification with uid {uid} does not exist")
-
+    async def update(self, uid: str, name: str) -> Identification:
+        identification = await self.get(uid=uid)
         try:
             setattr(identification, "name", name)
         except AttributeError as e:
-            logger.warning(e)
+            ...
 
-        id_in = schemas.IdentificationUpdate(**identification.to_dict())
-        identification = await identification.update(id_in)
-        return IdentificationType(**identification.marshal_simple())
+        id_in = IdentificationUpdate(**marshal(identification))
+        return await super().update(**marshal(id_in))
 
-    
-    async def create_patient(self, info, payload: PatientInputType) -> PatientResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
-        auth_success, auth_error = verify_user_auth(
-            is_authenticated,
-            felicity_user,
-            "Only Authenticated user can create patients",
-        )
-        if not auth_success:
-            return auth_error
+class PatientIdentificationService(
+    BaseService[PatientIdentification], IPatientIdentificationService
+):
+    def __init__(self, repository: IPatientIdentificationRepository):
+        self.repository = repository
 
-        if (
-            not payload.client_patient_id
-            or not payload.first_name
-            or not payload.last_name
-            or not payload.client_uid
-        ):
-            return OperationError(
-                error="Client Patient Id, First Name and Last Name , gender etc are required"
+    async def create(
+            self, patient: Patient, identifications: list[IdentificationIn]
+    ) -> None:
+        for p_id in identifications:
+            pid_in = PatientIdentificationCreate(
+                patient_uid=patient.uid,
+                identification_uid=p_id.get("identification_uid"),
+                value=p_id.get("value"),
             )
+            await super().create(**marshal(pid_in))
 
-        exists = await models.Patient.get(client_patient_id=payload.client_patient_id)
+    async def update(
+            self, patient: Patient, identifications: list[IdentificationIn]
+    ) -> None:
+        update_identification_uids = [
+            ident.get("identification_uid") for ident in identifications
+        ]
+        identifications = await self.get_all(patient_uid=patient.uid)
+        identifications_uids = [ident.uid for ident in identifications]
+
+        for identification in identifications:
+            # deleted
+            if identification.uid not in update_identification_uids:
+                await self.delete(identification)
+            else:  # update
+                update_identification = list(
+                    filter(
+                        lambda x: x.identification_uid == identification.uid,
+                        identifications,
+                    )
+                )[0]
+                id_update_in = PatientIdentificationUpdate(
+                    patient_uid=patient.uid, **marshal(update_identification)
+                )
+                await self.super().update(
+                    update_identification, **marshal(id_update_in)
+                )
+
+        # new
+        for _pid in identifications:
+            if _pid.identification_uid not in identifications_uids:
+                pid_in = PatientIdentificationCreate(
+                    patient_uid=patient.uid,
+                    identification_uid=_pid.get("identification_uid"),
+                    value=_pid.get("value"),
+                )
+                await super().create(**marshal(pid_in))
+
+
+class PatientService(BaseService[Patient], IPatientService):
+    def __init__(
+            self,
+            repository: IPatientRepository,
+            id_sequence_service: IIdSequenceService,
+            client_service: IClientService,
+            patient_identification_service: IPatientIdentificationService,
+    ):
+        self.repository = repository
+        self.id_sequence_service = id_sequence_service
+        self.client_service = client_service
+        self.patient_identification_service = patient_identification_service
+
+    async def search(self, query_string: str) -> list[Patient]:
+        filters = {
+            "first_name": query_string,
+            "middle_name": query_string,
+            "last_name": query_string,
+            "patient_id": query_string,
+            "client_patient_id": query_string,
+            "phone_mobile": query_string,
+            "phone_home": query_string,
+        }
+        return await super().search(**filters)
+
+    async def create(
+            self,
+            client_patient_id: str,
+            first_name: str,
+            last_name: str,
+            client_uid: str,
+            gender: str,
+            middle_name: str | None,
+            age: int | None,
+            date_of_birth: datetime | None,
+            age_dob_estimated: bool | None,
+            phone_mobile: str | None,
+            phone_home: str | None,
+            consent_sms: bool | None,
+            internal_use: bool | None,
+            country_uid: str | None,
+            province_uid: str | None,
+            district_uid: str | None,
+            identifications: list[IdentificationIn] | None,
+            felicity_user: User,
+    ) -> Patient:
+        payload = locals()
+
+        exists = await self.get(client_patient_id=client_patient_id)
         if exists:
-            return OperationError(error=f"Client Patient Id already in use")
-
-        client = await client_models.Client.get(uid=payload.client_uid)
-        if not client:
-            return OperationError(
-                error=f"Client with uid {payload.client_uid} does not exist"
-            )
+            raise AlreadyExistsError(f"Client Patient Id already in use")
 
         incoming: dict = {
+            "patient_id": (
+                await self.id_sequence_service.get_next_number(prefix="P", generic=True)
+            )[1],
             "created_by_uid": felicity_user.uid,
             "updated_by_uid": felicity_user.uid,
         }
+
         for k, v in payload.__dict__.items():
             incoming[k] = v
 
-        obj_in = schemas.PatientCreate(**incoming)
-        patient: models.Patient = await models.Patient.create(obj_in)
+        obj_in = PatientCreate(**incoming)
+        patient = await super().create(**marshal(obj_in))
 
-        # create identifications
-        for p_id in payload.identifications:
-            pid_in = schemas.PatientIdentificationCreate(
-                patient_uid=patient.uid,
-                identification_uid=p_id.identification_uid,
-                value=p_id.value,
-            )
-            await models.PatientIdentification.create(pid_in)
-
-        return PatientType(**patient.marshal_simple())
-
-    
-    async def update_patient(
-        self, info, uid: str, payload: PatientInputType
-    ) -> PatientResponse:
-
-        is_authenticated, felicity_user = await auth_from_info(info)
-        verify_user_auth(
-            is_authenticated,
-            felicity_user,
-            "Only Authenticated user can update patients",
+        await self.patient_identification_service.create(
+            patient, payload.identifications  # noqa
         )
+        return patient
 
-        if not uid:
-            return OperationError(error="No uid provided to idenity update obj")
+    async def update(
+            self,
+            uid: str,
+            client_patient_id: str,
+            first_name: str,
+            last_name: str,
+            client_uid: str,
+            gender: str,
+            middle_name: str | None,
+            age: int | None,
+            date_of_birth: datetime | None,
+            age_dob_estimated: bool | None,
+            phone_mobile: str | None,
+            phone_home: str | None,
+            consent_sms: bool | None,
+            internal_use: bool | None,
+            country_uid: str | None,
+            province_uid: str | None,
+            district_uid: str | None,
+            identifications: list[IdentificationIn] | None,
+            felicity_user: User,
+    ) -> Patient:
+        payload = locals()
 
-        patient: models.Patient = await models.Patient.get(uid=uid)
-        if not patient:
-            return OperationError(
-                error=f"patient with uid {uid} not found. Cannot update obj ..."
-            )
-
-        obj_data = patient.to_dict()
+        patient = await self.get(uid=uid)
+        obj_data = marshal(patient)
         for field in obj_data:
             if field in payload.__dict__:
                 try:
@@ -216,56 +223,10 @@ from domain.patient.schemas import (
 
         setattr(patient, "updated_by_uid", felicity_user.uid)
 
-        obj_in = schemas.PatientUpdate(**patient.to_dict())
-        patient = await patient.update(obj_in)
+        obj_in = PatientUpdate(**marshal(patient))
+        patient = await super().update(obj_in, **marshal(patient))
 
-        # update identifications
-        update_identification_uids = [
-            id.identification_uid for id in payload.identifications
-        ]
-        identifications = await models.PatientIdentification.get_all(
-            patient_uid=patient.uid
+        await self.patient_identification_service.update(
+            patient, payload.identifications  # noqa
         )
-        identifications_uids = [id.uid for id in identifications]
-
-        for identification in identifications:
-            # deleted
-            if not identification.uid in update_identification_uids:
-                await identification.delete()
-            else:  # update
-                update_identification = list(
-                    filter(
-                        lambda x: x.identification_uid == identification.uid,
-                        payload.identifications,
-                    )
-                )[0]
-                id_update_in = schemas.PatientIdentificationUpdate(
-                    patient_uid=patient.uid, **id_update_in.to_dict()
-                )
-                identification = await identification.update(id_update_in)
-
-        # new
-        for _pid in payload.identifications:
-            if not _pid.identification_uid in identifications_uids:
-                pid_in = schemas.PatientIdentificationCreate(
-                    patient_uid=patient.uid,
-                    identification_uid=_pid.identification_uid,
-                    value=_pid.value,
-                )
-                await models.PatientIdentification.create(pid_in)
-
-        patient = await models.Patient.get(uid=patient.uid)
-        return PatientType(**patient.marshal_simple())
-
-
-class IdentificationService(BaseService[Identification], IIdentificationService):
-    ...
-    
-class PatientIdentificationService(BaseService[PatientIdentification], IPatientIdentificationService):
-    ...
-    
-class PatientService(BaseService[Patient], IPatientService):
-    async def create(cls, obj_in: schemas.PatientCreate) -> schemas.Patient:
-        data = cls._import(obj_in)
-        data["patient_id"] = (await IdSequence.get_next_number(prefix="P", generic=True))[1]
-        return await super().create(**data)
+        return await self.get(uid=patient.uid)
