@@ -1,5 +1,4 @@
 from domain.shared.services import BaseService
-from domain.exceptions import NoFoundError, AlreadyExistsError
 from domain.shipment.ports.service import (
     IReferralLaboratoryService,
     IShippedSampleService,
@@ -59,15 +58,15 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
         return self
 
     async def shipment_all(
-        self,
-        info,
-        page_size: int | None = None,
-        after_cursor: str | None = None,
-        before_cursor: str | None = None,
-        text: str | None = None,
-        incoming: bool = False,
-        status: str | None = None,
-        sort_by: list[str] | None = None,
+            self,
+            info,
+            page_size: int | None = None,
+            after_cursor: str | None = None,
+            before_cursor: str | None = None,
+            text: str | None = None,
+            incoming: bool = False,
+            status: str | None = None,
+            sort_by: list[str] | None = None,
     ) -> ShipmentCursorPage:
 
         filters = [{"incoming": incoming}]
@@ -105,13 +104,13 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
         )
 
     async def create_shipment(
-        self, info, payload: ShipmentInputType
+            self, info, payload: ShipmentInputType
     ) -> ShipmentsResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create shipments",
         )
 
@@ -125,8 +124,8 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
             "laboratory_uid": payload.laboratory_uid,
             "shipment_id": None,
             "state": conf.shipment_states.EMPTY,
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
 
         sh_schema = schemas.ShipmentCreate(**incoming)
@@ -147,13 +146,13 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
         )
 
     async def update_shipment(
-        self, info, uid: str, payload: ShipmentUpdateInputType
+            self, info, uid: str, payload: ShipmentUpdateInputType
     ) -> ShipmentResponse:  # noqa
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update shipments",
         )
 
@@ -184,13 +183,13 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
         return ShipmentType(**shipment.marshal_simple())
 
     async def action_shipment(
-        self, info, uid: str, action: str
+            self, info, uid: str, action: str
     ) -> ShipmentResponse:  # noqa
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can action shipments",
         )
 
@@ -206,14 +205,14 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
 
         if action == "dispatch":
             shipment = await shipment.change_state(
-                conf.shipment_states.AWAITING, felicity_user.uid
+                conf.shipment_states.AWAITING, user.uid
             )
 
             job_schema = job_schemas.JobCreate(
                 action=actions.SH_DISPATCH,
                 category=categories.SHIPMENT,
                 priority=priorities.MEDIUM,
-                creator_uid=felicity_user.uid,
+                creator_uid=user.uid,
                 job_id=shipment.uid,
                 status=states.PENDING,
                 data=None,
@@ -221,18 +220,18 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
             await job_models.Job.create(job_schema)
 
         else:
-            shipment = await action_shipment(uid, action, felicity_user)
+            shipment = await action_shipment(uid, action, user)
 
         return ShipmentType(**shipment.marshal_simple())
 
     async def shipment_manage_samples(
-        self, info, uid: str, payload: ShipmentManageSamplesInput
+            self, info, uid: str, payload: ShipmentManageSamplesInput
     ) -> ShipmentResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update shipments",
         )
 
@@ -253,16 +252,16 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
                 action=actions.SH_MANUAL_ASSIGN,
                 category=categories.SHIPMENT,
                 priority=priorities.MEDIUM,
-                creator_uid=felicity_user.uid,
+                creator_uid=user.uid,
                 job_id=shipment.uid,
                 status=states.PENDING,
                 data=data,
             )
             await job_models.Job.create(job_schema)
         elif payload.action == "recover":
-            await shipment_recover(shipment.uid, data, felicity_user.uid)
+            await shipment_recover(shipment.uid, data, user.uid)
         elif payload.action == "recall":
-            await shipment_recall(shipment.uid, data, felicity_user.uid)
+            await shipment_recall(shipment.uid, data, user.uid)
         else:
             pass
 
@@ -270,13 +269,13 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
         return ShipmentType(**shipment.marshal_simple())
 
     async def create_referral_laboratory(
-        info, payload: ReferralLaboratoryInputType
+            info, payload: ReferralLaboratoryInputType
     ) -> ReferralLaboratoryResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create referral labs",
         )
 
@@ -293,8 +292,8 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
             )
 
         incoming = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -306,13 +305,13 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
         return types.ReferralLaboratoryType(**referral_laboratory.marshal_simple())
 
     async def update_referral_laboratory(
-        info, uid: str, payload: ReferralLaboratoryInputType
+            info, uid: str, payload: ReferralLaboratoryInputType
     ) -> ReferralLaboratoryResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update referral labs",
         )
 

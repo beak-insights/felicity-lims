@@ -1,13 +1,12 @@
 import logging
 
 import strawberry  # noqa
-from api.gql.types import OperationError
+from api.gql.analysis.types import analysis as a_types
 from api.gql.auth import auth_from_info, verify_user_auth
 from api.gql.permissions import IsAuthenticated
-from api.gql.analysis.types import analysis as a_types
+from api.gql.types import OperationError
 from apps.analysis import schemas
 from apps.analysis.models import analysis as analysis_models
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -21,11 +20,10 @@ RejectionReasonResponse = strawberry.union(
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def create_rejection_reason(info, reason: str) -> RejectionReasonResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can create rejection reasons",
     )
 
@@ -40,8 +38,8 @@ async def create_rejection_reason(info, reason: str) -> RejectionReasonResponse:
 
     incoming = {
         "reason": reason,
-        "created_by_uid": felicity_user.uid,
-        "updated_by_uid": felicity_user.uid,
+        "created_by_uid": user.uid,
+        "updated_by_uid": user.uid,
     }
 
     obj_in = schemas.RejectionReasonCreate(**incoming)
@@ -53,12 +51,12 @@ async def create_rejection_reason(info, reason: str) -> RejectionReasonResponse:
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def update_rejection_reason(
-    info, uid: str, reason: str
+        info, uid: str, reason: str
 ) -> RejectionReasonResponse:
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can update rejection reasons",
     )
 

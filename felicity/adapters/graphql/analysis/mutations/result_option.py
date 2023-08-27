@@ -1,13 +1,12 @@
 import logging
 
 import strawberry  # noqa
-from api.gql.types import OperationError
+from api.gql.analysis.types import analysis as a_types
 from api.gql.auth import auth_from_info, verify_user_auth
 from api.gql.permissions import IsAuthenticated
-from api.gql.analysis.types import analysis as a_types
+from api.gql.types import OperationError
 from apps.analysis import schemas
 from apps.analysis.models import analysis as analysis_models
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -29,13 +28,12 @@ ResultOptionResponse = strawberry.union(
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def create_result_option(
-    info, payload: ResultOptionInputType
+        info, payload: ResultOptionInputType
 ) -> ResultOptionResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can add result options",
     )
 
@@ -52,8 +50,8 @@ async def create_result_option(
         )
 
     incoming = {
-        "created_by_uid": felicity_user.uid,
-        "updated_by_uid": felicity_user.uid,
+        "created_by_uid": user.uid,
+        "updated_by_uid": user.uid,
     }
     for k, v in payload.__dict__.items():
         incoming[k] = v
@@ -67,13 +65,12 @@ async def create_result_option(
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def update_result_option(
-    info, uid: str, payload: ResultOptionInputType
+        info, uid: str, payload: ResultOptionInputType
 ) -> ResultOptionResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can update result options",
     )
 

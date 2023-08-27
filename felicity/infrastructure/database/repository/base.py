@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar, Any, List
+from typing import Generic, TypeVar, Any, List, AsyncIterator, Optional
 
 from sqlalchemy import or_ as sa_or_
 from sqlalchemy import select
@@ -10,7 +10,11 @@ from domain.shared.ports.paginator.cursor import PageCursor, EdgeNode, PageInfo
 from domain.shared.ports.repository import IBaseRepository
 from domain.shared.utils.serialisers import marshal
 from infrastructure.database.repository.session import async_session
-from infrastructure.database.utils.queryset import QueryBuilder, settable_attributes
+from infrastructure.database.utils.queryset import (
+    QueryBuilder,
+    settable_attributes,
+    smart_query,
+)
 
 M = TypeVar("M")
 
@@ -41,51 +45,51 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
                 raise
         return m
 
+    async def save_all(cls, items):
+        async with cls.session() as session:
+            try:
+                session.add_all(items)
+                await session.flush()
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
+        return items
+
     async def create(self, **kwargs) -> M:
         cls = self.model()
         filled = self.fill(cls, **kwargs)
         return await self.save(filled)
 
     async def bulk_create(self, bulk: list[dict]) -> list[M]:
-        pass
+        to_save = []
+        for data in bulk:
+            fill = await self.fill(self.model(), **data)
+            to_save.append(fill)
+        return await self.save_all(to_save)
 
     async def update(self, model: M, **kwargs) -> M:
         filled = self.fill(model, **kwargs)
         return await self.save(filled)
 
     async def update_by_uid(self, uid: str, **kwargs) -> M:
-        update = await self.get(uid=uid)
-        filled = self.fill(update, **kwargs)
+        _update = await self.get(uid=uid)
+        filled = self.fill(_update, **kwargs)
         return await self.save(filled)
 
-    async def get(self, **kwargs) -> M:
-        stmt = self._qb.where(**kwargs)
+    async def bulk_update_where(self, update_data: list[dict], filters: dict):
+        """
+        @param update_data a List of dictionary update values.
+        @param filters is a dict of filter values.
+        e.g [{'uid': 34, update_values}, ...]
+        """
+        query = smart_query(query=update(self.model), filters=filters)
+        stmt = query.values(update_data).execution_options(synchronize_session="fetch")
+
         async with self.async_session() as session:
             results = await session.execute(stmt)
-            found = results.scalars().first()
-        return found
-
-    async def get_all(self, **kwargs) -> list[M]:
-        stmt = self._qb.where(**kwargs)
-        async with self.async_session() as session:
-            results = await session.execute(stmt)
-            found = results.scalars().all()
-        return found
-
-    async def get_by_uids(self, uids: list[str]) -> list[M]:
-        stmt = self._qb.where(uid__in=uids)
-        async with self.async_session() as session:
-            results = await session.execute(stmt)
-            found = results.scalars().all()
-        return found
-
-    async def get_related(self, uid: str, related: list[str]) -> M:
-        pass
-
-    async def all(self) -> list[M]:
-        async with self.async_session() as session:
-            results = await session.execute(select(self.model))
-        return results.scalars().all()
+        updated = results.scalars().all()
+        return updated
 
     async def bulk_update_with_mappings(self, mappings: list) -> None:
         """
@@ -116,6 +120,117 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
             await session.execute(stmt, to_update)
             await session.flush()
             await session.commit()
+
+    async def table_insert(self, table: Any, mappings: list[dict]) -> None:
+        """
+        @param table is a sqlalchemy table model
+        @param mappings a dictionary update values.
+        e.g {'name': 34, 'day': "fff"}
+        """
+        async with self.async_session() as session:
+            stmt = table.insert()
+            await session.execute(stmt, mappings)
+            await session.commit()
+            await session.flush()
+
+    async def query_table(self, table, **kwargs):
+        stmt = select(table)
+        for k, v in kwargs.items():
+            stmt = stmt.where(table.c[k] == v)
+
+        async with self.async_session() as session:
+            results = await session.execute(stmt)
+        return results.unique().scalars().all()
+
+    async def get(self, **kwargs) -> M:
+        stmt = self._qb.where(**kwargs)
+        async with self.async_session() as session:
+            results = await session.execute(stmt)
+            found = results.scalars().first()
+        return found
+
+    async def get_all(self, **kwargs) -> list[M]:
+        stmt = self._qb.where(**kwargs)
+        async with self.async_session() as session:
+            results = await session.execute(stmt)
+            found = results.scalars().all()
+        return found
+
+    async def all(self) -> list[M]:
+        async with self.async_session() as session:
+            results = await session.execute(select(self.model))
+        return results.scalars().all()
+
+    async def all_by_page(self, page: int = 1, limit: int = 20, **kwargs) -> dict:
+        start = (page - 1) * limit
+
+        stmt = self._qb.where(**kwargs).limit(limit).offset(start)
+        async with self.async_session() as session:
+            results = await session.execute(stmt)
+        found = results.scalars().all()
+        return found
+
+    async def get_by_uids(self, uids: List[str]) -> list[M]:
+        stmt = select(self.model).where(self.model.uid.in_(uids))  # type: ignore
+        async with self.async_session() as session:
+            results = await session.execute(stmt.order_by(self.model.uid))
+        return results.scalars().all()
+
+    async def get_related(
+            self, related: Optional[list] = None, many: bool = False, **kwargs
+    ):
+        """Return the first value in database based on given args."""
+        try:
+            del kwargs["related"]
+        except KeyError:
+            pass
+
+        try:
+            del kwargs["many"]
+        except KeyError:
+            pass
+
+        stmt = self._qb.where(**kwargs)
+        # if related:
+        #     stmt.options(selectinload(related))
+
+        async with self.async_session() as session:
+            results = await session.execute(stmt)
+
+        if not many:
+            found = results.scalars().first()
+        else:
+            found = results.scalars().all()
+
+        return found
+
+    async def stream_by_uids(self, uids: List[Any]) -> AsyncIterator[M]:
+
+        stmt = select(self.model).where(self.model.in_(uids))  # type: ignore
+
+        async with self.async_session() as session:
+            stream = await session.stream(stmt.order_by(self.model.uid))
+        async for row in stream:
+            yield row
+
+    async def stream_all(self) -> AsyncIterator[Any]:
+        stmt = select(self.model)
+        async with self.async_session() as session:
+            stream = await session.stream(stmt.order_by(self.model.uid))
+        async for row in stream:
+            yield row
+
+    async def full_text_search(self, search_string, field):
+        """Full-text Search with PostgreSQL"""
+        stmt = select(self.model).filter(
+            func.to_tsvector("english", getattr(self.model, field)).match(
+                search_string, postgresql_regconfig="english"
+            )
+        )
+        async with self.async_session() as session:
+            results = await session.execute(stmt)
+        search = results.scalars().all()
+        return search
 
     async def delete(self, uid: str) -> M:
         obj = await self.get(uid=uid)
@@ -151,6 +266,17 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
                 combined.add(item)
 
         return list(combined)
+
+    async def filter(
+            self,
+            filters: list[dict],
+            sort_attrs: list[str] | None,
+    ) -> list[M]:
+        stmt = self._qb.smart_query(filters, sort_attrs)
+        async with self.async_session() as session:
+            results = await session.execute(stmt)
+            found = results.scalars().all()
+        return found
 
     async def paginate_with_cursors(
             self,

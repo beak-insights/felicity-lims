@@ -4,6 +4,7 @@ import time
 import strawberry
 
 from adapters.graphql.permissions import IsAuthenticated, Info
+from adapters.graphql.types import OperationError
 from adapters.graphql.user.types import (
     AuthenticatedData,
     GroupType,
@@ -11,9 +12,7 @@ from adapters.graphql.user.types import (
     UserAuthType,
     UserType,
 )
-from adapters.graphql.types import OperationError
 from core.setting import settings
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -59,13 +58,13 @@ def simple_task(message: str):
 class UserMutations:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_user(
-        self,
-        info: Info,
-        first_name: str,
-        last_name: str,
-        email: str,
-        group_uid: str | None = None,
-        open_reg: bool | None = False,
+            self,
+            info: Info,
+            first_name: str,
+            last_name: str,
+            email: str,
+            group_uid: str | None = None,
+            open_reg: bool | None = False,
     ) -> UserResponse:
         user_service = info.context.user_service.create()
 
@@ -80,15 +79,15 @@ class UserMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_user(
-        self,
-        info,
-        user_uid: str,
-        first_name: str | None,
-        last_name: str | None,
-        mobile_phone: str | None,
-        email: str | None,
-        group_uid: str | None,
-        is_active: bool | None,
+            self,
+            info,
+            user_uid: str,
+            first_name: str | None,
+            last_name: str | None,
+            mobile_phone: str | None,
+            email: str | None,
+            group_uid: str | None,
+            is_active: bool | None,
     ) -> UserResponse:
 
         user = await user_models.User.get_one(uid=user_uid)
@@ -124,7 +123,7 @@ class UserMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_user_auth(
-        self, info, user_uid: str, user_name: str, password: str, passwordc: str
+            self, info, user_uid: str, user_name: str, password: str, passwordc: str
     ) -> UserResponse:
 
         auth = await user_models.UserAuth.get_by_username(username=user_name)
@@ -173,12 +172,12 @@ class UserMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_user_auth(
-        self,
-        info,
-        user_uid: str,
-        user_name: str | None,
-        password: str | None,
-        passwordc: str | None,
+            self,
+            info,
+            user_uid: str,
+            user_name: str | None,
+            password: str | None,
+            passwordc: str | None,
     ) -> UserResponse:
 
         if not user_name or not password:
@@ -225,7 +224,7 @@ class UserMutations:
 
     @strawberry.mutation
     async def authenticate_user(
-        self, info, username: str, password: str
+            self, info, username: str, password: str
     ) -> AuthenticatedDataResponse:
         auth = await user_models.UserAuth.get_by_username(username=username)
         if not auth:
@@ -280,10 +279,10 @@ class UserMutations:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_group(info, payload: GroupInputType) -> GroupResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can add user groups",
         )
 
@@ -298,8 +297,8 @@ class UserMutations:
 
         incoming = {
             "keyword": payload.name.upper(),
-            # "created_by_uid": felicity_user.uid,
-            # "updated_by_uid": felicity_user.uid,
+            # "created_by_uid": user.uid,
+            # "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -310,10 +309,10 @@ class UserMutations:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_group(info, uid: str, payload: GroupInputType) -> GroupResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update user groups",
         )
 
@@ -336,7 +335,7 @@ class UserMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_group_permissions(
-        self, info, group_uid: str, permission_uid: str
+            self, info, group_uid: str, permission_uid: str
     ) -> UpdatedGroupPermsResponse:
         if not group_uid or not permission_uid:
             return OperationError(error="Group and Permission are required.")

@@ -2,16 +2,14 @@ import logging
 from typing import List, Optional
 
 import strawberry  # noqa
-from api.gql.types import DeletedItem, DeleteResponse, OperationError
 from api.gql.auth import auth_from_info, verify_user_auth
-from api.gql.permissions import IsAuthenticated
 from api.gql.noticeboard.types import NoticeType
+from api.gql.permissions import IsAuthenticated
+from api.gql.types import DeletedItem, DeleteResponse, OperationError
 from apps.noticeboard import models, schemas
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 
 NoticeResponse = strawberry.union(
     "NoticeResponse",
@@ -34,10 +32,10 @@ class NoticeMutations:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_notice(self, info, payload: NoticeInputType) -> NoticeResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create notices",
         )
 
@@ -55,8 +53,8 @@ class NoticeMutations:
             )
 
         incoming = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -81,13 +79,13 @@ class NoticeMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_notice(
-        self, info, uid: str, payload: NoticeInputType
+            self, info, uid: str, payload: NoticeInputType
     ) -> NoticeResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update notices",
         )
 
@@ -122,7 +120,7 @@ class NoticeMutations:
                     _departments.append(_gr)
             setattr(notice, "departments", _departments)
 
-        setattr(notice, "update_by_uid", felicity_user.uid)
+        setattr(notice, "update_by_uid", user.uid)
 
         notice_in = schemas.NoticeUpdate(**notice.to_dict())
         notice = await notice.update(notice_in)
@@ -131,9 +129,9 @@ class NoticeMutations:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def view_notice(self, info, uid: str, viewer: str) -> NoticeType:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
-            is_authenticated, felicity_user, "Only Authenticated user can view notices"
+            is_authenticated, user, "Only Authenticated user can view notices"
         )
 
         notice: models.Notice = await models.Notice.get(uid=uid)
@@ -150,9 +148,9 @@ class NoticeMutations:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def delete_notice(self, info, uid: str) -> DeleteResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
-            is_authenticated, felicity_user, "Only Authenticated user can view notices"
+            is_authenticated, user, "Only Authenticated user can view notices"
         )
 
         notice: models.Notice = await models.Notice.get(uid=uid)

@@ -34,7 +34,7 @@ class IdentificationService(BaseService[Identification], IIdentificationService)
     def __init__(self, repository: IIdentificationRepository):
         self.repository = repository
 
-    async def create(self, name: str, felicity_user: User) -> Identification:
+    async def create(self, name: str, user: User) -> Identification:
 
         exists = await self.get(name=name)
         if exists:
@@ -44,8 +44,8 @@ class IdentificationService(BaseService[Identification], IIdentificationService)
 
         incoming = {
             "name": name,
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
 
         obj_in = IdentificationCreate(**incoming)
@@ -161,7 +161,7 @@ class PatientService(BaseService[Patient], IPatientService):
             province_uid: str | None,
             district_uid: str | None,
             identifications: list[IdentificationIn] | None,
-            felicity_user: User,
+            user: User,
     ) -> Patient:
         payload = locals()
 
@@ -173,8 +173,8 @@ class PatientService(BaseService[Patient], IPatientService):
             "patient_id": (
                 await self.id_sequence_service.get_next_number(prefix="P", generic=True)
             )[1],
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
 
         for k, v in payload.__dict__.items():
@@ -208,7 +208,7 @@ class PatientService(BaseService[Patient], IPatientService):
             province_uid: str | None,
             district_uid: str | None,
             identifications: list[IdentificationIn] | None,
-            felicity_user: User,
+            user: User,
     ) -> Patient:
         payload = locals()
 
@@ -221,7 +221,7 @@ class PatientService(BaseService[Patient], IPatientService):
                 except Exception as e:  # noqa
                     pass
 
-        setattr(patient, "updated_by_uid", felicity_user.uid)
+        setattr(patient, "updated_by_uid", user.uid)
 
         obj_in = PatientUpdate(**marshal(patient))
         patient = await super().update(obj_in, **marshal(patient))

@@ -1,14 +1,11 @@
 import logging
-from typing import Optional
 
 import strawberry  # noqa
-from api.gql.types import OperationError
-from api.gql.auth import auth_from_info, verify_user_auth
-from api.gql.permissions import IsAuthenticated
 from api.gql.analysis.types import analysis as a_types
+from api.gql.auth import auth_from_info, verify_user_auth
+from api.gql.types import OperationError
 from apps.analysis import schemas
 from apps.analysis.models import analysis as analysis_models
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -28,13 +25,12 @@ CodingStandardResponse = strawberry.union(
 
 
 async def create_coding_standard(
-    info, payload: CodingStandardInputType
+        info, payload: CodingStandardInputType
 ) -> CodingStandardResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can create coding standards",
     )
 
@@ -46,8 +42,8 @@ async def create_coding_standard(
         return OperationError(error=f"Coding Standard: {payload.name} already exists")
 
     incoming = {
-        "created_by_uid": felicity_user.uid,
-        "updated_by_uid": felicity_user.uid,
+        "created_by_uid": user.uid,
+        "updated_by_uid": user.uid,
     }
     for k, v in payload.__dict__.items():
         incoming[k] = v
@@ -60,13 +56,12 @@ async def create_coding_standard(
 
 
 async def update_coding_standard(
-    info, uid: str, payload: CodingStandardInputType
+        info, uid: str, payload: CodingStandardInputType
 ) -> CodingStandardResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can update codind standards",
     )
 

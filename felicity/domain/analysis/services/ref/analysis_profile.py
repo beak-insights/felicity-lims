@@ -3,13 +3,11 @@ from dataclasses import field
 from typing import List, Optional
 
 import strawberry  # noqa
-from api.gql.types import OperationError
-from api.gql.auth import auth_from_info, verify_user_auth
-from api.gql.permissions import IsAuthenticated
 from api.gql.analysis.types import analysis as a_types
+from api.gql.auth import auth_from_info, verify_user_auth
+from api.gql.types import OperationError
 from apps.analysis import schemas
 from apps.analysis.models import analysis as analysis_models
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -49,11 +47,10 @@ class ProfileMappingInputType:
 
 
 async def create_profile(info, payload: ProfileInputType) -> AnalysisProfileResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can create analysis profiles",
     )
 
@@ -71,8 +68,8 @@ async def create_profile(info, payload: ProfileInputType) -> AnalysisProfileResp
         )
 
     incoming = {
-        "created_by_uid": felicity_user.uid,
-        "updated_by_uid": felicity_user.uid,
+        "created_by_uid": user.uid,
+        "updated_by_uid": user.uid,
     }
     for k, v in payload.__dict__.items():
         if k not in ["sample_types", "services"]:
@@ -100,13 +97,12 @@ async def create_profile(info, payload: ProfileInputType) -> AnalysisProfileResp
 
 
 async def update_profile(
-    info, uid: str, payload: ProfileInputType
+        info, uid: str, payload: ProfileInputType
 ) -> AnalysisProfileResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can update analysis profiles",
     )
 
@@ -155,13 +151,12 @@ async def update_profile(
 
 
 async def create_profile_mapping(
-    info, payload: ProfileMappingInputType
+        info, payload: ProfileMappingInputType
 ) -> ProfileMappingResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can create profiles mappigs",
     )
 
@@ -170,8 +165,8 @@ async def create_profile_mapping(
         return OperationError(error=f"Mapping: {payload.code} already exists")
 
     incoming = {
-        "created_by_uid": felicity_user.uid,
-        "updated_by_uid": felicity_user.uid,
+        "created_by_uid": user.uid,
+        "updated_by_uid": user.uid,
     }
     for k, v in payload.__dict__.items():
         incoming[k] = v
@@ -184,13 +179,12 @@ async def create_profile_mapping(
 
 
 async def update_profile_mapping(
-    info, uid: str, payload: ProfileMappingInputType
+        info, uid: str, payload: ProfileMappingInputType
 ) -> ProfileMappingResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can update profile mappings",
     )
 

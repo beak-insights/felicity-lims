@@ -1,6 +1,11 @@
 from typing import List, Optional, Any
-from domain.shared.services import BaseService
-from domain.exceptions import NoFoundError, AlreadyExistsError
+
+from domain.notification.conf import channels
+from domain.notification.ports.repository import (
+    INotificationRepository,
+    IActivityFeedRepository,
+    IActivityStreamRepository,
+)
 from domain.notification.ports.service import (
     IActivityFeedService,
     IActivityStreamService,
@@ -10,103 +15,51 @@ from domain.notification.schemas import (
     ActivityFeed,
     ActivityStream,
     Notification,
+    ActivityStreamCreate,
+    NotificationCreate,
 )
-from domain.user.schemas import User, Group
 from domain.setup.schemas import Department
+from domain.shared.channel import broadcast
+from domain.shared.services import BaseService
+from domain.shared.utils.serialisers import marshal
+from domain.user.schemas import User, Group
 
-
-    
-    async def notification_filter(
-        self,
-        info,
-        group_uid: str | None,
-        department_uid: str | None,
-        user_uid: str | None,
-    ) -> List[NotificationType]:
-        filters = {}
-
-        if group_uid:
-            filters["groups__uid__in"] = [group_uid]
-
-        if department_uid:
-            filters["departments__uid__in"] = [department_uid]
-
-        if user_uid:
-            filters["users__uid__in"] = [user_uid]
-
-        notif_stmt = models.Notification.smart_query(
-            filters=filters, sort_attrs=["-created_at"]
-        )
-
-        notifications = (
-            (await models.Notification.session.execute(notif_stmt)).scalars().all()
-        )
-        return list(notifications)
-    
-    
 
 class ActivityFeedService(BaseService[ActivityFeed], IActivityFeedService):
-    async def reset_subscribers(self) -> ActivityFeed:
-        self.subscribers.clear()
-        return await self.save()
+    def __init__(self, repository: IActivityFeedRepository):
+        self.repository = repository
 
-    async def remove_subscriber(self, user: User) -> ActivityFeed:
-        self.subscribers.remove(user)
-        return await self.save()
+    async def reset_subscribers(self, activity_feed: ActivityFeed) -> ActivityFeed:
+        activity_feed.subscribers.clear()
+        return await super().update(activity_feed, **marshal(activity_feed))
 
-    async def add_subscriber(self, user: User) -> ActivityFeed:
-        if user not in self.viewers:
-            self.subscribers.append(user)
-            return await self.save()
-        return self
+    async def remove_subscriber(
+            self, activity_feed: ActivityFeed, user: User
+    ) -> ActivityFeed:
+        activity_feed.subscribers.remove(user)
+        return await super().update(activity_feed, **marshal(activity_feed))
+
+    async def add_subscriber(
+            self, activity_feed: ActivityFeed, user: User
+    ) -> ActivityFeed:
+        if user not in activity_feed.viewers:
+            activity_feed.subscribers.append(user)
+            return await super().update(activity_feed, **marshal(activity_feed))
+        return activity_feed
 
 
 class ActivityStreamService(BaseService[ActivityStream], IActivityStreamService):
-    async def reset_feeds(self) -> ActivityStream:
-        self.feeds.clear()
-        return await self.save()
-
-    async def remove_feed(self, feed: ActivityFeed) -> ActivityStream:
-        self.feeds.remove(feed)
-        return await self.save()
-
-    async def add_feed(self, feed: ActivityFeed) -> ActivityStream:
-        if feed not in self.feeds:
-            self.feeds.append(feed)
-            return await self.save()
-        return self
-
-    async def reset_viewers(self) -> ActivityStream:
-        self.viewers.clear()
-        return await self.save()
-
-    async def remove_viewer(self, viewer: User) -> ActivityStream:
-        self.viewers.remove(viewer)
-        return await self.save()
-
-    async def add_viewer(self, viewer: User) -> ActivityStream:
-        if viewer not in self.viewers:
-            self.viewers.append(viewer)
-            return await self.save()
-        return self
-
-    async def not_viewed(self, activity_uid) -> Optional[List[User]]:
-        """list of users who have not seen the notification"""
-
-    @classmethod
-    async def for_viewer(
-        cls, viewer: User, seen=False
-    ) -> Optional[List[ActivityStream]]:
-        """Streams for user: seen or unseen"""
+    def __init__(self, repository: IActivityStreamRepository):
+        self.repository = repository
 
     @classmethod
     async def stream(
-        cls,
-        obj: Any,
-        actor: User,
-        verb: str,
-        object_type: str,
-        feeds: List[ActivityFeed] = None,
+            cls,
+            obj: Any,
+            actor: User,
+            verb: str,
+            object_type: str,
+            feeds: List[ActivityFeed] = None,
     ):
         if feeds is None:
             feeds = []
@@ -118,62 +71,154 @@ class ActivityStreamService(BaseService[ActivityStream], IActivityStreamService)
             action_object_uid=obj.uid,
             target_uid=None,
         )
-        await cls.create(s_in)
+        stream = await super().create(**marshal(s_in))
+        await broadcast.publish(channels.ACTIVITIES, stream)
+
+    async def reset_feeds(self, activity_stream: ActivityStream) -> ActivityStream:
+        activity_stream.feeds.clear()
+        return await super().update(activity_stream, **marshal(activity_stream))
+
+    async def remove_feed(
+            self, activity_stream: ActivityStream, feed: ActivityFeed
+    ) -> ActivityStream:
+        activity_stream.feeds.remove(feed)
+        return await super().update(activity_stream, **marshal(activity_stream))
+
+    async def add_feed(
+            self, activity_stream: ActivityStream, feed: ActivityFeed
+    ) -> ActivityStream:
+        if feed not in activity_stream.feeds:
+            activity_stream.feeds.append(feed)
+            return await super().update(activity_stream, **marshal(activity_stream))
+        return activity_stream
+
+    async def reset_viewers(self, activity_stream: ActivityStream) -> ActivityStream:
+        activity_stream.viewers.clear()
+        return await super().update(activity_stream, **marshal(activity_stream))
+
+    async def remove_viewer(
+            self, activity_stream: ActivityStream, viewer: User
+    ) -> ActivityStream:
+        activity_stream.viewers.remove(viewer)
+        return await super().update(activity_stream, **marshal(activity_stream))
+
+    async def add_viewer(
+            self, activity_stream: ActivityStream, viewer: User
+    ) -> ActivityStream:
+        if viewer not in activity_stream.viewers:
+            activity_stream.viewers.append(viewer)
+            return await super().update(activity_stream, **marshal(activity_stream))
+        return activity_stream
+
+    async def not_viewed(self, activity_uid) -> Optional[List[User]]:
+        """list of users who have not seen the notification"""
+
+    @classmethod
+    async def for_viewer(
+            self, activity_stream: ActivityStream, viewer: User, seen=False
+    ) -> Optional[List[ActivityStream]]:
+        """Streams for user: seen or unseen"""
 
 
 class NotificationService(BaseService[Notification], INotificationService):
-    async def reset_views(self) -> Notification:
-        self.viewers.clear()
-        return await self.save()
+    def __init__(self, respository: INotificationRepository):
+        self.respository = respository
 
-    async def remove_viewer(self, user: User) -> Notification:
-        self.viewers.remove(user)
-        return await self.save()
+    async def notify(
+            self,
+            message: str,
+            departments,
+            groups,
+            users,
+    ) -> None:
+        n_in = NotificationCreate(message=message)
+        n_in.users = users
+        n_in.departments = departments
+        n_in.groups = groups
+        notification = await super().create(**marshal(n_in))
+        await broadcast.publish(channels.NOTIFICATIONS, notification)
 
-    async def add_viewer(self, user: User) -> Notification:
-        if user not in self.viewers:
-            self.viewers.append(user)
-            return await self.save()
-        return self
+    async def filter(
+            self,
+            group_uid: str | None,
+            department_uid: str | None,
+            user_uid: str | None,
+    ) -> List[Notification]:
+        filters = {}
 
-    async def reset_departments(self) -> Notification:
-        self.departments.clear()
-        return await self.save()
+        if group_uid:
+            filters["groups__uid__in"] = [group_uid]
 
-    async def remove_department(self, department: Department) -> Notification:
-        self.departments.remove(department)
-        return await self.save()
+        if department_uid:
+            filters["departments__uid__in"] = [department_uid]
 
-    async def add_department(self, department: Department) -> Notification:
+        if user_uid:
+            filters["users__uid__in"] = [user_uid]
+
+        return await self.repository.filter(filters, ["-created_at"])
+
+    async def reset_views(self, notification: Notification) -> Notification:
+        notification.viewers.clear()
+        return await super().update(notification, **marshal(notification))
+
+    async def remove_viewer(
+            self, notification: Notification, user: User
+    ) -> Notification:
+        notification.viewers.remove(user)
+        return await super().update(notification, **marshal(notification))
+
+    async def add_viewer(self, notification: Notification, user: User) -> Notification:
+        if user not in notification.viewers:
+            notification.viewers.append(user)
+            return await super().update(notification, **marshal(notification))
+        return notification
+
+    async def reset_departments(self, notification: Notification) -> Notification:
+        notification.departments.clear()
+        return await super().update(notification, **marshal(notification))
+
+    async def remove_department(
+            self, notification: Notification, department: Department
+    ) -> Notification:
+        notification.departments.remove(department)
+        return await super().update(notification, **marshal(notification))
+
+    async def add_department(
+            self, notification: Notification, department: Department
+    ) -> Notification:
         if department not in self.departments:
-            self.departments.append(department)
-            return await self.save()
+            notification.departments.append(department)
+            return await super().update(notification, **marshal(notification))
+        return notification
+
+    async def reset_groups(self, notification: Notification) -> Notification:
+        notification.groups.clear()
+        return await super().update(notification, **marshal(notification))
+
+    async def remove_group(
+            self, notification: Notification, group: Group
+    ) -> Notification:
+        notification.groups.remove(group)
+        return await super().update(notification, **marshal(notification))
+
+    async def add_group(self, notification: Notification, group: Group) -> Notification:
+        if group not in notification.groups:
+            notification.groups.append(group)
+            return await super().update(notification, **marshal(notification))
         return self
 
-    async def reset_groups(self) -> Notification:
-        self.groups.clear()
-        return await self.save()
+    async def reset_users(self, notification: Notification) -> Notification:
+        notification.users.clear()
+        return await super().update(notification, **marshal(notification))
 
-    async def remove_group(self, group: Group) -> Notification:
-        self.groups.remove(group)
-        return await self.save()
+    async def remove_users(
+            self, notification: Notification, user: User
+    ) -> Notification:
+        notification.users.remove(user)
+        return await super().update(notification, **marshal(notification))
 
-    async def add_group(self, group: Group) -> Notification:
-        if group not in self.groups:
-            self.groups.append(group)
-            return await self.save()
-        return self
-
-    async def reset_users(self) -> Notification:
-        self.users.clear()
-        return await self.save()
-
-    async def remove_users(self, user: User) -> Notification:
-        self.users.remove(user)
-        return await self.save()
-
-    async def add_user(self, user: Group) -> Notification:
-        if user not in self.users:
+    async def add_user(self, notification: Notification, user: Group) -> Notification:
+        if user not in notification.users:
             self.users.append(user)
-            return await self.save()
-        return self
+            return await super().update(notification, **marshal(notification))
+        return notification

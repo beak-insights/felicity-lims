@@ -154,7 +154,7 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
             template_uid: str,
             analyst_uid: str,
             count: int | None,
-            felicity_user: User,
+            user: User,
     ) -> list[WorkSheet]:
         if not count:
             count = 1
@@ -178,8 +178,8 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
             "cols": ws_temp.cols,
             "row_wise": ws_temp.row_wise,
             "state": WSStates.EMPTY,
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
 
         ws_schema = WorkSheetCreate(**incoming)
@@ -204,7 +204,7 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
             category=JobCategories.WORKSHEET,
             priority=JobPriorities.MEDIUM,
             job_id=None,
-            creator_uid=felicity_user.uid,
+            creator_uid=user.uid,
             status=JobStates.PENDING,
         )
         j_schemas = []
@@ -262,7 +262,7 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
         return worksheet
 
     async def update_worksheet_apply_template(
-            self, template_uid: str, worksheet_uid: str, felicity_user: User
+            self, template_uid: str, worksheet_uid: str, user: User
     ) -> WorkSheet:
 
         if not template_uid or not worksheet_uid:
@@ -300,7 +300,7 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
             action=JobActions.WS_ASSIGN,
             category=JobCategories.WORKSHEET,
             priority=JobPriorities.MEDIUM,
-            creator_uid=felicity_user.uid,
+            creator_uid=user.uid,
             job_id=ws.uid,
             status=JobStates.PENDING,
         )
@@ -313,7 +313,7 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
             uid: str,
             analyses_uids: list[str],
             qc_template_uid: str | None,
-            felicity_user: User,
+            user: User,
     ) -> WorkSheet:
 
         if not len(analyses_uids) > 0:
@@ -326,7 +326,7 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
             action=JobActions.WS_MANUAL_ASSIGN,
             category=JobCategories.WORKSHEET,
             priority=JobPriorities.MEDIUM,
-            creator_uid=felicity_user.uid,
+            creator_uid=user.uid,
             job_id=ws.uid,
             status=JobStates.PENDING,
             data={"qc_template_uid": qc_template_uid, "analyses_uids": analyses_uids},
@@ -758,7 +758,7 @@ class WorkSheetTemplateService(BaseService[WSTemplate], IWorkSheetTemplateServic
 
     async def create(
             self,
-            felicity_user: User,
+            user: User,
             name: str,
             sample_type_uid: str,
             reserved: list[ReservedIn],
@@ -793,8 +793,8 @@ class WorkSheetTemplateService(BaseService[WSTemplate], IWorkSheetTemplateServic
             "row_wise": row_wise,
             "description": description,
             "qc_template_uid": qc_template_uid,
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
 
         _qc_levels = []
@@ -823,7 +823,7 @@ class WorkSheetTemplateService(BaseService[WSTemplate], IWorkSheetTemplateServic
     async def update(
             self,
             uid: str,
-            felicity_user: User,
+            user: User,
             name: str,
             sample_type_uid: str,
             reserved: list[ReservedIn],

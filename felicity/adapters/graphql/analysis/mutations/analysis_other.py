@@ -1,13 +1,12 @@
 import logging
 
 import strawberry  # noqa
-from api.gql.types import OperationError
+from api.gql.analysis.types import analysis as a_types
 from api.gql.auth import auth_from_info, verify_user_auth
 from api.gql.permissions import IsAuthenticated
-from api.gql.analysis.types import analysis as a_types
+from api.gql.types import OperationError
 from apps.analysis import schemas
 from apps.analysis.models import analysis as analysis_models
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -95,19 +94,18 @@ AnalysisSpecificationResponse = strawberry.union(
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def create_analysis_interim(
-    info, payload: AnalysisInterimInput
+        info, payload: AnalysisInterimInput
 ) -> AnalysisInterimResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can add analysis interims",
     )
 
     incoming = {
-        "created_by_uid": felicity_user.uid,
-        "updated_by_uid": felicity_user.uid,
+        "created_by_uid": user.uid,
+        "updated_by_uid": user.uid,
     }
     for k, v in payload.__dict__.items():
         incoming[k] = v
@@ -121,13 +119,12 @@ async def create_analysis_interim(
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def update_analysis_interim(
-    info, uid: str, payload: AnalysisInterimInput
+        info, uid: str, payload: AnalysisInterimInput
 ) -> AnalysisInterimResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can update analysis interims",
     )
 
@@ -152,19 +149,18 @@ async def update_analysis_interim(
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def create_analysis_correction_factor(
-    info, payload: AnalysisCorrectionFactorInput
+        info, payload: AnalysisCorrectionFactorInput
 ) -> AnalysisCorrectionFactorResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can add analysis correction factors",
     )
 
     incoming = {
-        "created_by_uid": felicity_user.uid,
-        "updated_by_uid": felicity_user.uid,
+        "created_by_uid": user.uid,
+        "updated_by_uid": user.uid,
     }
     for k, v in payload.__dict__.items():
         incoming[k] = v
@@ -178,13 +174,12 @@ async def create_analysis_correction_factor(
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def update_analysis_correction_factor(
-    info, uid: str, payload: AnalysisCorrectionFactorInput
+        info, uid: str, payload: AnalysisCorrectionFactorInput
 ) -> AnalysisCorrectionFactorResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can update analysis correction factors",
     )
 
@@ -211,19 +206,18 @@ async def update_analysis_correction_factor(
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def create_analysis_detection_limit(
-    info, payload: AnalysisDetectionLimitInput
+        info, payload: AnalysisDetectionLimitInput
 ) -> AnalysisDetectionLimitResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can add analysis detection limits",
     )
 
     incoming = {
-        "created_by_uid": felicity_user.uid,
-        "updated_by_uid": felicity_user.uid,
+        "created_by_uid": user.uid,
+        "updated_by_uid": user.uid,
     }
     for k, v in payload.__dict__.items():
         incoming[k] = v
@@ -237,13 +231,12 @@ async def create_analysis_detection_limit(
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def update_analysis_detection_limit(
-    info, uid: str, payload: AnalysisDetectionLimitInput
+        info, uid: str, payload: AnalysisDetectionLimitInput
 ) -> AnalysisDetectionLimitResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can update analysis interims",
     )
 
@@ -270,19 +263,18 @@ async def update_analysis_detection_limit(
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def create_analysis_uncertainty(
-    info, payload: AnalysisUncertaintyInput
+        info, payload: AnalysisUncertaintyInput
 ) -> AnalysisUncertaintyResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can add analysis uncertainties",
     )
 
     incoming = {
-        "created_by_uid": felicity_user.uid,
-        "updated_by_uid": felicity_user.uid,
+        "created_by_uid": user.uid,
+        "updated_by_uid": user.uid,
     }
     for k, v in payload.__dict__.items():
         incoming[k] = v
@@ -296,13 +288,12 @@ async def create_analysis_uncertainty(
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def update_analysis_uncertainty(
-    info, uid: str, payload: AnalysisUncertaintyInput
+        info, uid: str, payload: AnalysisUncertaintyInput
 ) -> AnalysisUncertaintyResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can update analysis interims",
     )
 
@@ -327,13 +318,12 @@ async def update_analysis_uncertainty(
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def create_analysis_specification(
-    info, payload: AnalysisSpecificationInput
+        info, payload: AnalysisSpecificationInput
 ) -> AnalysisSpecificationResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can add analysis specifications",
     )
 
@@ -344,8 +334,8 @@ async def create_analysis_specification(
         )
 
     incoming = {
-        "created_by_uid": felicity_user.uid,
-        "updated_by_uid": felicity_user.uid,
+        "created_by_uid": user.uid,
+        "updated_by_uid": user.uid,
     }
     for k, v in payload.__dict__.items():
         incoming[k] = v
@@ -359,13 +349,12 @@ async def create_analysis_specification(
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def update_analysis_specification(
-    info, uid: str, payload: AnalysisSpecificationInput
+        info, uid: str, payload: AnalysisSpecificationInput
 ) -> AnalysisSpecificationResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can update analysis specifications",
     )
 

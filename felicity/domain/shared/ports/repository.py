@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Any
 
 from domain.shared.ports.paginator.cursor import PageCursor
 
@@ -70,4 +70,16 @@ class IBaseRepository(Generic[M], ABC):
 
     @abstractmethod
     async def search(self, **kwargs) -> list[M]:
+        pass
+
+    @abstractmethod
+    async def filter(
+            self,
+            filters: dict | list[dict],
+            sort: list[str] | None,
+    ) -> list[M]:
+        pass
+
+    @abstractmethod
+    async def table_insert(self, table: Any, mappings: dict) -> None:
         pass

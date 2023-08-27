@@ -52,9 +52,7 @@ class ReflexRuleService(BaseService[ReflexRule], IReflexRuleService):
     def __init__(self, repository: IReflexRuleRepository):
         self.repository = repository
 
-    async def create(
-            self, name: str, description: str, felicity_user: User
-    ) -> ReflexRule:
+    async def create(self, name: str, description: str, user: User) -> ReflexRule:
         payload = locals()
 
         exists = await self.get(name=name)
@@ -62,8 +60,8 @@ class ReflexRuleService(BaseService[ReflexRule], IReflexRuleService):
             raise AlreadyExistsError(f"Reflex Rule name must be unique")
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -72,7 +70,7 @@ class ReflexRuleService(BaseService[ReflexRule], IReflexRuleService):
         return await super().create(**marshal(obj_in))
 
     async def update(
-            self, info, uid: str, name: str, description: str, felicity_user: User
+            self, info, uid: str, name: str, description: str, user: User
     ) -> ReflexRule:
         payload = locals()
 
@@ -86,7 +84,7 @@ class ReflexRuleService(BaseService[ReflexRule], IReflexRuleService):
                 except Exception as e:  # noqa
                     pass
 
-        setattr(reflex_rule, "updated_by_uid", felicity_user.uid)
+        setattr(reflex_rule, "updated_by_uid", user.uid)
 
         obj_in = ReflexRuleUpdate(**marshal(reflex_rule))
         return await super().update(reflex_rule, **marshal(obj_in))
@@ -125,15 +123,15 @@ class ReflexBrainService(BaseService[ReflexBrain], IReflexBrainService):
             analyses_values: list[ReflexCriteriaIn] | None,
             add_new: list[ReflexAddNewIn] | None,
             finalise: list[ReflexFinalIn] | None,
-            felicity_user: User,
+            user: User,
     ) -> ReflexBrain:
         payload = locals()
 
         incoming: dict = {
             "reflex_action_uid": reflex_action_uid,
             "description": description,
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         obj_in = ReflexBrainCreate(**incoming)
         brain = await super().create(**marshal(obj_in))
@@ -184,7 +182,7 @@ class ReflexBrainService(BaseService[ReflexBrain], IReflexBrainService):
             analyses_values: list[ReflexCriteriaIn] | None,
             add_new: list[ReflexAddNewIn] | None,
             finalise: list[ReflexFinalIn] | None,
-            felicity_user: User,
+            user: User,
     ) -> ReflexBrain:
         payload = locals()
 
@@ -198,7 +196,7 @@ class ReflexBrainService(BaseService[ReflexBrain], IReflexBrainService):
                 except Exception as e:  # noqa
                     pass
 
-        setattr(reflex_brain, "updated_by_uid", felicity_user.uid)
+        setattr(reflex_brain, "updated_by_uid", user.uid)
 
         _analyses_values = []
         for criteria in analyses_values:
@@ -249,13 +247,13 @@ class ReflexActionService(BaseService[ReflexAction], IReflexActionService):
             analyses: list[str],
             reflex_rule_uid: str,
             sample_type_uid: str | None,
-            felicity_user: User,
+            user: User,
     ) -> ReflexAction:
         payload = locals()
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -281,7 +279,7 @@ class ReflexActionService(BaseService[ReflexAction], IReflexActionService):
             analyses: list[str],
             reflex_rule_uid: str,
             sample_type_uid: str | None,
-            felicity_user: User,
+            user: User,
     ) -> ReflexAction:
         payload = locals()
 
@@ -295,7 +293,7 @@ class ReflexActionService(BaseService[ReflexAction], IReflexActionService):
                 except Exception as e:  # noqa
                     pass
 
-        setattr(reflex_action, "updated_by_uid", felicity_user.uid)
+        setattr(reflex_action, "updated_by_uid", user.uid)
 
         _analyses = []
         for _anal_uid in analyses:

@@ -1,11 +1,11 @@
 import logging
-from typing import List, Optional
+from typing import List
 
 import strawberry  # noqa
-from api.gql.types import OperationError, OperationSuccess
-from api.gql.auth import auth_from_info, verify_user_auth
 from api.gql.analysis.types import results as r_types
-from api.gql.permissions import CanVerifyAnalysisResult, IsAuthenticated
+from api.gql.auth import auth_from_info, verify_user_auth
+from api.gql.permissions import CanVerifyAnalysisResult
+from api.gql.types import OperationError, OperationSuccess
 from apps.analysis.conf import states as analysis_states
 from apps.analysis.models import analysis as analysis_models
 from apps.analysis.models import results as result_models
@@ -17,7 +17,6 @@ from apps.job.conf import states as job_states
 from apps.notification.utils import FelicityStreamer
 from apps.worksheet import conf as ws_conf
 from apps.worksheet import models as ws_models
-
 
 streamer = FelicityStreamer()
 
@@ -51,15 +50,15 @@ AnalysisResultOperationResponse = strawberry.union(
 
 
 async def submit_analysis_results(
-    info,
-    analysis_results: List[ARResultInputType],
-    source_object: str,
-    source_object_uid: str,
+        info,
+        analysis_results: List[ARResultInputType],
+        source_object: str,
+        source_object_uid: str,
 ) -> AnalysisResultOperationResponse:
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can submit analysis results",
     )
 
@@ -83,7 +82,7 @@ async def submit_analysis_results(
         priority=priorities.MEDIUM,
         job_id="0",
         status=job_states.PENDING,
-        creator_uid=felicity_user.uid,
+        creator_uid=user.uid,
         data=an_results,
     )
 
@@ -91,10 +90,10 @@ async def submit_analysis_results(
 
     if source_object == "worksheet" and source_object_uid:
         ws = await ws_models.WorkSheet.get(uid=source_object_uid)
-        await ws.change_state(ws_conf.worksheet_states.SUBMITTING, felicity_user.uid)
+        await ws.change_state(ws_conf.worksheet_states.SUBMITTING, user.uid)
     # elif source_object == "sample" and source_object_uid:
     #     sa = await analysis_models.Sample.get(uid=source_object_uid)
-    #     await sa.change_status("processing", felicity_user.uid)
+    #     await sa.change_status("processing", user.uid)
 
     return OperationSuccess(
         message="Your results are being submitted in the background."
@@ -103,12 +102,12 @@ async def submit_analysis_results(
 
 @strawberry.mutation(permission_classes=[CanVerifyAnalysisResult])
 async def verify_analysis_results(
-    info, analyses: list[str], source_object: str, source_object_uid: str
+        info, analyses: list[str], source_object: str, source_object_uid: str
 ) -> AnalysisResultOperationResponse:
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can verify analysis results",
     )
 
@@ -126,7 +125,7 @@ async def verify_analysis_results(
         priority=priorities.MEDIUM,
         job_id="0",
         status=job_states.PENDING,
-        creator_uid=felicity_user.uid,
+        creator_uid=user.uid,
         data=analyses,
     )
 
@@ -134,10 +133,10 @@ async def verify_analysis_results(
 
     if source_object == "worksheet" and source_object_uid:
         ws = await ws_models.WorkSheet.get(uid=source_object_uid)
-        await ws.change_state(ws_conf.worksheet_states.APPROVING, felicity_user.uid)
+        await ws.change_state(ws_conf.worksheet_states.APPROVING, user.uid)
     # elif source_object == "sample" and source_object_uid:
     #     sa = await analysis_models.Sample.get(uid=source_object_uid)
-    #     await sa.change_status("APPROVING", felicity_user.uid)
+    #     await sa.change_status("APPROVING", user.uid)
 
     return OperationSuccess(
         message="Your results are being verified in the background."
@@ -145,10 +144,10 @@ async def verify_analysis_results(
 
 
 async def retract_analysis_results(info, analyses: list[str]) -> AnalysisResultResponse:
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can retract analysis results",
     )
 
@@ -165,12 +164,12 @@ async def retract_analysis_results(info, analyses: list[str]) -> AnalysisResultR
             return OperationError(error=f"AnalysisResult with uid {_ar_uid} not found")
 
         retest, a_result = await a_result.retest_result(
-            retested_by=felicity_user, next_action="retract"
+            retested_by=user, next_action="retract"
         )
 
         # monkeypatch -> notify of sample state
         sample = await analysis_models.Sample.get(uid=a_result.sample_uid)
-        await streamer.stream(sample, felicity_user, sample.status, "sample")
+        await streamer.stream(sample, user, sample.status, "sample")
 
         # if in worksheet then keep add retest to ws
         if a_result.worksheet_uid:
@@ -189,31 +188,31 @@ async def retract_analysis_results(info, analyses: list[str]) -> AnalysisResultR
 
 
 async def retest_analysis_results(info, analyses: list[str]) -> AnalysisResultResponse:
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can retest analysis results",
     )
 
     if len(analyses) == 0:
         return OperationError(error=f"No analyses to Retest are provided!")
 
-    retests, originals = await retest_from_result_uids(analyses, felicity_user)
+    retests, originals = await retest_from_result_uids(analyses, user)
 
     # monkeypatch -> notify of sample state
     for result in originals:
         sample = await analysis_models.Sample.get(uid=result.sample_uid)
-        await streamer.stream(sample, felicity_user, sample.status, "sample")
+        await streamer.stream(sample, user, sample.status, "sample")
 
     return ResultListingType(results=retests + originals)
 
 
 async def cancel_analysis_results(info, analyses: list[str]) -> AnalysisResultResponse:
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can cancel analysis results",
     )
 
@@ -234,7 +233,7 @@ async def cancel_analysis_results(info, analyses: list[str]) -> AnalysisResultRe
             return_results.append(a_result)
             continue
 
-        a_result = await a_result.cancel(cancelled_by=felicity_user)
+        a_result = await a_result.cancel(cancelled_by=user)
         if a_result:
             return_results.append(a_result)
 
@@ -242,12 +241,12 @@ async def cancel_analysis_results(info, analyses: list[str]) -> AnalysisResultRe
 
 
 async def re_instate_analysis_results(
-    info, analyses: list[str]
+        info, analyses: list[str]
 ) -> AnalysisResultResponse:
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can re instate cancelled analysis " "results",
     )
 
@@ -263,7 +262,7 @@ async def re_instate_analysis_results(
         if not a_result:
             return OperationError(error=f"AnalysisResult with uid {_ar_uid} not found")
 
-        a_result = await a_result.re_instate(re_instated_by=felicity_user)
+        a_result = await a_result.re_instate(re_instated_by=user)
         if a_result:
             return_results.append(a_result)
 

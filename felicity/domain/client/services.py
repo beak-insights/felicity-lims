@@ -24,7 +24,7 @@ class ClientService(BaseService[Client], IClientService):
 
     async def create(
             self,
-            felicity_user: User,
+            user: User,
             name: str,
             code: str,
             district_uid: str | None = None,
@@ -46,8 +46,8 @@ class ClientService(BaseService[Client], IClientService):
             )
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -58,7 +58,7 @@ class ClientService(BaseService[Client], IClientService):
     async def update(
             self,
             uid: str,
-            felicity_user: User,
+            user: User,
             name: str,
             code: str,
             district_uid: str | None = None,
@@ -98,7 +98,7 @@ class ClientContactService(BaseService[ClientContact], IClientContactService):
 
     async def create(
             self,
-            felicity_user: User,
+            user: User,
             first_name: str,
             client_uid: str,
             last_name: str | None = None,
@@ -121,8 +121,8 @@ class ClientContactService(BaseService[ClientContact], IClientContactService):
             )
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -132,7 +132,7 @@ class ClientContactService(BaseService[ClientContact], IClientContactService):
 
     async def update(
             self,
-            felicity_user: User,
+            user: User,
             uid: str,
             first_name: str,
             client_uid: str,

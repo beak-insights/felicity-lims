@@ -1,14 +1,12 @@
 import logging
-from typing import Optional
 
 import strawberry  # noqa
-from api.gql.types import OperationError
+from api.gql.analysis.types import analysis as a_types
 from api.gql.auth import auth_from_info, verify_user_auth
 from api.gql.permissions import IsAuthenticated
-from api.gql.analysis.types import analysis as a_types
+from api.gql.types import OperationError
 from apps.analysis import schemas
 from apps.analysis.models import analysis as analysis_models
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -29,7 +27,6 @@ SampleTypeResponse = strawberry.union(
     description="",
 )
 
-
 SampleTypeMappingResponse = strawberry.union(
     "SampleTypeMappingResponse",
     (a_types.SampleTypeMappingType, OperationError),  # noqa
@@ -48,11 +45,10 @@ class SampleTypeMappingInputType:
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def create_sample_type(info, payload: SampleTypeInputType) -> SampleTypeResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can create sample types",
     )
 
@@ -64,8 +60,8 @@ async def create_sample_type(info, payload: SampleTypeInputType) -> SampleTypeRe
         return OperationError(error=f"Sample Type: {payload.name} already exists")
 
     incoming = {
-        "created_by_uid": felicity_user.uid,
-        "updated_by_uid": felicity_user.uid,
+        "created_by_uid": user.uid,
+        "updated_by_uid": user.uid,
     }
     for k, v in payload.__dict__.items():
         incoming[k] = v
@@ -79,13 +75,12 @@ async def create_sample_type(info, payload: SampleTypeInputType) -> SampleTypeRe
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def update_sample_type(
-    info, uid: str, payload: SampleTypeInputType
+        info, uid: str, payload: SampleTypeInputType
 ) -> SampleTypeResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can update sample types",
     )
 
@@ -108,13 +103,12 @@ async def update_sample_type(
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def create_sample_type_mapping(
-    info, payload: SampleTypeMappingInputType
+        info, payload: SampleTypeMappingInputType
 ) -> SampleTypeMappingResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can create sample type mappigs",
     )
 
@@ -123,8 +117,8 @@ async def create_sample_type_mapping(
         return OperationError(error=f"Mapping: {payload.code} already exists")
 
     incoming = {
-        "created_by_uid": felicity_user.uid,
-        "updated_by_uid": felicity_user.uid,
+        "created_by_uid": user.uid,
+        "updated_by_uid": user.uid,
     }
     for k, v in payload.__dict__.items():
         incoming[k] = v
@@ -138,13 +132,12 @@ async def create_sample_type_mapping(
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def update_sample_type_mapping(
-    info, uid: str, payload: SampleTypeMappingInputType
+        info, uid: str, payload: SampleTypeMappingInputType
 ) -> SampleTypeMappingResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can update sample_type mappings",
     )
 

@@ -1,16 +1,15 @@
 import logging
-from typing import Dict, List, Optional
+from typing import List
 
 import strawberry  # noqa
-from api.gql.types import OperationError
+from api.gql.analysis.types.analysis import SampleType
 from api.gql.auth import auth_from_info, verify_user_auth
 from api.gql.permissions import IsAuthenticated
-from api.gql.analysis.types.analysis import SampleType
 from api.gql.storage import types
+from api.gql.types import OperationError
 from apps.analysis.conf import states as analysis_states
 from apps.analysis.models import analysis as an_models
 from apps.storage import models, schemas
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -95,12 +94,12 @@ class StoreSamplesInputType:
 class StorageMutations:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_store_room(
-        self, info, payload: StoreRoomInputType
+            self, info, payload: StoreRoomInputType
     ) -> StoreRoomResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create store rooms",
         )
         if not auth_success:
@@ -111,8 +110,8 @@ class StorageMutations:
             return OperationError(error=f"StoreRoom with this name already exists")
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -123,13 +122,13 @@ class StorageMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_store_room(
-        self, info, uid: str, payload: StoreRoomInputType
+            self, info, uid: str, payload: StoreRoomInputType
     ) -> StoreRoomResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update store rooms",
         )
 
@@ -150,7 +149,7 @@ class StorageMutations:
                 except Exception as e:  # noqa
                     pass
 
-        setattr(store_room, "updated_by_uid", felicity_user.uid)
+        setattr(store_room, "updated_by_uid", user.uid)
 
         obj_in = schemas.StoreRoomUpdate(**store_room.to_dict())
         store_room = await store_room.update(obj_in)
@@ -158,12 +157,12 @@ class StorageMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_storage_location(
-        self, info, payload: StorageLocationInputType
+            self, info, payload: StorageLocationInputType
     ) -> StorageLocationResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create storage locations",
         )
         if not auth_success:
@@ -182,8 +181,8 @@ class StorageMutations:
             )
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -196,13 +195,13 @@ class StorageMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_storage_location(
-        self, info, uid: str, payload: StorageLocationInputType
+            self, info, uid: str, payload: StorageLocationInputType
     ) -> StorageLocationResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update storage locations",
         )
 
@@ -225,7 +224,7 @@ class StorageMutations:
                 except Exception as e:  # noqa
                     pass
 
-        setattr(storage_location, "updated_by_uid", felicity_user.uid)
+        setattr(storage_location, "updated_by_uid", user.uid)
 
         obj_in = schemas.StorageLocationUpdate(**storage_location.to_dict())
         storage_location = await storage_location.update(obj_in)
@@ -233,12 +232,12 @@ class StorageMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_storage_section(
-        self, info, payload: StorageSectionInputType
+            self, info, payload: StorageSectionInputType
     ) -> StorageSectionResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create storage sections",
         )
         if not auth_success:
@@ -257,8 +256,8 @@ class StorageMutations:
             )
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -271,13 +270,13 @@ class StorageMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_storage_section(
-        self, info, uid: str, payload: StorageSectionInputType
+            self, info, uid: str, payload: StorageSectionInputType
     ) -> StorageSectionResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update storage sections",
         )
 
@@ -300,7 +299,7 @@ class StorageMutations:
                 except Exception as e:  # noqa
                     pass
 
-        setattr(storage_section, "updated_by_uid", felicity_user.uid)
+        setattr(storage_section, "updated_by_uid", user.uid)
 
         obj_in = schemas.StorageSectionUpdate(**storage_section.to_dict())
         storage_section = await storage_section.update(obj_in)
@@ -308,12 +307,12 @@ class StorageMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_storage_container(
-        self, info, payload: StorageContainerInputType
+            self, info, payload: StorageContainerInputType
     ) -> StorageContainerResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create storage containers",
         )
         if not auth_success:
@@ -326,8 +325,8 @@ class StorageMutations:
             )
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
             "stored_count": 0,
         }
         for k, v in payload.__dict__.items():
@@ -345,13 +344,13 @@ class StorageMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_storage_container(
-        self, info, uid: str, payload: StorageContainerInputType
+            self, info, uid: str, payload: StorageContainerInputType
     ) -> StorageContainerResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update storage container",
         )
 
@@ -374,7 +373,7 @@ class StorageMutations:
                 except Exception as e:  # noqa
                     pass
 
-        setattr(storage_container, "updated_by_uid", felicity_user.uid)
+        setattr(storage_container, "updated_by_uid", user.uid)
 
         obj_in = schemas.StorageContainerUpdate(**storage_container.to_dict())
         storage_container = await storage_container.update(obj_in)
@@ -384,12 +383,12 @@ class StorageMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def store_samples(
-        info, payload: List[StoreSamplesInputType]
+            info, payload: List[StoreSamplesInputType]
     ) -> StoreSampleResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can submit analysis results",
         )
 
@@ -426,7 +425,7 @@ class StorageMutations:
                     "storage_slot": sample_datum.storage_slot,
                     "storage_slot_index": sample_datum.storage_slot_index,
                     "status": analysis_states.sample.STORED,
-                    "stored_by_uid": felicity_user.uid,
+                    "stored_by_uid": user.uid,
                 }
                 await _sample.update(obj_in=storage_object)
 
@@ -440,10 +439,10 @@ class StorageMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def recover_samples(info, sample_uids: List[str]) -> StoreSampleResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can recover stored samples",
         )
 

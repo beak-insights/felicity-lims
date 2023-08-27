@@ -1,15 +1,14 @@
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from typing import List
 
 import strawberry  # noqa
-from api.gql.types import OperationError
 from api.gql.auth import auth_from_info, verify_user_auth
-from api.gql.permissions import IsAuthenticated
 from api.gql.inventory import types
+from api.gql.permissions import IsAuthenticated
+from api.gql.types import OperationError
 from apps.inventory import models, schemas
 from apps.inventory.conf import order_states
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -168,12 +167,12 @@ class StockAdjustmentInputType:
 class InventoryMutations:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_stock_item(
-        self, info, payload: StockItemInputType
+            self, info, payload: StockItemInputType
     ) -> StockItemResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create stock item",
         )
         if not auth_success:
@@ -184,8 +183,8 @@ class InventoryMutations:
             return OperationError(error="StockItem with this name already exists")
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -196,13 +195,13 @@ class InventoryMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_stock_item(
-        self, info, uid: str, payload: StockItemInputType
+            self, info, uid: str, payload: StockItemInputType
     ) -> StockItemResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update stock item",
         )
 
@@ -223,7 +222,7 @@ class InventoryMutations:
                 except Exception as e:  # noqa
                     pass
 
-        setattr(stock_item, "updated_by_uid", felicity_user.uid)
+        setattr(stock_item, "updated_by_uid", user.uid)
 
         obj_in = schemas.StockItemUpdate(**stock_item.to_dict())
         stock_item = await stock_item.update(obj_in)
@@ -231,12 +230,12 @@ class InventoryMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_stock_category(
-        self, info, payload: StockCategoryInputType
+            self, info, payload: StockCategoryInputType
     ) -> StockCategoryResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create stock categories",
         )
         if not auth_success:
@@ -247,8 +246,8 @@ class InventoryMutations:
             return OperationError(error="StockCategory with this name already exists")
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -259,13 +258,13 @@ class InventoryMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_stock_category(
-        self, info, uid: str, payload: StockCategoryInputType
+            self, info, uid: str, payload: StockCategoryInputType
     ) -> StockCategoryResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update stock category",
         )
 
@@ -288,7 +287,7 @@ class InventoryMutations:
                 except Exception as e:  # noqa
                     pass
 
-        setattr(stock_category, "updated_by_uid", felicity_user.uid)
+        setattr(stock_category, "updated_by_uid", user.uid)
 
         obj_in = schemas.StockCategoryUpdate(**stock_category.to_dict())
         stock_category = await stock_category.update(obj_in)
@@ -296,10 +295,10 @@ class InventoryMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_hazard(self, info, payload: HazardInputType) -> HazardResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create hazard",
         )
         if not auth_success:
@@ -310,8 +309,8 @@ class InventoryMutations:
             return OperationError(error="Hazard with this name already exists")
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -322,13 +321,13 @@ class InventoryMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_hazard(
-        self, info, uid: str, payload: HazardInputType
+            self, info, uid: str, payload: HazardInputType
     ) -> HazardResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update hazard",
         )
 
@@ -349,7 +348,7 @@ class InventoryMutations:
                 except Exception as e:  # noqa
                     pass
 
-        setattr(hazard, "updated_by_uid", felicity_user.uid)
+        setattr(hazard, "updated_by_uid", user.uid)
 
         obj_in = schemas.HazardUpdate(**hazard.to_dict())
         hazard = await hazard.update(obj_in)
@@ -357,12 +356,12 @@ class InventoryMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_stock_unit(
-        self, info, payload: StockUnitInputType
+            self, info, payload: StockUnitInputType
     ) -> StockUnitResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create stock_unit",
         )
         if not auth_success:
@@ -373,8 +372,8 @@ class InventoryMutations:
             return OperationError(error="StockUnit with this name already exists")
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -385,13 +384,13 @@ class InventoryMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_stock_unit(
-        self, info, uid: str, payload: StockUnitInputType
+            self, info, uid: str, payload: StockUnitInputType
     ) -> StockUnitResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update stock_unit",
         )
 
@@ -412,7 +411,7 @@ class InventoryMutations:
                 except Exception as e:  # noqa
                     pass
 
-        setattr(stock_unit, "updated_by_uid", felicity_user.uid)
+        setattr(stock_unit, "updated_by_uid", user.uid)
 
         obj_in = schemas.StockUnitUpdate(**stock_unit.to_dict())
         stock_unit = await stock_unit.update(obj_in)
@@ -420,12 +419,12 @@ class InventoryMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_stock_packaging(
-        self, info, payload: StockPackagingInputType
+            self, info, payload: StockPackagingInputType
     ) -> StockPackagingResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create stock_packaging",
         )
         if not auth_success:
@@ -436,8 +435,8 @@ class InventoryMutations:
             return OperationError(error="StockPackaging with this name already exists")
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -450,13 +449,13 @@ class InventoryMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_stock_packaging(
-        self, info, uid: str, payload: StockPackagingInputType
+            self, info, uid: str, payload: StockPackagingInputType
     ) -> StockPackagingResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update stock_packaging",
         )
 
@@ -479,7 +478,7 @@ class InventoryMutations:
                 except Exception as e:  # noqa
                     pass
 
-        setattr(stock_packaging, "updated_by_uid", felicity_user.uid)
+        setattr(stock_packaging, "updated_by_uid", user.uid)
 
         obj_in = schemas.StockPackagingUpdate(**stock_packaging.to_dict())
         stock_packaging = await stock_packaging.update(obj_in)
@@ -487,12 +486,12 @@ class InventoryMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_stock_product(
-        self, info, payload: StockProductInputType
+            self, info, payload: StockProductInputType
     ) -> StockProductResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create stock_product",
         )
         if not auth_success:
@@ -501,8 +500,8 @@ class InventoryMutations:
         incoming: dict = {
             "date_received": datetime.today(),
             "expiry_date": datetime.today() + timedelta(days=10),
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -514,13 +513,13 @@ class InventoryMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_stock_product(
-        self, info, uid: str, payload: StockProductInputType
+            self, info, uid: str, payload: StockProductInputType
     ) -> StockProductResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update stock_product",
         )
 
@@ -541,7 +540,7 @@ class InventoryMutations:
                 except Exception as e:  # noqa
                     pass
 
-        setattr(stock_product, "updated_by_uid", felicity_user.uid)
+        setattr(stock_product, "updated_by_uid", user.uid)
 
         obj_in = schemas.StockProductUpdate(**stock_product.to_dict())
         stock_product = await stock_product.update(obj_in)
@@ -549,21 +548,21 @@ class InventoryMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_stock_order(
-        self, info, payload: StockOrderInputType
+            self, info, payload: StockOrderInputType
     ) -> StockOrderResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create stock_order",
         )
         if not auth_success:
             return auth_error
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
-            "order_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
+            "order_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -594,12 +593,12 @@ class InventoryMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_stock_order(
-        self, info, uid: str, payload: StockOrderInputType
+            self, info, uid: str, payload: StockOrderInputType
     ) -> StockOrderResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create stock_order",
         )
         if not auth_success:
@@ -614,7 +613,7 @@ class InventoryMutations:
         obj_in = schemas.StockOrderUpdate(
             **{
                 "department_uid": payload.department_uid,
-                "order_by_uid": felicity_user.uid,
+                "order_by_uid": user.uid,
             }
         )
         await stock_order.update(obj_in)
@@ -655,10 +654,10 @@ class InventoryMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def submit_stock_order(self, info, uid: str) -> StockOrderResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can submit stock orders",
         )
         if not auth_success:
@@ -677,12 +676,12 @@ class InventoryMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def approve_stock_order(
-        self, info, uid: str, payload: StockOrderApprovalInputType
+            self, info, uid: str, payload: StockOrderApprovalInputType
     ) -> StockOrderResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can approve stock orders",
         )
         if not auth_success:
@@ -701,12 +700,12 @@ class InventoryMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def issue_stock_order(
-        self, info, uid: str, payload: List[StockOrderProductLineInputType]
+            self, info, uid: str, payload: List[StockOrderProductLineInputType]
     ) -> StockOrderResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can delete stock orders",
         )
         if not auth_success:
@@ -720,14 +719,14 @@ class InventoryMutations:
         for order_p in payload:
             # init transaction
             incoming: dict = {
-                "created_by_uid": felicity_user.uid,
-                "updated_by_uid": felicity_user.uid,
+                "created_by_uid": user.uid,
+                "updated_by_uid": user.uid,
                 "date_issued": datetime.now(),
                 "product_uid": order_p.product_uid,
                 "issued": order_p.quantity,
                 "issued_to_uid": stock_order.order_by_uid,
                 "department_uid": stock_order.department_uid,
-                "transaction_by_uid": felicity_user.uid,
+                "transaction_by_uid": user.uid,
             }
             obj_in = schemas.StockTransactionCreate(**incoming)
             stock_transaction: models.StockTransaction = (
@@ -751,10 +750,10 @@ class InventoryMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def delete_stock_order(self, info, uid: str) -> StockOrderResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can delete stock orders",
         )
         if not auth_success:
@@ -777,21 +776,21 @@ class InventoryMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_stock_transaction(
-        self, info, payload: StockTransactionInputType
+            self, info, payload: StockTransactionInputType
     ) -> StockTransactionResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create stock_transaction",
         )
         if not auth_success:
             return auth_error
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
-            "transaction_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
+            "transaction_by_uid": user.uid,
             "date_issued": datetime.now(),
         }
         for k, v in payload.__dict__.items():
@@ -818,21 +817,21 @@ class InventoryMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_stock_adjustment(
-        self, info, payload: StockAdjustmentInputType
+            self, info, payload: StockAdjustmentInputType
     ) -> StockAdjustmentResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create stock_adjustment",
         )
         if not auth_success:
             return auth_error
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
-            "adjustment_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
+            "adjustment_by_uid": user.uid,
             "adjustment_date": datetime.now(),
         }
         for k, v in payload.__dict__.items():

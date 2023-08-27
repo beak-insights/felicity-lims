@@ -2,19 +2,18 @@ import logging
 from typing import List, Optional
 
 import strawberry  # noqa
-from sqlalchemy import or_
-from api.gql.types import OperationError
 from api.gql.auth import auth_from_info, verify_user_auth
 from api.gql.permissions import IsAuthenticated
+from api.gql.shipment import types
 from api.gql.shipment.types import ShipmentType
+from api.gql.types import OperationError
 from apps.common.models import IdSequence
 from apps.job import models as job_models
 from apps.job import schemas as job_schemas
 from apps.job.conf import actions, categories, priorities, states
 from apps.shipment import conf, models, schemas
 from apps.shipment.utils import shipment_recover, shipment_recall, action_shipment
-from api.gql.shipment import types
-
+from sqlalchemy import or_
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -70,7 +69,6 @@ ReferralLaboratoryResponse = strawberry.union(
     description="",
 )
 
-
 ShipmentsResponse = strawberry.union(
     "ShipmentsResponse", (ShipmentListingType, OperationError), description=""  # noqa
 )
@@ -84,13 +82,13 @@ ShipmentResponse = strawberry.union(
 class ShipmentMutations:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_shipment(
-        self, info, payload: ShipmentInputType
+            self, info, payload: ShipmentInputType
     ) -> ShipmentsResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create shipments",
         )
 
@@ -104,8 +102,8 @@ class ShipmentMutations:
             "laboratory_uid": payload.laboratory_uid,
             "shipment_id": None,
             "state": conf.shipment_states.EMPTY,
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
 
         sh_schema = schemas.ShipmentCreate(**incoming)
@@ -127,13 +125,13 @@ class ShipmentMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_shipment(
-        self, info, uid: str, payload: ShipmentUpdateInputType
+            self, info, uid: str, payload: ShipmentUpdateInputType
     ) -> ShipmentResponse:  # noqa
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update shipments",
         )
 
@@ -165,13 +163,13 @@ class ShipmentMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def action_shipment(
-        self, info, uid: str, action: str
+            self, info, uid: str, action: str
     ) -> ShipmentResponse:  # noqa
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can action shipments",
         )
 
@@ -187,14 +185,14 @@ class ShipmentMutations:
 
         if action == "dispatch":
             shipment = await shipment.change_state(
-                conf.shipment_states.AWAITING, felicity_user.uid
+                conf.shipment_states.AWAITING, user.uid
             )
 
             job_schema = job_schemas.JobCreate(
                 action=actions.SH_DISPATCH,
                 category=categories.SHIPMENT,
                 priority=priorities.MEDIUM,
-                creator_uid=felicity_user.uid,
+                creator_uid=user.uid,
                 job_id=shipment.uid,
                 status=states.PENDING,
                 data=None,
@@ -202,19 +200,19 @@ class ShipmentMutations:
             await job_models.Job.create(job_schema)
 
         else:
-            shipment = await action_shipment(uid, action, felicity_user)
+            shipment = await action_shipment(uid, action, user)
 
         return ShipmentType(**shipment.marshal_simple())
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def shipment_manage_samples(
-        self, info, uid: str, payload: ShipmentManageSamplesInput
+            self, info, uid: str, payload: ShipmentManageSamplesInput
     ) -> ShipmentResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update shipments",
         )
 
@@ -235,16 +233,16 @@ class ShipmentMutations:
                 action=actions.SH_MANUAL_ASSIGN,
                 category=categories.SHIPMENT,
                 priority=priorities.MEDIUM,
-                creator_uid=felicity_user.uid,
+                creator_uid=user.uid,
                 job_id=shipment.uid,
                 status=states.PENDING,
                 data=data,
             )
             await job_models.Job.create(job_schema)
         elif payload.action == "recover":
-            await shipment_recover(shipment.uid, data, felicity_user.uid)
+            await shipment_recover(shipment.uid, data, user.uid)
         elif payload.action == "recall":
-            await shipment_recall(shipment.uid, data, felicity_user.uid)
+            await shipment_recall(shipment.uid, data, user.uid)
         else:
             pass
 
@@ -253,13 +251,13 @@ class ShipmentMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_referral_laboratory(
-        info, payload: ReferralLaboratoryInputType
+            info, payload: ReferralLaboratoryInputType
     ) -> ReferralLaboratoryResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create referral labs",
         )
 
@@ -276,8 +274,8 @@ class ShipmentMutations:
             )
 
         incoming = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -290,13 +288,13 @@ class ShipmentMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_referral_laboratory(
-        info, uid: str, payload: ReferralLaboratoryInputType
+            info, uid: str, payload: ReferralLaboratoryInputType
     ) -> ReferralLaboratoryResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update referral labs",
         )
 

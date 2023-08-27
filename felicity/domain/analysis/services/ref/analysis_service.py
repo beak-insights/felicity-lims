@@ -3,14 +3,12 @@ from dataclasses import field
 from typing import List, Optional
 
 import strawberry  # noqa
-from api.gql.types import OperationError
-from api.gql.auth import auth_from_info, verify_user_auth
-from api.gql.permissions import IsAuthenticated
 from api.gql.analysis.types import analysis as a_types
+from api.gql.auth import auth_from_info, verify_user_auth
+from api.gql.types import OperationError
 from apps.analysis import schemas
 from apps.analysis.models import analysis as analysis_models
 from apps.instrument.models import Method
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -58,10 +56,9 @@ class AnalysisMappingInputType:
 
 
 async def create_analysis(info, payload: AnalysisInputType) -> ProfilesServiceResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
-        is_authenticated, felicity_user, "Only Authenticated user can create analysis"
+        is_authenticated, user, "Only Authenticated user can create analysis"
     )
 
     if not payload.name or not payload.description:
@@ -76,8 +73,8 @@ async def create_analysis(info, payload: AnalysisInputType) -> ProfilesServiceRe
         return OperationError(error=f"Analysis Keyword {payload.keyword} is not unique")
 
     incoming = {
-        "created_by_uid": felicity_user.uid,
-        "updated_by_uid": felicity_user.uid,
+        "created_by_uid": user.uid,
+        "updated_by_uid": user.uid,
     }
     for k, v in payload.__dict__.items():
         if k not in ["sample_types"]:
@@ -107,12 +104,11 @@ async def create_analysis(info, payload: AnalysisInputType) -> ProfilesServiceRe
 
 
 async def update_analysis(
-    info, uid: str, payload: AnalysisInputType
+        info, uid: str, payload: AnalysisInputType
 ) -> ProfilesServiceResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
-        is_authenticated, felicity_user, "Only Authenticated user can update analysis"
+        is_authenticated, user, "Only Authenticated user can update analysis"
     )
 
     analysis = await analysis_models.Analysis.get(uid=uid)
@@ -157,13 +153,12 @@ async def update_analysis(
 
 
 async def create_analysis_mapping(
-    info, payload: AnalysisMappingInputType
+        info, payload: AnalysisMappingInputType
 ) -> AnalysisMappingResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can create analysiss mappigs",
     )
 
@@ -172,8 +167,8 @@ async def create_analysis_mapping(
         return OperationError(error=f"Mapping: {payload.code} already exists")
 
     incoming = {
-        "created_by_uid": felicity_user.uid,
-        "updated_by_uid": felicity_user.uid,
+        "created_by_uid": user.uid,
+        "updated_by_uid": user.uid,
     }
     for k, v in payload.__dict__.items():
         incoming[k] = v
@@ -186,13 +181,12 @@ async def create_analysis_mapping(
 
 
 async def update_analysis_mapping(
-    info, uid: str, payload: AnalysisMappingInputType
+        info, uid: str, payload: AnalysisMappingInputType
 ) -> AnalysisMappingResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can update analysis mappings",
     )
 

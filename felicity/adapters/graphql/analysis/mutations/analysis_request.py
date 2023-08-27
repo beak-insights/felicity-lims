@@ -1,16 +1,16 @@
 import asyncio
 import logging
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import List
 
 import strawberry  # noqa
-from api.gql.types import OperationError, OperationSuccess, SuccessErrorResponse
-from api.gql.auth import auth_from_info, verify_user_auth
 from api.gql.analysis.types import analysis as a_types
 from api.gql.analysis.types import results as r_types
+from api.gql.auth import auth_from_info, verify_user_auth
 from api.gql.permissions import CanVerifySample, IsAuthenticated
+from api.gql.types import OperationError, OperationSuccess, SuccessErrorResponse
 from apps.analysis import schemas
-from apps.analysis.conf import priorities, states
+from apps.analysis.conf import states
 from apps.analysis.models import analysis as analysis_models
 from apps.analysis.models import results as result_models
 from apps.client import models as ct_models
@@ -21,7 +21,6 @@ from apps.job.conf import states as job_states
 from apps.notification.utils import FelicityStreamer
 from apps.patient import models as pt_models
 from apps.reflex.utils import ReflexUtil
-
 
 streamer = FelicityStreamer()
 
@@ -94,14 +93,14 @@ class AnalysisRequestInputType:
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def create_analysis_request(
-    info, payload: AnalysisRequestInputType
+        info, payload: AnalysisRequestInputType
 ) -> AnalysisRequestResponse:
     logger.info("Received request to create analysis request")
 
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can create analysis requests",
     )
 
@@ -132,8 +131,8 @@ async def create_analysis_request(
         "client_uid": payload.client_uid,
         "request_id": None,
         "client_request_id": payload.client_request_id,
-        "created_by_uid": felicity_user.uid,
-        "updated_by_uid": felicity_user.uid,
+        "created_by_uid": user.uid,
+        "updated_by_uid": user.uid,
     }
 
     obj_in = schemas.AnalysisRequestCreate(**incoming)
@@ -154,8 +153,8 @@ async def create_analysis_request(
             )
 
         sample_in = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
             "analysis_request_uid": analysis_request.uid,
             "sample_type_uid": _st_uid,
             "sample_id": None,
@@ -200,7 +199,7 @@ async def create_analysis_request(
 
         # auto receive samples
         # ?? sample_workflow based check needed
-        await sample.receive(received_by=felicity_user)
+        await sample.receive(received_by=user)
 
         # link sample to provided profiles
         for _prof in profiles:
@@ -225,8 +224,8 @@ async def create_analysis_request(
             status=states.result.PENDING,
             analysis_uid=None,
             due_date=None,
-            created_by_uid=felicity_user.uid,
-            updated_by_uid=felicity_user.uid,
+            created_by_uid=user.uid,
+            updated_by_uid=user.uid,
         )
         result_schemas = []
         for _service in _profiles_analyses:
@@ -235,7 +234,7 @@ async def create_analysis_request(
                     update={
                         "analysis_uid": _service.uid,
                         "due_date": datetime.now()
-                        + timedelta(minutes=_service.tat_length_minutes)
+                                    + timedelta(minutes=_service.tat_length_minutes)
                         if _service.tat_length_minutes
                         else None,
                     }
@@ -258,9 +257,9 @@ async def create_analysis_request(
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def clone_samples(info, samples: List[str]) -> SampleActionResponse:
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
-        is_authenticated, felicity_user, "Only Authenticated user can clone samples"
+        is_authenticated, user, "Only Authenticated user can clone samples"
     )
 
     if len(samples) == 0:
@@ -271,7 +270,7 @@ async def clone_samples(info, samples: List[str]) -> SampleActionResponse:
         uids=samples
     )
     for _, _sample in enumerate(to_clone):
-        clone = await _sample.clone_afresh(felicity_user)
+        clone = await _sample.clone_afresh(user)
 
         if clone:
             clones.append(clone)
@@ -303,9 +302,9 @@ async def clone_samples(info, samples: List[str]) -> SampleActionResponse:
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def cancel_samples(info, samples: List[str]) -> ResultedSampleActionResponse:
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
-        is_authenticated, felicity_user, "Only Authenticated user can cancel samples"
+        is_authenticated, user, "Only Authenticated user can cancel samples"
     )
 
     return_samples = []
@@ -325,7 +324,7 @@ async def cancel_samples(info, samples: List[str]) -> ResultedSampleActionRespon
             return_samples.append(sample)
             continue
 
-        sample = await sample.cancel(cancelled_by=felicity_user)
+        sample = await sample.cancel(cancelled_by=user)
         if sample:
             return_samples.append(sample)
 
@@ -334,10 +333,10 @@ async def cancel_samples(info, samples: List[str]) -> ResultedSampleActionRespon
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def re_instate_samples(info, samples: List[str]) -> ResultedSampleActionResponse:
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can re instate cancelled samples",
     )
 
@@ -351,7 +350,7 @@ async def re_instate_samples(info, samples: List[str]) -> ResultedSampleActionRe
         if not sample:
             return OperationError(error=f"Sample with uid {_sa_uid} not found")
 
-        sample = await sample.re_instate(re_instated_by=felicity_user)
+        sample = await sample.re_instate(re_instated_by=user)
         if sample:
             return_samples.append(sample)
 
@@ -360,10 +359,10 @@ async def re_instate_samples(info, samples: List[str]) -> ResultedSampleActionRe
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def receive_samples(info, samples: List[str]) -> ResultedSampleActionResponse:
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can receive due samples",
     )
 
@@ -377,7 +376,7 @@ async def receive_samples(info, samples: List[str]) -> ResultedSampleActionRespo
         if not sample:
             return OperationError(error=f"Sample with uid {_sa_uid} not found")
 
-        sample = await sample.receive(received_by=felicity_user)
+        sample = await sample.receive(received_by=user)
         if sample:
             return_samples.append(sample)
 
@@ -386,9 +385,9 @@ async def receive_samples(info, samples: List[str]) -> ResultedSampleActionRespo
 
 @strawberry.mutation(permission_classes=[CanVerifySample])
 async def verify_samples(info, samples: List[str]) -> SampleActionResponse:
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
-        is_authenticated, felicity_user, "Only Authenticated user can verify samples"
+        is_authenticated, user, "Only Authenticated user can verify samples"
     )
 
     return_samples = []
@@ -401,7 +400,7 @@ async def verify_samples(info, samples: List[str]) -> SampleActionResponse:
         if not sample:
             return OperationError(error=f"Sample with uid {_sa_uid} not found")
 
-        sample = await sample.verify(verified_by=felicity_user)
+        sample = await sample.verify(verified_by=user)
         if sample:
             return_samples.append(sample)
 
@@ -410,11 +409,11 @@ async def verify_samples(info, samples: List[str]) -> SampleActionResponse:
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def reject_samples(
-    info, samples: List[SampleRejectInputType]
+        info, samples: List[SampleRejectInputType]
 ) -> SampleActionResponse:
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
-        is_authenticated, felicity_user, "Only Authenticated user can reject samples"
+        is_authenticated, user, "Only Authenticated user can reject samples"
     )
 
     return_samples = []
@@ -435,7 +434,7 @@ async def reject_samples(
                 )
 
             # TODO: Transactions
-            sample = await sample.reject(rejected_by=felicity_user)
+            sample = await sample.reject(rejected_by=user)
             await analysis_models.Sample.table_insert(
                 analysis_models.sample_rejection_reason,
                 {"sample_uid": sample.uid, "rejection_reason_uid": reason.uid},
@@ -446,19 +445,19 @@ async def reject_samples(
 
                 if sample.status == states.sample.REJECTED:
                     for analyte in sample.analysis_results:
-                        await analyte.cancel(cancelled_by=felicity_user)
+                        await analyte.cancel(cancelled_by=user)
 
     return SampleListingType(samples=return_samples)
 
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def publish_samples(
-    info, samples: List[SamplePublishInputType]
+        info, samples: List[SamplePublishInputType]
 ) -> SuccessErrorResponse:
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can impress samples",
     )
 
@@ -482,7 +481,7 @@ async def publish_samples(
         priority=priorities.NORMAL,
         job_id="0",
         status=job_states.PENDING,
-        creator_uid=felicity_user.uid,
+        creator_uid=user.uid,
         data=data,
     )
 
@@ -492,7 +491,7 @@ async def publish_samples(
     # unfreeze frontend and return sample to original state since it is a non final publish
     ns_samples = await analysis_models.Sample.get_by_uids([nf.uid for nf in not_final])
     for sample in ns_samples:
-        await streamer.stream(sample, felicity_user, sample.status, "sample")
+        await streamer.stream(sample, user, sample.status, "sample")
 
     return OperationSuccess(
         message="Your results are being published in the background."
@@ -501,10 +500,10 @@ async def publish_samples(
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def print_samples(info, samples: List[str]) -> SampleActionResponse:
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can re print samples",
     )
 
@@ -518,7 +517,7 @@ async def print_samples(info, samples: List[str]) -> SampleActionResponse:
         if not sample:
             return OperationError(error=f"Sample with uid {_sa_uid} not found")
 
-        sample = await sample.print(printed_by=felicity_user)
+        sample = await sample.print(printed_by=user)
         if sample:
             return_samples.append(sample)
 
@@ -527,10 +526,10 @@ async def print_samples(info, samples: List[str]) -> SampleActionResponse:
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def invalidate_samples(info, samples: List[str]) -> SampleActionResponse:
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can re invalidate samples",
     )
 
@@ -544,7 +543,7 @@ async def invalidate_samples(info, samples: List[str]) -> SampleActionResponse:
         if not sample:
             return OperationError(error=f"Sample with uid {_sa_uid} not found")
 
-        copy, invalidated = await sample.invalidate(invalidated_by=felicity_user)
+        copy, invalidated = await sample.invalidate(invalidated_by=user)
 
         # add invalidated
         if invalidated:

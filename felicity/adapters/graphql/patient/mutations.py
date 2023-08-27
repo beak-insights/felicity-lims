@@ -1,16 +1,15 @@
 import logging
 from dataclasses import field
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import strawberry  # noqa
-from api.gql.types import OperationError
 from api.gql.auth import auth_from_info, verify_user_auth
-from api.gql.permissions import IsAuthenticated
 from api.gql.patient.types import IdentificationType, PatientType
+from api.gql.permissions import IsAuthenticated
+from api.gql.types import OperationError
 from apps.client import models as client_models
 from apps.patient import models, schemas
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -61,10 +60,10 @@ class PatientMutations:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_identification(info, name: str) -> IdentificationResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create person identification",
         )
 
@@ -79,8 +78,8 @@ class PatientMutations:
 
         incoming = {
             "name": name,
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
 
         obj_in = schemas.IdentificationCreate(**incoming)
@@ -91,12 +90,12 @@ class PatientMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_identification(
-        info, uid: str, name: str
+            info, uid: str, name: str
     ) -> IdentificationResponse:
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update person identifications",
         )
 
@@ -116,20 +115,20 @@ class PatientMutations:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_patient(self, info, payload: PatientInputType) -> PatientResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         auth_success, auth_error = verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create patients",
         )
         if not auth_success:
             return auth_error
 
         if (
-            not payload.client_patient_id
-            or not payload.first_name
-            or not payload.last_name
-            or not payload.client_uid
+                not payload.client_patient_id
+                or not payload.first_name
+                or not payload.last_name
+                or not payload.client_uid
         ):
             return OperationError(
                 error="Client Patient Id, First Name and Last Name , gender etc are required"
@@ -146,8 +145,8 @@ class PatientMutations:
             )
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -168,13 +167,13 @@ class PatientMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_patient(
-        self, info, uid: str, payload: PatientInputType
+            self, info, uid: str, payload: PatientInputType
     ) -> PatientResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update patients",
         )
 
@@ -195,7 +194,7 @@ class PatientMutations:
                 except Exception as e:  # noqa
                     pass
 
-        setattr(patient, "updated_by_uid", felicity_user.uid)
+        setattr(patient, "updated_by_uid", user.uid)
 
         obj_in = schemas.PatientUpdate(**patient.to_dict())
         patient = await patient.update(obj_in)

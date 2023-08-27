@@ -10,21 +10,18 @@ from apps.analysis.models.results import (
     result_verification,
     ResultMutation,
 )
-from apps.notification.utils import FelicityStreamer
-from apps.reflex.utils import ReflexUtil
-from apps.shipment.models import ShippedSample
+from apps.job import conf as job_conf
 from apps.job.models import Job
 from apps.job.schemas import JobCreate
-from apps.job import conf as job_conf
+from apps.reflex.utils import ReflexUtil
+from apps.shipment.models import ShippedSample
 from apps.user.models import User
-
 from sqlalchemy import or_
+
 from utils import has_value_or_is_truthy
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-streamer = FelicityStreamer()
 
 
 async def get_qc_sample_type():
@@ -47,7 +44,7 @@ async def get_last_verificator(result_uid: str):
 
 
 async def sample_search(
-    model, status: str, text: str, client_uid: str
+        model, status: str, text: str, client_uid: str
 ) -> List[schemas.SampleType]:
     """No pagination"""
     filters = []
@@ -233,8 +230,8 @@ async def result_mutator(result: AnalysisResult):
         # Correction factor
         for cf in correction_factors:
             if (
-                cf.instrument_uid == result.instrument_uid
-                and cf.method_uid == result.method_uid
+                    cf.instrument_uid == result.instrument_uid
+                    and cf.method_uid == result.method_uid
             ):
                 await ResultMutation.create(
                     obj_in={

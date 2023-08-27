@@ -2,9 +2,9 @@ import logging
 from typing import List, Optional
 
 import strawberry  # noqa
-from api.gql.types import OperationError
 from api.gql.auth import auth_from_info, verify_user_auth
 from api.gql.permissions import IsAuthenticated
+from api.gql.types import OperationError
 from api.gql.worksheet.types import WorkSheetTemplateType, WorkSheetType
 from apps.analysis.models import analysis as analysis_models
 from apps.analysis.models import qc as qc_models
@@ -71,13 +71,13 @@ WorkSheetResponse = strawberry.union(
 class WorkSheetMutations:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_worksheet_template(
-        self, info, payload: WorksheetTemplateInputType
+            self, info, payload: WorksheetTemplateInputType
     ) -> WorkSheetTemplateResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create worksheet templates",
         )
 
@@ -99,8 +99,8 @@ class WorkSheetMutations:
             )
 
         incoming = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             if has_value_or_is_truthy(v):
@@ -135,7 +135,7 @@ class WorkSheetMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_worksheet_template(
-        self, uid: str, payload: WorksheetTemplateInputType
+            self, uid: str, payload: WorksheetTemplateInputType
     ) -> WorkSheetTemplateResponse:
 
         if not uid:
@@ -178,17 +178,17 @@ class WorkSheetMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_worksheet(
-        self,
-        info,
-        template_uid: str,
-        analyst_uid: str,
-        count: int | None = 1,
+            self,
+            info,
+            template_uid: str,
+            analyst_uid: str,
+            count: int | None = 1,
     ) -> WorkSheetsResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create worksheets",
         )
 
@@ -219,8 +219,8 @@ class WorkSheetMutations:
             "cols": ws_temp.cols,
             "row_wise": ws_temp.row_wise,
             "state": conf.worksheet_states.EMPTY,
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
 
         ws_schema = schemas.WorkSheetCreate(**incoming)
@@ -242,7 +242,7 @@ class WorkSheetMutations:
             category=categories.WORKSHEET,
             priority=priorities.MEDIUM,
             job_id=None,
-            creator_uid=felicity_user.uid,
+            creator_uid=user.uid,
             status=states.PENDING,
         )
         j_schemas = []
@@ -258,20 +258,20 @@ class WorkSheetMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_worksheet(
-        self,
-        info,
-        worksheet_uid: str,
-        analyst_uid: str | None = None,
-        instrument_uid: str | None = None,
-        method_uid: str | None = None,
-        action: str | None = None,
-        samples: Optional[List[str]] = None,
+            self,
+            info,
+            worksheet_uid: str,
+            analyst_uid: str | None = None,
+            instrument_uid: str | None = None,
+            method_uid: str | None = None,
+            action: str | None = None,
+            samples: Optional[List[str]] = None,
     ) -> WorkSheetResponse:  # noqa
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update worksheets",
         )
 
@@ -339,13 +339,13 @@ class WorkSheetMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_worksheet_apply_template(
-        self, info, template_uid: str, worksheet_uid: str
+            self, info, template_uid: str, worksheet_uid: str
     ) -> WorkSheetResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update worksheets",
         )
 
@@ -367,7 +367,7 @@ class WorkSheetMutations:
             return OperationError(
                 error=f"Worksheet has {ws.assigned_count} assigned samples. You can not apply a different template",
                 suggestion="Un-assign contained samples first and you will be able to apply any template of your "
-                "choosing ",
+                           "choosing ",
             )
 
         incoming = {
@@ -391,7 +391,7 @@ class WorkSheetMutations:
             action=actions.WS_ASSIGN,
             category=categories.WORKSHEET,
             priority=priorities.MEDIUM,
-            creator_uid=felicity_user.uid,
+            creator_uid=user.uid,
             job_id=ws.uid,
             status=states.PENDING,
         )
@@ -402,17 +402,17 @@ class WorkSheetMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_worksheet_manual_assign(
-        self,
-        info,
-        uid: str,
-        analyses_uids: List[str],
-        qc_template_uid: str | None = None,
+            self,
+            info,
+            uid: str,
+            analyses_uids: List[str],
+            qc_template_uid: str | None = None,
     ) -> WorkSheetResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update worksheets",
         )
 
@@ -435,7 +435,7 @@ class WorkSheetMutations:
             action=actions.WS_MANUAL_ASSIGN,
             category=categories.WORKSHEET,
             priority=priorities.MEDIUM,
-            creator_uid=felicity_user.uid,
+            creator_uid=user.uid,
             job_id=ws.uid,
             status=states.PENDING,
             data={"qc_template_uid": qc_template_uid, "analyses_uids": analyses_uids},

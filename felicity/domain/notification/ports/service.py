@@ -1,13 +1,14 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional, Any
-from domain.shared.ports.service import IBaseService
+
 from domain.notification.schemas import (
     ActivityFeed,
     ActivityStream,
     Notification,
 )
-from domain.user.schemas import User, Group
 from domain.setup.schemas import Department
+from domain.shared.ports.service import IBaseService
+from domain.user.schemas import User, Group
 
 
 class IActivityFeedService(IBaseService[ActivityFeed], ABC):
@@ -55,23 +56,32 @@ class IActivityStreamService(IBaseService[ActivityStream], ABC):
 
     @abstractmethod
     async def for_viewer(
-        cls, viewer: User, seen=False
+            cls, viewer: User, seen=False
     ) -> Optional[List[ActivityStream]]:
         ...
 
     @abstractmethod
     async def stream(
-        cls,
-        obj: Any,
-        actor: User,
-        verb: str,
-        object_type: str,
-        feeds: List[ActivityFeed] = None,
+            cls,
+            obj: Any,
+            actor: User,
+            verb: str,
+            object_type: str,
+            feeds: List[ActivityFeed] = None,
     ):
         ...
 
 
 class INotificationService(IBaseService[Notification], ABC):
+    @abstractmethod
+    async def filter(
+            self,
+            group_uid: str | None,
+            department_uid: str | None,
+            user_uid: str | None,
+    ) -> List[Notification]:
+        ...
+
     @abstractmethod
     async def reset_views(self) -> Notification:
         ...

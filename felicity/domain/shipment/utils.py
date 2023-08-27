@@ -1,7 +1,8 @@
-import logging
 import asyncio
+import logging
 from datetime import datetime, timedelta
 
+from apps.analysis import conf as analysis_conf
 from apps.analysis.models.analysis import (
     Sample,
     AnalysisRequest,
@@ -15,26 +16,23 @@ from apps.analysis.schemas import (
     SampleCreate,
     AnalysisResultCreate,
 )
-from apps.analysis import conf as analysis_conf
-from apps.shipment.models import Shipment, ShippedSample
-from apps.shipment.schemas import ShipmentUpdate
-from apps.shipment.manifest import ManifetReport
-from apps.shipment import conf
-from apps.patient.schemas import PatientCreate
-from apps.patient.models import Patient, Client
-from apps.user.models import User
-from apps.reflex.utils import ReflexUtil
-
-from apps.iol.relay import post_data
 from apps.iol.fhir.utils import get_shipment_bundle_resource
-
+from apps.iol.relay import post_data
 from apps.job import models as job_models
 from apps.job import schemas as job_schemas
 from apps.job.conf import actions, categories, priorities, states
-
+from apps.patient.models import Patient, Client
+from apps.patient.schemas import PatientCreate
+from apps.reflex.utils import ReflexUtil
+from apps.shipment import conf
+from apps.shipment.manifest import ManifetReport
+from apps.shipment.models import Shipment, ShippedSample
+from apps.shipment.schemas import ShipmentUpdate
+from apps.user.models import User
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 # shipments
 async def shipment_assign(shipment_uid: str, samples_data: list[dict], actor_uid):
@@ -93,7 +91,7 @@ async def shipment_receive(job_uid: str):
     await job.change_status(new_status=states.RUNNING)
     shipment_uid = job.job_id
     shipment: Shipment = await Shipment.get(uid=shipment_uid)
-    felicity_user = await User.get(uid=job.creator_uid)
+    user = await User.get(uid=job.creator_uid)
 
     entries = shipment.data["entry"]
 
@@ -125,8 +123,8 @@ async def shipment_receive(job_uid: str):
             code=patient_data["managingOrganization"]["identifier"]["value"]
         )
         patient_in: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
             "client_patient_id": patient_data["identifier"][0]["value"] + _diff_,
             "client_uid": client.uid,
             "first_name": patient_data["name"][0]["given"][0],
@@ -153,8 +151,8 @@ async def shipment_receive(job_uid: str):
             "patient_uid": patient.uid,
             "client_uid": patient.client_uid,
             "client_request_id": sample_data["subject"]["display"] + _diff_,
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         ar_sch = AnalysisRequestCreate(**ar_in)
         analysis_request = await AnalysisRequest.create(ar_sch)
@@ -165,8 +163,8 @@ async def shipment_receive(job_uid: str):
             "sample_type_uid": sample_type.uid,
             "priority": 0,
             "status": analysis_conf.states.sample.EXPECTED,
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
 
         # get analysis tests
@@ -189,7 +187,7 @@ async def shipment_receive(job_uid: str):
         sample = await Sample.create(sa_sch)
 
         # auto receive samples
-        await sample.receive(received_by=felicity_user)
+        await sample.receive(received_by=user)
 
         # link sample to provided services
         for _anal in analyses:
@@ -207,8 +205,8 @@ async def shipment_receive(job_uid: str):
             status=analysis_conf.states.result.PENDING,
             analysis_uid=None,
             due_date=None,
-            created_by_uid=felicity_user.uid,
-            updated_by_uid=felicity_user.uid,
+            created_by_uid=user.uid,
+            updated_by_uid=user.uid,
         )
 
         result_schemas = []
@@ -218,7 +216,7 @@ async def shipment_receive(job_uid: str):
                     update={
                         "analysis_uid": _service.uid,
                         "due_date": datetime.now()
-                        + timedelta(minutes=_service.tat_length_minutes)
+                                    + timedelta(minutes=_service.tat_length_minutes)
                         if _service.tat_length_minutes
                         else None,
                     }
@@ -243,7 +241,7 @@ async def shipment_receive(job_uid: str):
             }
         )
 
-    await shipment.change_state(conf.shipment_states.RECEIVED, felicity_user.uid)
+    await shipment.change_state(conf.shipment_states.RECEIVED, user.uid)
     await job.change_status(new_status=states.FINISHED)
 
 

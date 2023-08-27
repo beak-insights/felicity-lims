@@ -1,14 +1,13 @@
 import logging
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import strawberry  # noqa
-from api.gql.types import OperationError
 from api.gql.auth import auth_from_info, verify_user_auth
 from api.gql.permissions import IsAuthenticated
 from api.gql.reflex.types import ReflexActionType, ReflexBrainType, ReflexRuleType
+from api.gql.types import OperationError
 from apps.analysis.models import analysis as analysis_models
 from apps.reflex import models, schemas
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -76,13 +75,13 @@ ReflexBrainResponse = strawberry.union(
 class ReflexRuleMutations:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_reflex_rule(
-        self, info, payload: ReflexRuleInput
+            self, info, payload: ReflexRuleInput
     ) -> ReflexRuleResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can add reflex rules",
         )
 
@@ -94,8 +93,8 @@ class ReflexRuleMutations:
             return OperationError(error=f"Reflex Rule name must be unique")
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -106,13 +105,13 @@ class ReflexRuleMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_reflex_rule(
-        self, info, uid: str, payload: ReflexRuleInput
+            self, info, uid: str, payload: ReflexRuleInput
     ) -> ReflexRuleResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update reflex rules",
         )
 
@@ -133,7 +132,7 @@ class ReflexRuleMutations:
                 except Exception as e:  # noqa
                     pass
 
-        setattr(reflex_rule, "updated_by_uid", felicity_user.uid)
+        setattr(reflex_rule, "updated_by_uid", user.uid)
 
         obj_in = schemas.ReflexRuleUpdate(**reflex_rule.to_dict())
         reflex_rule = await reflex_rule.update(obj_in)
@@ -141,26 +140,26 @@ class ReflexRuleMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_reflex_action(
-        self, info, payload: ReflexActionInput
+            self, info, payload: ReflexActionInput
     ) -> ReflexActionResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can add reflex actions",
         )
 
         if (
-            not len(payload.analyses) > 0
-            or not payload.level
-            or not payload.description
+                not len(payload.analyses) > 0
+                or not payload.level
+                or not payload.description
         ):
             return OperationError(error="Anaysis, Level and description are required")
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -180,13 +179,13 @@ class ReflexRuleMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_reflex_action(
-        self, info, uid: str, payload: ReflexActionInput
+            self, info, uid: str, payload: ReflexActionInput
     ) -> ReflexActionResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can add reflex actions",
         )
 
@@ -207,7 +206,7 @@ class ReflexRuleMutations:
                 except Exception as e:  # noqa
                     pass
 
-        setattr(reflex_action, "updated_by_uid", felicity_user.uid)
+        setattr(reflex_action, "updated_by_uid", user.uid)
 
         analyses = []
         for _anal_uid in payload.analyses:
@@ -221,13 +220,13 @@ class ReflexRuleMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_reflex_brain(
-        self, info, payload: ReflexBrainInput
+            self, info, payload: ReflexBrainInput
     ) -> ReflexBrainResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can add reflex brains",
         )
 
@@ -237,8 +236,8 @@ class ReflexRuleMutations:
         incoming: dict = {
             "reflex_action_uid": payload.reflex_action_uid,
             "description": payload.description,
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         obj_in = schemas.ReflexBrainCreate(**incoming)
 
@@ -283,13 +282,13 @@ class ReflexRuleMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_reflex_brain(
-        self, info, uid: str, payload: ReflexBrainInput
+            self, info, uid: str, payload: ReflexBrainInput
     ) -> ReflexBrainResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can add reflex brains",
         )
 
@@ -310,7 +309,7 @@ class ReflexRuleMutations:
                 except Exception as e:  # noqa
                     pass
 
-        setattr(reflex_brain, "updated_by_uid", felicity_user.uid)
+        setattr(reflex_brain, "updated_by_uid", user.uid)
 
         analyses_values = []
         for criteria in payload.analyses_values:

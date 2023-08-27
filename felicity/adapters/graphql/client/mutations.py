@@ -1,13 +1,11 @@
 import logging
-from typing import Dict, Optional
 
 import strawberry  # noqa
-from api.gql.types import OperationError, DeletedItem
 from api.gql.auth import auth_from_info, verify_user_auth
-from api.gql.permissions import IsAuthenticated
 from api.gql.client.types import ClientContactType, ClientType
+from api.gql.permissions import IsAuthenticated
+from api.gql.types import OperationError, DeletedItem
 from apps.client import models, schemas
-
 from strawberry.types import Info  # noqa
 
 logging.basicConfig(level=logging.INFO)
@@ -57,13 +55,13 @@ class ClientContactInputType:
 class ClientMutations:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_client(
-        self, info: Info, payload: ClientInputType
+            self, info: Info, payload: ClientInputType
     ) -> ClientResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         success, auth_err = verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create clients",
         )
         if not success:
@@ -81,8 +79,8 @@ class ClientMutations:
             )
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -93,13 +91,13 @@ class ClientMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_client(
-        self, info, uid: str, payload: ClientInputType
+            self, info, uid: str, payload: ClientInputType
     ) -> ClientResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update clients",
         )
 
@@ -125,13 +123,13 @@ class ClientMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_client_contact(
-        self, info, payload: ClientContactInputType
+            self, info, payload: ClientContactInputType
     ) -> ClientContactResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can create client contacts",
         )
 
@@ -154,8 +152,8 @@ class ClientMutations:
             )
 
         incoming: dict = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
@@ -168,13 +166,13 @@ class ClientMutations:
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_client_contact(
-        self, info, uid: str, payload: ClientContactInputType
+            self, info, uid: str, payload: ClientContactInputType
     ) -> ClientContactResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can update client contacts",
         )
 
@@ -203,10 +201,10 @@ class ClientMutations:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def delete_client_contact(self, info, uid: str) -> DeleteContactResponse:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
+        is_authenticated, user = await auth_from_info(info)
         verify_user_auth(
             is_authenticated,
-            felicity_user,
+            user,
             "Only Authenticated user can delete/deactivate client contacts",
         )
 

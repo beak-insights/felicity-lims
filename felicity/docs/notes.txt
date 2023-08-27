@@ -3,6 +3,13 @@ python -m unittest discover tests.unit -p "*_test.py"
 
 python -m pytest tests/unit
 
+
+inspector = inspect.getargvalues(inspect.currentframe())
+passed_args = get_passed_args(inspector)
+vs
+passed_args = local()
+
+
 KPI:
 Total number of urgent tests
 Critical Results

@@ -1,14 +1,12 @@
 import logging
-from typing import Optional
 
 import strawberry  # noqa
-from api.gql.types import OperationError
+from api.gql.analysis.types import analysis as a_types
 from api.gql.auth import auth_from_info, verify_user_auth
 from api.gql.permissions import IsAuthenticated
-from api.gql.analysis.types import analysis as a_types
+from api.gql.types import OperationError
 from apps.analysis import schemas
 from apps.analysis.models import analysis as analysis_models
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -30,13 +28,12 @@ class AnalysisCategoryInputType:
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def create_analysis_category(
-    info, payload: AnalysisCategoryInputType
+        info, payload: AnalysisCategoryInputType
 ) -> AnalysisCategoryResponse:
-
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can create analysis categories",
     )
 
@@ -54,8 +51,8 @@ async def create_analysis_category(
         )
 
     incoming = {
-        "created_by_uid": felicity_user.uid,
-        "updated_by_uid": felicity_user.uid,
+        "created_by_uid": user.uid,
+        "updated_by_uid": user.uid,
     }
     for k, v in payload.__dict__.items():
         incoming[k] = v
@@ -69,13 +66,13 @@ async def create_analysis_category(
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def update_analysis_category(
-    self, info, uid: str, payload: AnalysisCategoryInputType
+        self, info, uid: str, payload: AnalysisCategoryInputType
 ) -> AnalysisCategoryResponse:  # noqa
 
-    is_authenticated, felicity_user = await auth_from_info(info)
+    is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
         is_authenticated,
-        felicity_user,
+        user,
         "Only Authenticated user can update analysis categories",
     )
 

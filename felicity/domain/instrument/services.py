@@ -1,4 +1,14 @@
-from domain.shared.services import BaseService
+from datetime import datetime
+
+from domain.analysis.ports.service.analysis import IAnalysisService
+from domain.exceptions import AlreadyExistsError
+from domain.idsequence.ports.service import IIdSequenceService
+from domain.instrument.ports.repository import (
+    ICalibrationCertificateRepository,
+    IMethodRepository,
+    IInstrumentTypeRepository,
+    IInstrumentCalibrationRepository,
+)
 from domain.instrument.ports.service import (
     ICalibrationCertificateService,
     IMethodService,
@@ -13,364 +23,143 @@ from domain.instrument.schemas import (
     InstrumentType,
     Instrument,
     InstrumentCalibration,
+    CalibrationCertificateCreate,
+    CalibrationCertificateUpdate,
+    MethodCreate,
+    MethodUpdate,
+    InstrumentTypeCreate,
+    InstrumentTypeUpdate,
+    InstrumentCreate,
+    InstrumentUpdate,
+    InstrumentCalibrationCreate,
+    InstrumentCalibrationUpdate,
 )
+from domain.shared.services import BaseService
+from domain.shared.utils.serialisers import marshal
+from infrastructure.database.analysis.entities.analysis import (
+    analysis_method,
+    analysis_instrument,
+)
+from infrastructure.database.instrument.entities import method_instrument
 
 
-async def get_all_instrument_types(
-    self,
-    info,
-    page_size: int | None = None,
-    after_cursor: str | None = None,
-    before_cursor: str | None = None,
-    text: str | None = None,
-    sort_by: list[str] | None = None,
-) -> InstrumentTypeCursorPage:
-    filters = {}
+class CalibrationCertificateService(
+    BaseService[CalibrationCertificate], ICalibrationCertificateService
+):
+    def __init__(self, repository: ICalibrationCertificateRepository):
+        self.repository = repository
 
-    _or_ = dict()
-    if has_value_or_is_truthy(text):
-        arg_list = ["name__ilike", "description__ilike"]
-        for _arg in arg_list:
-            _or_[_arg] = f"%{text}%"
+    async def create(
+            self,
+            instrument_uid: str,
+            date_issued: datetime | None,
+            valid_from_date: datetime | None,
+            valid_to_date: datetime | None,
+            certificate_code: str | None,
+            issuer: str | None,
+            performed_by: str | None,
+            approved_by: str | None,
+            remarks: str | None,
+            internal: bool,
+    ) -> CalibrationCertificate:
+        payload = locals()
 
-        filters = {sa.or_: _or_}
-
-    page = await models.InstrumentType.paginate_with_cursors(
-        page_size=page_size,
-        after_cursor=after_cursor,
-        before_cursor=before_cursor,
-        filters=filters,
-        sort_by=sort_by,
-    )
-
-    total_count: int = page.total_count
-    edges: List[InstrumentTypeEdge[InstrumentType]] = page.edges
-    items: List[InstrumentTypeType] = page.items
-    page_info: PageInfo = page.page_info
-
-    return InstrumentTypeCursorPage(
-        total_count=total_count, edges=edges, items=items, page_info=page_info
-    )
-
-
-async def get_all_instruments(
-    self,
-    info,
-    page_size: int | None = None,
-    after_cursor: str | None = None,
-    before_cursor: str | None = None,
-    text: str | None = None,
-    sort_by: list[str] | None = None,
-) -> InstrumentCursorPage:
-    filters = {}
-
-    _or_ = dict()
-    if has_value_or_is_truthy(text):
-        arg_list = [
-            "name__ilike",
-            "code__ilike",
-            "email__ilike",
-            "email_cc__ilike",
-            "mobile_phone__ilike",
-            "business_phone__ilike",
-            "province___name__ilike",
-            "province___code__ilike",
-        ]
-        for _arg in arg_list:
-            _or_[_arg] = f"%{text}%"
-
-        filters = {sa.or_: _or_}
-
-    page = await models.Instrument.paginate_with_cursors(
-        page_size=page_size,
-        after_cursor=after_cursor,
-        before_cursor=before_cursor,
-        filters=filters,
-        sort_by=sort_by,
-        get_related="methods",
-    )
-
-    total_count: int = page.total_count
-    edges: List[InstrumentEdge[InstrumentType]] = page.edges
-    items: List[InstrumentType] = page.items
-    page_info: PageInfo = page.page_info
-
-    return InstrumentCursorPage(
-        total_count=total_count, edges=edges, items=items, page_info=page_info
-    )
-
-
-async def get_all_methods(
-    self,
-    info,
-    page_size: int | None = None,
-    after_cursor: str | None = None,
-    before_cursor: str | None = None,
-    text: str | None = None,
-    sort_by: list[str] | None = None,
-) -> MethodCursorPage:
-    filters = {}
-
-    _or_ = dict()
-    if has_value_or_is_truthy(text):
-        arg_list = ["name__ilike", "keywork__ilike"]
-        for _arg in arg_list:
-            _or_[_arg] = f"%{text}%"
-
-        filters = {sa.or_: _or_}
-
-    page = await models.Method.paginate_with_cursors(
-        page_size=page_size,
-        after_cursor=after_cursor,
-        before_cursor=before_cursor,
-        filters=filters,
-        sort_by=sort_by,
-        get_related="instruments",
-    )
-
-    total_count: int = page.total_count
-    edges: List[MethodEdge[MethodType]] = page.edges
-    items: List[MethodType] = page.items
-    page_info: PageInfo = page.page_info
-
-    return MethodCursorPage(
-        total_count=total_count, edges=edges, items=items, page_info=page_info
-    )
-
-    async def create_instrument_type(
-        self, info, payload: InstrumentTypeInputType
-    ) -> InstrumentTypeResponse:  # noqa
-
-        if not payload.name:
-            return OperationError(error="Please a name for your instrument type")
-
-        exists = await models.InstrumentType.get(name=payload.name)
-        if exists:
-            return OperationError(
-                error=f"A InstrumentType named {payload.name} already exists"
-            )
-
-        incoming: dict = dict()
+        incoming = dict()
         for k, v in payload.__dict__.items():
             incoming[k] = v
 
-        obj_in = schemas.InstrumentTypeCreate(**incoming)
-        inst_type: models.InstrumentType = await models.InstrumentType.create(obj_in)
-        return InstrumentTypeType(**inst_type.marshal_simple())
+        obj_in = CalibrationCertificateCreate(**incoming)
+        return await super().create(**marshal(obj_in))
 
-    async def update_instrument_type(
-        self, info, uid: str, payload: InstrumentTypeInputType
-    ) -> InstrumentTypeResponse:  # noqa
+    async def update(
+            self,
+            uid: str,
+            instrument_uid: str,
+            date_issued: datetime | None,
+            valid_from_date: datetime | None,
+            valid_to_date: datetime | None,
+            certificate_code: str | None,
+            issuer: str | None,
+            performed_by: str | None,
+            approved_by: str | None,
+            remarks: str | None,
+            internal: bool,
+    ) -> CalibrationCertificate:
+        payload = locals()
 
-        if not uid:
-            return OperationError(error="No uid provided to identity update obj")
+        certificate = await self.get(uid=uid)
 
-        inst_type = await models.InstrumentType.get(uid=uid)
-        if not inst_type:
-            return OperationError(
-                error=f"manufacturer with uid {uid} not found. Cannot update obj ..."
-            )
-
-        obj_data = inst_type.to_dict()
-        for field in obj_data:
-            if field in payload.__dict__:
-                try:
-                    setattr(inst_type, field, payload.__dict__[field])
-                except Exception as e:
-                    logger.warning(e)
-
-        obj_in = schemas.InstrumentTypeUpdate(**inst_type.to_dict())
-        inst_type = await inst_type.update(obj_in)
-        return InstrumentTypeType(**inst_type.marshal_simple())
-
-    async def create_instrument(
-        self, info, payload: InstrumentInputType
-    ) -> InstrumentResponse:  # noqa
-
-        if not payload.name or not payload.keyword:
-            return OperationError(
-                error="Provide a name and a unique keyword for your instrument"
-            )
-
-        taken = await models.Instrument.get(keyword=payload.keyword)
-        if taken:
-            return OperationError(
-                error=f"Provided keyword already assigned to instrument {taken.name}"
-            )
-
-        exists = await models.Instrument.get(name=payload.name)
-        if exists:
-            return OperationError(
-                error=f"An Instrument named {payload.name} already exists"
-            )
-
-        incoming: dict = dict()
-        for k, v in payload.__dict__.items():
-            incoming[k] = v
-
-        obj_in = schemas.InstrumentCreate(**incoming)
-        instrument: models.Instrument = await models.Instrument.create(obj_in)
-        return InstrumentType(**instrument.marshal_simple())
-
-    async def update_instrument(
-        self, info, uid: str, payload: InstrumentInputType
-    ) -> InstrumentResponse:  # noqa
-
-        if not uid:
-            return OperationError(error="No uid provided to identity update obj")
-
-        if "keyword" in payload.__dict__:
-            taken = await models.Instrument.get(keyword=payload.keyword)
-            if taken and not (str(uid) == str(taken.uid)):
-                return OperationError(
-                    error=f"Provided keyword already assigned to instrument {taken.name}"
-                )
-
-        instrument = await models.Instrument.get(uid=uid)
-        if not instrument:
-            return OperationError(
-                error=f"instrument with uid {uid} not found. Cannot update obj ..."
-            )
-
-        obj_data = instrument.to_dict()
-        for field in obj_data:
-            if field in payload.__dict__:
-                try:
-                    setattr(instrument, field, payload.__dict__[field])
-                except Exception as e:
-                    logger.warning(e)
-
-        obj_in = schemas.InstrumentUpdate(**instrument.to_dict())
-        instrument = await instrument.update(obj_in)
-        return InstrumentType(**instrument.marshal_simple())
-
-    async def create_instrument_caliberation(
-        self, info, payload: InstrumentCalibrationInput
-    ) -> InstrumentCalibrationResponse:  # noqa
-
-        incoming: dict = dict()
-        for k, v in payload.__dict__.items():
-            incoming[k] = v
-
-        obj_in = schemas.InstrumentCalibrationCreate(**incoming)
-        calib: models.InstrumentCalibration = await models.InstrumentCalibration.create(
-            obj_in
-        )
-        return InstrumentCalibrationType(**calib.marshal_simple())
-
-    async def update_instrument_caliberation(
-        self, info, uid: str, payload: InstrumentInputType
-    ) -> InstrumentCalibrationResponse:  # noqa
-
-        if not uid:
-            return OperationError(error="No uid provided to identity update obj")
-
-        caliberation = await models.InstrumentCalibration.get(uid=uid)
-        if not caliberation:
-            return OperationError(
-                error=f"caliberation with uid {uid} not found. Cannot update obj ..."
-            )
-
-        obj_data = caliberation.to_dict()
-        for field in obj_data:
-            if field in payload.__dict__:
-                try:
-                    setattr(caliberation, field, payload.__dict__[field])
-                except Exception as e:
-                    logger.warning(e)
-
-        obj_in = schemas.InstrumentCalibrationUpdate(**caliberation.to_dict())
-        caliberation = await caliberation.update(obj_in)
-        return InstrumentCalibrationType(**caliberation.marshal_simple())
-
-    async def create_caliberation_certificate(
-        self, info, payload: CalibrationCertificateInput
-    ) -> CalibrationCertificateResponse:  # noqa
-
-        incoming: dict = dict()
-        for k, v in payload.__dict__.items():
-            incoming[k] = v
-
-        obj_in = schemas.CalibrationCertificateCreate(**incoming)
-        certificate: models.CalibrationCertificate = (
-            await models.CalibrationCertificate.create(obj_in)
-        )
-        return CalibrationCertificateType(**certificate.marshal_simple())
-
-    async def update_caliberation_certificate(
-        self, info, uid: str, payload: CalibrationCertificateInput
-    ) -> CalibrationCertificateResponse:  # noqa
-
-        if not uid:
-            return OperationError(error="No uid provided to identity update obj")
-
-        certificate = await models.CalibrationCertificate.get(uid=uid)
-        if not certificate:
-            return OperationError(
-                error=f"caliberation certificate with uid {uid} not found. Cannot update obj ..."
-            )
-
-        obj_data = certificate.to_dict()
+        obj_data = marshal(certificate)
         for field in obj_data:
             if field in payload.__dict__:
                 try:
                     setattr(certificate, field, payload.__dict__[field])
                 except Exception as e:
-                    logger.warning(e)
+                    ...
 
-        obj_in = schemas.CalibrationCertificateUpdate(**certificate.to_dict())
-        certificate = await certificate.update(obj_in)
-        return CalibrationCertificateType(**certificate.marshal_simple())
+        obj_in = CalibrationCertificateUpdate(**marshal(certificate))
+        return await super().update(certificate, **marshal(obj_in))
 
-    async def create_method(
-        self, info, payload: MethodInputType
-    ) -> MethodResponse:  # noqa
 
-        if not payload.name:
-            return OperationError(error="Provide a name for your method")
+class MethodService(BaseService[Method], IMethodService):
+    def __init__(
+            self,
+            repository: IMethodRepository,
+            instrument_service: IInstrumentService,
+            analysis_service: IAnalysisService,
+    ):
+        self.repository = repository
+        self.instrument_service = instrument_service
+        self.analysis_service = analysis_service
 
-        if "keyword" in payload.__dict__:
-            taken = await models.Method.get(keyword=payload.keyword)
+    async def create(
+            self,
+            name: str,
+            instruments: list[str] | None,
+            analyses: list[str] | None,
+            keyword: str | None,
+            description: str | None,
+    ) -> Method:
+        payload = locals()
+
+        if keyword:
+            taken = await self.get(keyword=keyword)
             if taken:
-                return OperationError(
-                    error=f"Provided keyword already assigned to Method {taken.name}"
+                raise AlreadyExistsError(
+                    f"Provided keyword already assigned to Method {taken.name}"
                 )
 
-        exists = await models.Method.get(name=payload.name)
+        exists = await self.get(name=name)
         if exists:
-            return OperationError(error=f"A Method named {payload.name} already exists")
+            raise AlreadyExistsError(f"A Method named {name} already exists")
 
         incoming = {}
         for k, v in payload.__dict__.items():
             if k not in ["instruments", "analyses"]:
                 incoming[k] = v
 
-        obj_in = schemas.MethodCreate(**incoming)
-        method: models.Method = await models.Method.create(obj_in)
+        obj_in = MethodCreate(**incoming)
+        method = await super().create(**marshal(obj_in))
 
         _instruments = set()
-        for i_uid in payload.instruments:
-            instrument = await models.Instrument.get(uid=i_uid)
-            if not instrument:
-                return OperationError(
-                    error=f"An instrument with uid {i_uid} does not exist"
-                )
+        for i_uid in instruments:
+            instrument = await self.instrument_service.get(uid=i_uid)
             if instrument not in _instruments:
                 _instruments.add(instrument)
-                await models.Method.table_insert(
-                    table=models.method_instrument,
+                await self.repository.table_insert(
+                    table=method_instrument,
                     mappings={
                         "method_uid": method.uid,
                         "instrument_uid": instrument.uid,
                     },
                 )
 
-        for a_uid in payload.analyses:
-            analysis = await analysis_models.Analysis.get(uid=a_uid)
+        for a_uid in analyses:
+            analysis = await self.analysis_service.get(uid=a_uid)
             meth_uids = [meth.uid for meth in analysis.methods]
             if method.uid not in meth_uids:
-                await analysis_models.Analysis.table_insert(
-                    table=analysis_models.analysis_method,
+                await self.repository.table_insert(
+                    table=analysis_method,
                     mappings={"method_uid": method.uid, "analysis_uid": analysis.uid},
                 )
 
@@ -378,62 +167,61 @@ async def get_all_methods(
                 inst_uids = [inst.uid for inst in analysis.instruments]
                 if inst.uid not in inst_uids:
                     analysis.instruments.append(inst)
-                    await analysis_models.Analysis.table_insert(
-                        table=analysis_models.analysis_instrument,
+                    await self.repository.table_insert(
+                        table=analysis_instrument,
                         mappings={
                             "instrument_uid": inst.uid,
                             "analysis_uid": analysis.uid,
                         },
                     )
 
-        return MethodType(**method.marshal_simple(exclude=["instruments", "analyses"]))
+        return method
 
-    async def update_method(
-        self, info, uid: str, payload: MethodInputType
-    ) -> MethodResponse:  # noqa
+    async def update(
+            self,
+            uid: str,
+            name: str,
+            instruments: list[str] | None,
+            analyses: list[str] | None,
+            keyword: str | None,
+            description: str | None,
+    ) -> Method:  # noqa
+        payload = locals()
 
-        if not uid:
-            return OperationError(error="No uid provided to identity update obj")
-
-        if "keyword" in payload.__dict__:
-            taken = await models.Method.get(keyword=payload.keyword)
+        if keyword:
+            taken = await self.get(keyword=keyword)
             if taken and not (str(uid) == str(taken.uid)):
-                return OperationError(
-                    error=f"Provided keyword already assigned to method {taken.name}"
+                raise AlreadyExistsError(
+                    f"Provided keyword already assigned to method {taken.name}"
                 )
 
-        method = await models.Method.get(uid=uid)
-        if not method:
-            return OperationError(
-                error=f"method with uid {uid} not found. Cannot update obj ..."
-            )
-
+        method = await self.get(uid=uid)
         obj_data = method.to_dict()
         for field in obj_data:
             if field in payload.__dict__:
                 try:
                     setattr(method, field, payload.__dict__[field])
                 except Exception as e:
-                    logger.warning(e)
+                    pass
 
-        obj_in = schemas.MethodUpdate(**method.to_dict())
-        method = await method.update(obj_in)
+        obj_in = MethodUpdate(**marshal(method))
+        method = await super().update(method, **marshal(obj_in))
 
         # instrument management
         inst_uids = [inst.uid for inst in method.instruments]
         for _inst in inst_uids:
-            if _inst not in payload.instruments:
+            if _inst not in instruments:
                 instruments = filter(lambda i: i.uid == _inst, method.instruments)
                 instrument = list(instruments)[0]
                 method.instruments.remove(instrument)
-        for _inst in payload.instruments:
+        for _inst in instruments:
             if _inst not in inst_uids:
-                instrument = await models.Instrument.get(uid=_inst)
+                instrument = await self.instrument_service.get(uid=_inst)
                 method.instruments.append(instrument)
-        method = await method.save()
+        method = await super().update(method, **marshal(method))
 
         # manage analyses
-        all_analyses = await analysis_models.Analysis.all()
+        all_analyses = await self.all()
         analyses = set()
         for analysis in all_analyses:
             for _meth in analysis.methods:
@@ -442,52 +230,190 @@ async def get_all_methods(
 
         an_uids = [an.uid for an in analyses]
         for _anal in an_uids:
-            if _anal not in payload.analyses:
+            if _anal not in analyses:
                 analysis = filter(lambda a: a.uid == _anal, analyses)
                 analysis = list(analysis)[0]
                 for _method in analysis.methods:
                     if _method.uid == method.uid:
                         analysis.methods.remove(_method)
-                        await analysis.save()
+                        await super().update(analysis, **marshal(analysis))
 
-        for _anal in payload.analyses:
+        for _anal in analyses:
             if _anal not in an_uids:
-                analysis = await analysis_models.Analysis.get(uid=_anal)
-                await analysis_models.Analysis.table_insert(
-                    table=analysis_models.analysis_method,
+                analysis = await self.analysis_service.get(uid=_anal)
+                await self.repostory.table_insert(
+                    table=analysis_method,
                     mappings={"method_uid": method.uid, "analysis_uid": analysis.uid},
                 )
 
-        return MethodType(**method.marshal_simple())
-
-
-class CalibrationCertificateService(
-    BaseService[CalibrationCertificate], ICalibrationCertificateService
-):
-    ...
-
-
-class MethodService(BaseService[Method], IMethodService):
-    ...
+        return method
 
 
 class InstrumentTypeService(BaseService[InstrumentType], IInstrumentTypeService):
-    ...
+    def __init__(self, repository: IInstrumentTypeRepository):
+        self.repository = repository
+
+    async def create(
+            self, name: str, description: str | None
+    ) -> InstrumentType:  # noqa
+
+        exists = await self.get(name=name)
+        if exists:
+            raise AlreadyExistsError(f"A InstrumentType named {name} already exists")
+
+        incoming = {"name": name, "description": description}
+
+        obj_in = InstrumentTypeCreate(**incoming)
+        return await super().create(**marshal(obj_in))
+
+    async def update(
+            self, uid: str, name: str, description: str | None
+    ) -> InstrumentType:  # noqa
+        payload = locals()
+
+        inst_type = await self.get(uid=uid)
+
+        obj_data = inst_type.to_dict()
+        for field in obj_data:
+            if field in payload.__dict__:
+                try:
+                    setattr(inst_type, field, payload.__dict__[field])
+                except Exception as e:
+                    pass
+
+        obj_in = InstrumentTypeUpdate(**marshal(inst_type))
+        return await super().update(inst_type, **marshal(obj_in))
 
 
 class InstrumentService(BaseService[Instrument], IInstrumentService):
-    ...
+    async def create(
+            self,
+            name: str,
+            keyword: str,
+            description: str | None,
+            instrument_type_uid: str | None,
+            supplier_uid: str | None,
+            manufacturer_uid: str | None,
+    ) -> Instrument:  # noqa
+        payload = locals()
+
+        taken = await self.get(keyword=keyword)
+        if taken:
+            raise AlreadyExistsError(
+                f"Provided keyword already assigned to instrument {name}"
+            )
+
+        exists = await self.get(name=name)
+        if exists:
+            raise AlreadyExistsError(f"An Instrument named {name} already exists")
+
+        incoming: dict = dict()
+        for k, v in payload.__dict__.items():
+            incoming[k] = v
+
+        obj_in = InstrumentCreate(**incoming)
+        return await super().create(**marshal(obj_in))
+
+    async def update(
+            self,
+            uid: str,
+            name: str,
+            keyword: str,
+            description: str | None,
+            instrument_type_uid: str | None,
+            supplier_uid: str | None,
+            manufacturer_uid: str | None,
+    ) -> Instrument:  # noqa
+        payload = locals()
+
+        if keyword:
+            taken = await self.get(keyword=keyword)
+            if taken and not (str(uid) == str(taken.uid)):
+                raise AlreadyExistsError(
+                    f"Provided keyword already assigned to instrument {taken.name}"
+                )
+
+        instrument = await self.get(uid=uid)
+        if not instrument:
+            raise AlreadyExistsError(
+                f"instrument with uid {uid} not found. Cannot update obj ..."
+            )
+
+        obj_data = marshal(instrument)
+        for field in obj_data:
+            if field in payload.__dict__:
+                try:
+                    setattr(instrument, field, payload.__dict__[field])
+                except Exception as e:
+                    pass
+
+        obj_in = InstrumentUpdate(**marshal(instrument))
+        return await super().update(instrument, **marshal(obj_in))
 
 
 class InstrumentCalibrationService(
     BaseService[InstrumentCalibration], IInstrumentCalibrationService
 ):
-    def __int__(self, repository: IInstrumentCalibrationRepository):
+    def __int__(
+            self,
+            repository: IInstrumentCalibrationRepository,
+            idsequence_service: IIdSequenceService,
+    ):
         self.repository = repository
+        self.idsequence_service = idsequence_service
 
     async def create(
-        cls, obj_in: InstrumentCalibrationCreate
-    ) -> schemas.InstrumentCalibration:
-        data = cls._import(obj_in)
-        data["calibration_id"] = (await IdSequence.get_next_number("ICAL"))[1]
-        return await super().create(**data)
+            self,
+            instrument_uid: str,
+            date_reported: datetime | None,
+            start_date: datetime | None,
+            end_date: datetime | None,
+            calibration_id: str | None,
+            report_id: str | None,
+            performed_by: str | None,
+            notes_before: str | None,
+            work_done: str | None,
+            remarks: str | None,
+    ) -> InstrumentCalibration:  # noqa
+        payload = locals()
+
+        incoming = dict()
+
+        for k, v in payload.__dict__.items():
+            incoming[k] = v
+
+        incoming["calibration_id"] = (
+            await self.idsequence_service.get_next_number("ICAL")
+        )[1]
+
+        obj_in = InstrumentCalibrationCreate(**incoming)
+        return await super().create(**marshal(obj_in))
+
+    async def update(
+            self,
+            uid: str,
+            instrument_uid: str,
+            date_reported: datetime | None,
+            start_date: datetime | None,
+            end_date: datetime | None,
+            calibration_id: str | None,
+            report_id: str | None,
+            performed_by: str | None,
+            notes_before: str | None,
+            work_done: str | None,
+            remarks: str | None,
+    ) -> InstrumentCalibration:  # noqa
+        payload = locals()
+
+        caliberation = await self.get(uid=uid)
+
+        obj_data = marshal(caliberation)
+        for field in obj_data:
+            if field in payload.__dict__:
+                try:
+                    setattr(caliberation, field, payload.__dict__[field])
+                except Exception as e:
+                    pass
+
+        obj_in = InstrumentCalibrationUpdate(**marshal(caliberation))
+        return await super().update(caliberation, **marshal(obj_in))

@@ -1,16 +1,33 @@
-
-from domain.shared.services import BaseService
+from domain.exceptions import AlreadyExistsError
+from domain.noticeboard.ports.repository import INoticeRepository
 from domain.noticeboard.ports.service import INoticeService
-from domain.noticeboard.schemas import Notice
-from domain.user.schemas import User, Group
+from domain.noticeboard.schemas import Notice, NoticeCreate, NoticeUpdate
+from domain.setup.ports.service import IDepartmentService
 from domain.setup.schemas import Department
+from domain.shared.services import BaseService
+from domain.shared.utils.serialisers import marshal
+from domain.user.ports.service import IGroupService, IUserService
+from domain.user.schemas import User, Group
 
-    async def notice_filter(
-        self,
-        info,
-        group_uid: str | None,
-        department_uid: str | None,
-    ) -> List[NoticeType]:
+
+class NoticeService(BaseService[Notice], INoticeService):
+    def __init__(
+            self,
+            repository: INoticeRepository,
+            group_service: IGroupService,
+            department_service: IDepartmentService,
+            user_service: IUserService,
+    ):
+        self.repository = repository
+        self.group_service = group_service
+        self.department_service = department_service
+        self.user_service = user_service
+
+    async def filter(
+            self,
+            group_uid: str | None,
+            department_uid: str | None,
+    ) -> list[Notice]:
         filters = {}
 
         if group_uid:
@@ -19,80 +36,62 @@ from domain.setup.schemas import Department
         if department_uid:
             filters["departments__uid__in"] = [department_uid]
 
-        notice_stmt = models.Notice.smart_query(
-            filters=filters, sort_attrs=["-created_at"]
-        )
+        return await self.repository.filter(filters, ["-created_at"])
 
-        notices = (await models.Notice.session.execute(notice_stmt)).scalars().all()
-        return list(notices)
+    async def create(
+            self,
+            title: str,
+            body: str,
+            expiry: str,
+            groups: list[str] | None,
+            departments: list[str] | None,
+            user: User,
+    ) -> Notice:
+        payload = locals()
 
-
-    
-    async def create_notice(self, info, payload: NoticeInputType) -> NoticeResponse:
-
-        is_authenticated, felicity_user = await auth_from_info(info)
-        verify_user_auth(
-            is_authenticated,
-            felicity_user,
-            "Only Authenticated user can create notices",
-        )
-
-        if not payload.title or not payload.body or not payload.expiry:
-            return OperationError(
-                error="Some fields have missing required data",
-                suggestion="Make sure that the fields: [title, body, expiry] all have values",
-            )
-
-        exists = await models.Notice.get(title=payload.title)
+        exists = await self.get(title=title)
         if exists:
-            return OperationError(
-                error="Notice title Duplication not Allowed",
-                suggestion=f"Change the notice title",
+            raise AlreadyExistsError(
+                "Notice title Duplication not Allowed Change the notice title"
             )
 
         incoming = {
-            "created_by_uid": felicity_user.uid,
-            "updated_by_uid": felicity_user.uid,
+            "created_by_uid": user.uid,
+            "updated_by_uid": user.uid,
         }
         for k, v in payload.__dict__.items():
             incoming[k] = v
 
-        if payload.groups:
+        if groups:
             incoming["groups"] = []
-            for g_uid in payload.groups:
-                _gr = models.Group.get(uid=g_uid)
+            for g_uid in groups:
+                _gr = await self.group_service.get(uid=g_uid)
                 if _gr:
                     incoming["groups"].append(_gr)
 
-        if payload.departments:
+        if departments:
             incoming["departments"] = []
-            for dept_uid in payload.departments:
-                _gr = models.Department.get(uid=dept_uid)
+            for dept_uid in departments:
+                _gr = await self.department_service.get(uid=dept_uid)
                 if _gr:
                     incoming["departments"].append(_gr)
 
-        obj_in = schemas.NoticeCreate(**incoming)
-        notice: models.Notice = await models.Notice.create(obj_in)
-        return NoticeType(**notice.marshal_simple())
+        obj_in = NoticeCreate(**incoming)
+        return await super().create(**marshal(obj_in))
 
-    
-    async def update_notice(
-        self, info, uid: str, payload: NoticeInputType
-    ) -> NoticeResponse:
+    async def update(
+            self,
+            uid: str,
+            title: str,
+            body: str,
+            expiry: str,
+            groups: list[str] | None,
+            departments: list[str] | None,
+            user: User,
+    ) -> Notice:
+        payload = locals()
 
-        is_authenticated, felicity_user = await auth_from_info(info)
-        verify_user_auth(
-            is_authenticated,
-            felicity_user,
-            "Only Authenticated user can update notices",
-        )
-
-        notice = await models.Notice.get(uid=uid)
-        if not notice:
-            raise OperationError(
-                error=f"notice with uid {uid} does not exist",
-                suggestion=f"Refresh page",
-            )
+        notice = await self.get(uid=uid)
 
         notice_data = notice.to_dict()
         for field in notice_data:
@@ -100,107 +99,77 @@ from domain.setup.schemas import Department
                 try:
                     setattr(notice, field, payload.__dict__[field])
                 except Exception as e:
-                    logger.warning(e)
+                    pass
 
-        if payload.groups:
+        if groups:
             _groups = []
-            for g_uid in payload.groups:
-                _gr = models.Group.get(uid=g_uid)
+            for g_uid in groups:
+                _gr = self.group_service.get(uid=g_uid)
                 if _gr:
                     _groups.append(_gr)
             setattr(notice, "groups", _groups)
 
-        if payload.departments:
+        if departments:
             _departments = []
-            for dept_uid in payload.departments:
-                _gr = models.Department.get(uid=dept_uid)
-                if _gr:
-                    _departments.append(_gr)
+            for dept_uid in departments:
+                _dp = self.department_service.get(uid=dept_uid)
+                if _dp:
+                    _departments.append(_dp)
             setattr(notice, "departments", _departments)
 
-        setattr(notice, "update_by_uid", felicity_user.uid)
+        setattr(notice, "update_by_uid", user.uid)
 
-        notice_in = schemas.NoticeUpdate(**notice.to_dict())
-        notice = await notice.update(notice_in)
-        return NoticeType(**notice.marshal_simple())
+        notice_in = NoticeUpdate(**marshal(notice))
+        return await notice.update(notice, **marshal(notice_in))
 
-    
-    async def view_notice(
-        self, info, uid: str, viewer: str
-    ) -> NoticeType:
+    async def view(self, uid: str, viewer_uid: str) -> Notice:
 
-        is_authenticated, felicity_user = await auth_from_info(info)
-        verify_user_auth(
-            is_authenticated, felicity_user, "Only Authenticated user can view notices"
-        )
+        notice = await self.get(uid=uid)
+        _viewer = await self.user_service.get(uid=viewer_uid)
+        return await self.add_viewer(notice, _viewer)
 
-        notice: models.Notice = await models.Notice.get(uid=uid)
-        if not notice:
-            raise Exception(f"Notice with uid {uid} does not exist")
+    async def delete(self, uid: str):
+        notice = await self.get(uid=uid)
+        await super().delete(notice)
 
-        _viewer = await models.User.get(uid=viewer)
-        if not _viewer:
-            raise Exception(f"User with uid {viewer} does not exist")
+    async def reset_views(self, notice: Notice) -> Notice:
+        notice.viewers.clear()
+        return await super().update(notice, **marshal(notice))
 
-        notice = await notice.add_viewer(_viewer)
-        return NoticeType(**notice.marshal_simple())
+    async def remove_viewer(self, notice: Notice, user: User) -> Notice:
+        notice.viewers.remove(user)
+        return await super().update(notice, **marshal(notice))
 
-    
-    async def delete_notice(self, info, uid: str) -> DeleteResponse:
+    async def add_viewer(self, notice: Notice, user: User) -> Notice:
+        if user not in notice.viewers:
+            notice.viewers.append(user)
+            return await super().update(notice, **marshal(notice))
+        return notice
 
-        is_authenticated, felicity_user = await auth_from_info(info)
-        verify_user_auth(
-            is_authenticated, felicity_user, "Only Authenticated user can view notices"
-        )
+    async def reset_departments(self, notice: Notice) -> Notice:
+        notice.departments.clear()
+        return await super().update(notice, **marshal(notice))
 
-        notice: models.Notice = await models.Notice.get(uid=uid)
-        if not notice:
-            raise Exception(f"Notice with uid {uid} does not exist")
+    async def remove_department(self, notice: Notice, department: Department) -> Notice:
+        notice.departments.remove(department)
+        return await super().update(notice, **marshal(notice))
 
-        await notice.delete()
-        return DeletedItem(uid=uid)
+    async def add_department(self, notice: Notice, department: Department) -> Notice:
+        if department not in notice.departments:
+            notice.departments.append(department)
+            return await super().update(notice, **marshal(notice))
+        return notice
 
+    async def reset_groups(self, notice: Notice) -> Notice:
+        notice.groups.clear()
+        return await super().update(notice, **marshal(notice))
 
+    async def remove_group(self, notice: Notice, group: Group) -> Notice:
+        notice.groups.remove(group)
+        return await super().update(notice, **marshal(notice))
 
-class NoticeService(BaseService[Notice], INoticeService):
-    async def reset_views(self) -> Notice:
-        self.viewers.clear()
-        return await self.save()
-
-    async def remove_viewer(self, user: User) -> Notice:
-        self.viewers.remove(user)
-        return await self.save()
-
-    async def add_viewer(self, user: User) -> Notice:
-        if user not in self.viewers:
-            self.viewers.append(user)
-            return await self.save()
-        return self
-
-    async def reset_departments(self) -> Notice:
-        self.departments.clear()
-        return await self.save()
-
-    async def remove_department(self, department: Department) -> Notice:
-        self.departments.remove(department)
-        return await self.save()
-
-    async def add_department(self, department: Department) -> Notice:
-        if department not in self.departments:
-            self.departments.append(department)
-            return await self.save()
-        return self
-
-    async def reset_groups(self) -> Notice:
-        self.groups.clear()
-        return await self.save()
-
-    async def remove_group(self, group: Group) -> Notice:
-        self.groups.remove(group)
-        return await self.save()
-
-    async def add_group(self, group: Group) -> Notice:
-        if group not in self.groups:
-            self.groups.append(group)
-            return await self.save()
-        return self
+    async def add_group(self, notice: Notice, group: Group) -> Notice:
+        if group not in notice.groups:
+            notice.groups.append(group)
+            return await super().update(notice, **marshal(notice))
+        return notice
