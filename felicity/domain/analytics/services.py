@@ -21,12 +21,12 @@ from domain.shared.utils.serialisers import marshal
 
 class ReportMetaService(BaseService[ReportMeta], IReportMetaService):
     def __init__(
-            self,
-            repository: IReportMetaRepository,
-            sample_analytics_repository: ISampleAnalyticsRepository,
-            job_service: IJobService,
-            stream_service: IActivityStreamService,
-            notification_service: INotificationService,
+        self,
+        repository: IReportMetaRepository,
+        sample_analytics_repository: ISampleAnalyticsRepository,
+        job_service: IJobService,
+        stream_service: IActivityStreamService,
+        notification_service: INotificationService,
     ):
         self.repository = repository
         self.sample_analytics = sample_analytics_repository
@@ -35,7 +35,7 @@ class ReportMetaService(BaseService[ReportMeta], IReportMetaService):
         self.notification_service = notification_service
 
     async def set_final(
-            self, report: ReportMeta, status: str, location: str | None = None
+        self, report: ReportMeta, status: str, location: str | None = None
     ):
         if report.status != ReportStates.READY:
             report.location = location

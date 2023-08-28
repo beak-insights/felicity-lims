@@ -1,5 +1,6 @@
+import sqlalchemy as sa
+
 from domain.inventory.ports.repository import (
-    IStockItemRepository,
     IStockCategoryRepository,
     IHazardRepository,
     IStockUnitRepository,
@@ -9,10 +10,9 @@ from domain.inventory.ports.repository import (
     IStockOrderProductRepository,
     IStockTransactionRepository,
     IStockAdjustmentRepository,
+    IStockItemRepository,
 )
-
-from infrastructure.database.repository.base import BaseRepository
-
+from domain.shared.ports.paginator.cursor import PageCursor
 from infrastructure.database.inventory.entities import (
     StockItem,
     StockCategory,
@@ -25,12 +25,39 @@ from infrastructure.database.inventory.entities import (
     StockTransaction,
     StockAdjustment,
 )
+from infrastructure.database.repository.base import BaseRepository
 
 
 class StockItemRepository(BaseRepository[StockItem], IStockItemRepository):
     def __init__(self) -> None:
         self.model = StockItem
         super().__init__()
+
+    async def paginate_with_cursors(
+        self,
+        page_size: int | None = None,
+        after_cursor: str | None = None,
+        before_cursor: str | None = None,
+        text: str | None = None,
+        sort_by: list[str] | None = None,
+    ) -> PageCursor:
+
+        _or_ = dict()
+
+        if text:
+            arg_list = ["name__ilike"]
+            for _arg in arg_list:
+                _or_[_arg] = f"%{text}%"
+
+        filters = {sa.or_: _or_}
+
+        return super().paginate(
+            page_size=page_size,
+            after_cursor=after_cursor,
+            before_cursor=before_cursor,
+            filters=filters,
+            sort_by=sort_by,
+        )
 
 
 class StockCategoryRepository(BaseRepository[StockCategory], IStockCategoryRepository):
@@ -64,11 +91,68 @@ class StockProductRepository(BaseRepository[StockProduct], IStockProductReposito
         self.model = StockProduct
         super().__init__()
 
+    async def paginate_with_cursors(
+        self,
+        page_size: int | None = None,
+        after_cursor: str | None = None,
+        before_cursor: str | None = None,
+        text: str | None = None,
+        sort_by: list[str] | None = None,
+    ) -> PageCursor:
+
+        _or_ = dict()
+
+        if text:
+            arg_list = ["name__ilike"]
+            for _arg in arg_list:
+                _or_[_arg] = f"%{text}%"
+
+        filters = {sa.or_: _or_}
+
+        return super().paginate(
+            page_size=page_size,
+            after_cursor=after_cursor,
+            before_cursor=before_cursor,
+            filters=filters,
+            sort_by=sort_by,
+        )
+
 
 class StockOrderRepository(BaseRepository[StockOrder], IStockOrderRepository):
     def __init__(self) -> None:
         self.model = StockOrder
         super().__init__()
+
+    async def paginate_with_cursors(
+        self,
+        page_size: int | None = None,
+        after_cursor: str | None = None,
+        before_cursor: str | None = None,
+        text: str | None = None,
+        status: None = None,
+        sort_by: list[str] | None = None,
+    ) -> PageCursor:
+
+        filters = []
+
+        _or_ = dict()
+        if text:
+            arg_list = ["order_number__ilike"]
+            for _arg in arg_list:
+                _or_[_arg] = f"%{text}%"
+
+            filters.append({sa.or_: _or_})
+
+        if status:
+            filters.append({"status__exact": status})
+
+        return super().paginate(
+            page_size=page_size,
+            after_cursor=after_cursor,
+            before_cursor=before_cursor,
+            filters=filters,
+            sort_by=sort_by,
+        )
 
 
 class StockOrderProductRepository(
@@ -86,6 +170,32 @@ class StockTransactionRepository(
         self.model = StockTransaction
         super().__init__()
 
+    async def paginate_with_cursors(
+        self,
+        page_size: int | None = None,
+        after_cursor: str | None = None,
+        before_cursor: str | None = None,
+        text: str | None = None,
+        sort_by: list[str] | None = None,
+    ) -> PageCursor:
+
+        _or_ = dict()
+
+        if text:
+            arg_list = ["name__ilike", "product___name__ilike"]
+            for _arg in arg_list:
+                _or_[_arg] = f"%{text}%"
+
+        filters = {sa.or_: _or_}
+
+        return super().paginate(
+            page_size=page_size,
+            after_cursor=after_cursor,
+            before_cursor=before_cursor,
+            filters=filters,
+            sort_by=sort_by,
+        )
+
 
 class StockAdjustmentRepository(
     BaseRepository[StockAdjustment], IStockAdjustmentRepository
@@ -93,3 +203,34 @@ class StockAdjustmentRepository(
     def __init__(self) -> None:
         self.model = StockAdjustment
         super().__init__()
+
+    async def paginate_with_cursors(
+        self,
+        page_size: int | None = None,
+        after_cursor: str | None = None,
+        before_cursor: str | None = None,
+        text: str | None = None,
+        sort_by: list[str] | None = None,
+    ) -> PageCursor:
+
+        _or_ = dict()
+
+        if text:
+            arg_list = [
+                "name__ilike",
+                "adjustment_type__ilike",
+                "remarks__ilike",
+                "product___name__ilike",
+            ]
+            for _arg in arg_list:
+                _or_[_arg] = f"%{text}%"
+
+        filters = {sa.or_: _or_}
+
+        return super().paginate(
+            page_size=page_size,
+            after_cursor=after_cursor,
+            before_cursor=before_cursor,
+            filters=filters,
+            sort_by=sort_by,
+        )

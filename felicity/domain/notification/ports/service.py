@@ -56,18 +56,18 @@ class IActivityStreamService(IBaseService[ActivityStream], ABC):
 
     @abstractmethod
     async def for_viewer(
-            cls, viewer: User, seen=False
+        cls, viewer: User, seen=False
     ) -> Optional[List[ActivityStream]]:
         ...
 
     @abstractmethod
     async def stream(
-            cls,
-            obj: Any,
-            actor: User,
-            verb: str,
-            object_type: str,
-            feeds: List[ActivityFeed] = None,
+        cls,
+        obj: Any,
+        actor: User,
+        verb: str,
+        object_type: str,
+        feeds: List[ActivityFeed] = None,
     ):
         ...
 
@@ -75,10 +75,10 @@ class IActivityStreamService(IBaseService[ActivityStream], ABC):
 class INotificationService(IBaseService[Notification], ABC):
     @abstractmethod
     async def filter(
-            self,
-            group_uid: str | None,
-            department_uid: str | None,
-            user_uid: str | None,
+        self,
+        group_uid: str | None,
+        department_uid: str | None,
+        user_uid: str | None,
     ) -> List[Notification]:
         ...
 

@@ -1,7 +1,7 @@
 """Job Configs
 This file is part of Felicity LIMS Software
 """
-
+from enum import StrEnum
 
 CATEGORIES = ["Consumables", "Reagents", "Durables"]
 
@@ -58,7 +58,7 @@ PACKAGES = [
 ]
 
 
-class Adjust:
+class StockAdjust(StrEnum):
     TRANSFER_IN = "transfer_in"
     TRANSFER_OUT = "transfer_out"
     DAMAGED = "damaged"
@@ -67,15 +67,9 @@ class Adjust:
     LOSS = "lost"
 
 
-adjust = Adjust()
-
-
-class OrderStates:
+class OrderStates(StrEnum):
     PREPARATION = "preparation"
     SUBMITTED = "submitted"  # for approval
     PENDING = "pending"  # approved and pending issue
     PROCESSED = "processed"  # issued
     DECLINED = "declined"
-
-
-order_states = OrderStates()
