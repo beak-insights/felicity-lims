@@ -26,13 +26,13 @@ from domain.user.schemas import User
 
 class ReportImpressService(BaseService[ReportImpress], IReportImpressService):
     def __init__(
-            self,
-            repository: IReportImpressRepository,
-            sample_service: ISampleService,
-            activity_stream_service: IActivityStreamService,
-            job_service: IJobService,
-            user_service: IUserService,
-            notification_service: INotificationService,
+        self,
+        repository: IReportImpressRepository,
+        sample_service: ISampleService,
+        activity_stream_service: IActivityStreamService,
+        job_service: IJobService,
+        user_service: IUserService,
+        notification_service: INotificationService,
     ):
         self.repository = repository
         self.sample_service = sample_service

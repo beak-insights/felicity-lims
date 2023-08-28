@@ -129,3 +129,7 @@ class INotificationService(IBaseService[Notification], ABC):
     @abstractmethod
     async def add_user(self, user: Group) -> Notification:
         ...
+
+    @abstractmethod
+    def notify(self, param, created_by):
+        pass

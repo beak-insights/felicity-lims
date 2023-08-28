@@ -57,14 +57,14 @@ class IBaseRepository(Generic[M], ABC):
 
     @abstractmethod
     async def paginate_with_cursors(
-            self,
-            page_size: int | None,
-            after_cursor: str | None,
-            before_cursor: str | None,
-            filters: dict | list[dict] | None,
-            text: str | None,
-            sort_by: list[str] | None,
-            **kwargs
+        self,
+        page_size: int | None,
+        after_cursor: str | None,
+        before_cursor: str | None,
+        filters: dict | list[dict] | None,
+        text: str | None,
+        sort_by: list[str] | None,
+        **kwargs
     ) -> PageCursor:
         pass
 
@@ -74,9 +74,9 @@ class IBaseRepository(Generic[M], ABC):
 
     @abstractmethod
     async def filter(
-            self,
-            filters: dict | list[dict],
-            sort: list[str] | None,
+        self,
+        filters: dict | list[dict],
+        sort: list[str] | None,
     ) -> list[M]:
         pass
 

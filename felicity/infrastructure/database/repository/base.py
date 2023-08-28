@@ -177,7 +177,7 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
         return results.scalars().all()
 
     async def get_related(
-            self, related: Optional[list] = None, many: bool = False, **kwargs
+        self, related: Optional[list] = None, many: bool = False, **kwargs
     ):
         """Return the first value in database based on given args."""
         try:
@@ -268,9 +268,9 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
         return list(combined)
 
     async def filter(
-            self,
-            filters: list[dict],
-            sort_attrs: list[str] | None,
+        self,
+        filters: list[dict],
+        sort_attrs: list[str] | None,
     ) -> list[M]:
         stmt = self._qb.smart_query(filters, sort_attrs)
         async with self.async_session() as session:
@@ -279,13 +279,13 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
         return found
 
     async def paginate_with_cursors(
-            self,
-            page_size: int | None,
-            after_cursor: str | None,
-            before_cursor: str | None,
-            filters: dict | list[dict] | None,
-            sort_by: list[str] | None,
-            **kwargs,
+        self,
+        page_size: int | None,
+        after_cursor: str | None,
+        before_cursor: str | None,
+        filters: dict | list[dict] | None,
+        sort_by: list[str] | None,
+        **kwargs,
     ) -> PageCursor:
         if not filters:
             filters = {}
@@ -359,11 +359,11 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
         return EdgeNode(**{"cursor": self.encode_cursor(item.uid), "node": item})
 
     def build_page_info(
-            self,
-            start_cursor: str = None,
-            end_cursor: str = None,
-            has_next_page: bool = False,
-            has_previous_page: bool = False,
+        self,
+        start_cursor: str = None,
+        end_cursor: str = None,
+        has_next_page: bool = False,
+        has_previous_page: bool = False,
     ) -> PageInfo:
         return PageInfo(
             **{

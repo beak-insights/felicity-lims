@@ -44,7 +44,7 @@ async def get_last_verificator(result_uid: str):
 
 
 async def sample_search(
-        model, status: str, text: str, client_uid: str
+    model, status: str, text: str, client_uid: str
 ) -> List[schemas.SampleType]:
     """No pagination"""
     filters = []
@@ -230,8 +230,8 @@ async def result_mutator(result: AnalysisResult):
         # Correction factor
         for cf in correction_factors:
             if (
-                    cf.instrument_uid == result.instrument_uid
-                    and cf.method_uid == result.method_uid
+                cf.instrument_uid == result.instrument_uid
+                and cf.method_uid == result.method_uid
             ):
                 await ResultMutation.create(
                     obj_in={

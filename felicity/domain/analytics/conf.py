@@ -1,17 +1,14 @@
 """Job Configs
 This file is part of Felicity LIMS Software
 """
+from enum import StrEnum
 
 
-class Types:
+class ReportTypes(StrEnum):
     LINE_LISTING = "LINE_LISTING"
 
 
-class States:
+class ReportStates(StrEnum):
     PENDING = "PENDING"
     FAILED = "FAILED"
     READY = "READY"
-
-
-report_types = Types()
-report_states = States()

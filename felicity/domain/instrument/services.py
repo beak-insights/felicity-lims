@@ -50,17 +50,17 @@ class CalibrationCertificateService(
         self.repository = repository
 
     async def create(
-            self,
-            instrument_uid: str,
-            date_issued: datetime | None,
-            valid_from_date: datetime | None,
-            valid_to_date: datetime | None,
-            certificate_code: str | None,
-            issuer: str | None,
-            performed_by: str | None,
-            approved_by: str | None,
-            remarks: str | None,
-            internal: bool,
+        self,
+        instrument_uid: str,
+        date_issued: datetime | None,
+        valid_from_date: datetime | None,
+        valid_to_date: datetime | None,
+        certificate_code: str | None,
+        issuer: str | None,
+        performed_by: str | None,
+        approved_by: str | None,
+        remarks: str | None,
+        internal: bool,
     ) -> CalibrationCertificate:
         payload = locals()
 
@@ -72,18 +72,18 @@ class CalibrationCertificateService(
         return await super().create(**marshal(obj_in))
 
     async def update(
-            self,
-            uid: str,
-            instrument_uid: str,
-            date_issued: datetime | None,
-            valid_from_date: datetime | None,
-            valid_to_date: datetime | None,
-            certificate_code: str | None,
-            issuer: str | None,
-            performed_by: str | None,
-            approved_by: str | None,
-            remarks: str | None,
-            internal: bool,
+        self,
+        uid: str,
+        instrument_uid: str,
+        date_issued: datetime | None,
+        valid_from_date: datetime | None,
+        valid_to_date: datetime | None,
+        certificate_code: str | None,
+        issuer: str | None,
+        performed_by: str | None,
+        approved_by: str | None,
+        remarks: str | None,
+        internal: bool,
     ) -> CalibrationCertificate:
         payload = locals()
 
@@ -103,22 +103,22 @@ class CalibrationCertificateService(
 
 class MethodService(BaseService[Method], IMethodService):
     def __init__(
-            self,
-            repository: IMethodRepository,
-            instrument_service: IInstrumentService,
-            analysis_service: IAnalysisService,
+        self,
+        repository: IMethodRepository,
+        instrument_service: IInstrumentService,
+        analysis_service: IAnalysisService,
     ):
         self.repository = repository
         self.instrument_service = instrument_service
         self.analysis_service = analysis_service
 
     async def create(
-            self,
-            name: str,
-            instruments: list[str] | None,
-            analyses: list[str] | None,
-            keyword: str | None,
-            description: str | None,
+        self,
+        name: str,
+        instruments: list[str] | None,
+        analyses: list[str] | None,
+        keyword: str | None,
+        description: str | None,
     ) -> Method:
         payload = locals()
 
@@ -178,13 +178,13 @@ class MethodService(BaseService[Method], IMethodService):
         return method
 
     async def update(
-            self,
-            uid: str,
-            name: str,
-            instruments: list[str] | None,
-            analyses: list[str] | None,
-            keyword: str | None,
-            description: str | None,
+        self,
+        uid: str,
+        name: str,
+        instruments: list[str] | None,
+        analyses: list[str] | None,
+        keyword: str | None,
+        description: str | None,
     ) -> Method:  # noqa
         payload = locals()
 
@@ -254,7 +254,7 @@ class InstrumentTypeService(BaseService[InstrumentType], IInstrumentTypeService)
         self.repository = repository
 
     async def create(
-            self, name: str, description: str | None
+        self, name: str, description: str | None
     ) -> InstrumentType:  # noqa
 
         exists = await self.get(name=name)
@@ -267,7 +267,7 @@ class InstrumentTypeService(BaseService[InstrumentType], IInstrumentTypeService)
         return await super().create(**marshal(obj_in))
 
     async def update(
-            self, uid: str, name: str, description: str | None
+        self, uid: str, name: str, description: str | None
     ) -> InstrumentType:  # noqa
         payload = locals()
 
@@ -287,13 +287,13 @@ class InstrumentTypeService(BaseService[InstrumentType], IInstrumentTypeService)
 
 class InstrumentService(BaseService[Instrument], IInstrumentService):
     async def create(
-            self,
-            name: str,
-            keyword: str,
-            description: str | None,
-            instrument_type_uid: str | None,
-            supplier_uid: str | None,
-            manufacturer_uid: str | None,
+        self,
+        name: str,
+        keyword: str,
+        description: str | None,
+        instrument_type_uid: str | None,
+        supplier_uid: str | None,
+        manufacturer_uid: str | None,
     ) -> Instrument:  # noqa
         payload = locals()
 
@@ -315,14 +315,14 @@ class InstrumentService(BaseService[Instrument], IInstrumentService):
         return await super().create(**marshal(obj_in))
 
     async def update(
-            self,
-            uid: str,
-            name: str,
-            keyword: str,
-            description: str | None,
-            instrument_type_uid: str | None,
-            supplier_uid: str | None,
-            manufacturer_uid: str | None,
+        self,
+        uid: str,
+        name: str,
+        keyword: str,
+        description: str | None,
+        instrument_type_uid: str | None,
+        supplier_uid: str | None,
+        manufacturer_uid: str | None,
     ) -> Instrument:  # noqa
         payload = locals()
 
@@ -355,25 +355,25 @@ class InstrumentCalibrationService(
     BaseService[InstrumentCalibration], IInstrumentCalibrationService
 ):
     def __int__(
-            self,
-            repository: IInstrumentCalibrationRepository,
-            idsequence_service: IIdSequenceService,
+        self,
+        repository: IInstrumentCalibrationRepository,
+        idsequence_service: IIdSequenceService,
     ):
         self.repository = repository
         self.idsequence_service = idsequence_service
 
     async def create(
-            self,
-            instrument_uid: str,
-            date_reported: datetime | None,
-            start_date: datetime | None,
-            end_date: datetime | None,
-            calibration_id: str | None,
-            report_id: str | None,
-            performed_by: str | None,
-            notes_before: str | None,
-            work_done: str | None,
-            remarks: str | None,
+        self,
+        instrument_uid: str,
+        date_reported: datetime | None,
+        start_date: datetime | None,
+        end_date: datetime | None,
+        calibration_id: str | None,
+        report_id: str | None,
+        performed_by: str | None,
+        notes_before: str | None,
+        work_done: str | None,
+        remarks: str | None,
     ) -> InstrumentCalibration:  # noqa
         payload = locals()
 
@@ -390,18 +390,18 @@ class InstrumentCalibrationService(
         return await super().create(**marshal(obj_in))
 
     async def update(
-            self,
-            uid: str,
-            instrument_uid: str,
-            date_reported: datetime | None,
-            start_date: datetime | None,
-            end_date: datetime | None,
-            calibration_id: str | None,
-            report_id: str | None,
-            performed_by: str | None,
-            notes_before: str | None,
-            work_done: str | None,
-            remarks: str | None,
+        self,
+        uid: str,
+        instrument_uid: str,
+        date_reported: datetime | None,
+        start_date: datetime | None,
+        end_date: datetime | None,
+        calibration_id: str | None,
+        report_id: str | None,
+        performed_by: str | None,
+        notes_before: str | None,
+        work_done: str | None,
+        remarks: str | None,
     ) -> InstrumentCalibration:  # noqa
         payload = locals()
 
