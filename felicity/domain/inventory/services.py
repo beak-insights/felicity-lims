@@ -66,13 +66,13 @@ class StockItemService(BaseService[StockItem], IStockItemService):
         self.repository = repository
 
     async def create(
-            self,
-            name: str,
-            description: str,
-            department_uid: str | None,
-            maximum_level: int | None,
-            minimum_level: int | None,
-            user: User,
+        self,
+        name: str,
+        description: str,
+        department_uid: str | None,
+        maximum_level: int | None,
+        minimum_level: int | None,
+        user: User,
     ) -> StockItem:
         payload = locals()
 
@@ -91,14 +91,14 @@ class StockItemService(BaseService[StockItem], IStockItemService):
         return await super().create(**marshal(obj_in))
 
     async def update(
-            self,
-            uid: str,
-            name: str,
-            description: str,
-            department_uid: str | None,
-            maximum_level: int | None,
-            minimum_level: int | None,
-            user: User,
+        self,
+        uid: str,
+        name: str,
+        description: str,
+        department_uid: str | None,
+        maximum_level: int | None,
+        minimum_level: int | None,
+        user: User,
     ) -> StockItem:
         payload = locals()
 
@@ -137,7 +137,7 @@ class StockCategoryService(BaseService[StockCategory], IStockCategoryService):
         return await super().create(**marshal(obj_in))
 
     async def update(
-            self, uid: str, name: str, description: str, user: User
+        self, uid: str, name: str, description: str, user: User
     ) -> StockCategory:
 
         stock_category = await self.get(uid=uid)
@@ -240,25 +240,25 @@ class StockProductService(BaseService[StockProduct], IStockProductService):
         self.repository = repository
 
     async def create(
-            self,
-            name: str,
-            stock_item_uid: str | None,
-            department_uid: str | None,
-            supplier_uid: str | None,
-            category_uid: str | None,
-            hazard_uid: str | None,
-            store_room_uid: str | None,
-            lot_number: str | None,
-            batch: str | None,
-            size: int | None,
-            unit_uid: str | None,
-            packaging_uid: str | None,
-            price: int | None,
-            quantity_received: int | None,
-            date_received: datetime | None,
-            expiry_date: datetime | None,
-            received_by_uid: str | None,
-            user: User,
+        self,
+        name: str,
+        stock_item_uid: str | None,
+        department_uid: str | None,
+        supplier_uid: str | None,
+        category_uid: str | None,
+        hazard_uid: str | None,
+        store_room_uid: str | None,
+        lot_number: str | None,
+        batch: str | None,
+        size: int | None,
+        unit_uid: str | None,
+        packaging_uid: str | None,
+        price: int | None,
+        quantity_received: int | None,
+        date_received: datetime | None,
+        expiry_date: datetime | None,
+        received_by_uid: str | None,
+        user: User,
     ) -> StockProduct:
         payload = locals()
 
@@ -276,26 +276,26 @@ class StockProductService(BaseService[StockProduct], IStockProductService):
         return await super().create(**marshal(obj_in))
 
     async def update(
-            self,
-            uid: str,
-            name: str,
-            stock_item_uid: str | None,
-            department_uid: str | None,
-            supplier_uid: str | None,
-            category_uid: str | None,
-            hazard_uid: str | None,
-            store_room_uid: str | None,
-            lot_number: str | None,
-            batch: str | None,
-            size: int | None,
-            unit_uid: str | None,
-            packaging_uid: str | None,
-            price: int | None,
-            quantity_received: int | None,
-            date_received: datetime | None,
-            expiry_date: datetime | None,
-            received_by_uid: str | None,
-            user: User,
+        self,
+        uid: str,
+        name: str,
+        stock_item_uid: str | None,
+        department_uid: str | None,
+        supplier_uid: str | None,
+        category_uid: str | None,
+        hazard_uid: str | None,
+        store_room_uid: str | None,
+        lot_number: str | None,
+        batch: str | None,
+        size: int | None,
+        unit_uid: str | None,
+        packaging_uid: str | None,
+        price: int | None,
+        quantity_received: int | None,
+        date_received: datetime | None,
+        expiry_date: datetime | None,
+        received_by_uid: str | None,
+        user: User,
     ) -> StockProduct:
         payload = locals()
 
@@ -324,20 +324,20 @@ class StockOrderProductService(
 
 class StockTransactionService(BaseService[StockTransaction], IStockTransactionService):
     def __init__(
-            self,
-            repository: IStockTransactionRepository,
-            stock_product_service: IStockProductService,
+        self,
+        repository: IStockTransactionRepository,
+        stock_product_service: IStockProductService,
     ):
         self.repository = repository
         self.stock_product_service = stock_product_service
 
     async def create(
-            self,
-            product_uid: str,
-            issued: int,
-            issued_to_uid: str,
-            department_uid: str | None,
-            user: User,
+        self,
+        product_uid: str,
+        issued: int,
+        issued_to_uid: str,
+        department_uid: str | None,
+        user: User,
     ) -> StockTransaction:
 
         incoming: dict = {
@@ -376,20 +376,20 @@ class StockTransactionService(BaseService[StockTransaction], IStockTransactionSe
 
 class StockAdjustmentService(BaseService[StockAdjustment], IStockAdjustmentService):
     def __init__(
-            self,
-            repository: IStockAdjustmentRepository,
-            stock_product_service: IStockProductService,
+        self,
+        repository: IStockAdjustmentRepository,
+        stock_product_service: IStockProductService,
     ):
         self.repository = repository
         self.stock_product_service = stock_product_service
 
     async def create(
-            self,
-            product_uid: str,
-            adjustment_type: str,
-            adjust: int,
-            remarks: str | None,
-            user: User,
+        self,
+        product_uid: str,
+        adjustment_type: str,
+        adjust: int,
+        remarks: str | None,
+        user: User,
     ) -> StockAdjustment:
         incoming: dict = {
             "product_uid": product_uid,
@@ -428,11 +428,11 @@ class StockAdjustmentService(BaseService[StockAdjustment], IStockAdjustmentServi
 
 class StockOrderService(BaseService[StockOrder], IStockOrderService):
     def __init__(
-            self,
-            repository: IStockOrderRepository,
-            stock_product_service: IStockProductService,
-            stock_order_product_service: IStockOrderProductService,
-            stock_transaction_service: IStockTransactionService,
+        self,
+        repository: IStockOrderRepository,
+        stock_product_service: IStockProductService,
+        stock_order_product_service: IStockOrderProductService,
+        stock_transaction_service: IStockTransactionService,
     ):
         self.repository = repository
         self.stock_product_service = stock_product_service
@@ -440,10 +440,10 @@ class StockOrderService(BaseService[StockOrder], IStockOrderService):
         self.stock_transaction_service = stock_transaction_service
 
     async def create(
-            self,
-            order_products: list[StockOrderProductLineIn],
-            department_uid: str | None,
-            user: User,
+        self,
+        order_products: list[StockOrderProductLineIn],
+        department_uid: str | None,
+        user: User,
     ) -> tuple[StockOrder, list[StockOrderProduct]]:
 
         incoming: dict = {
@@ -476,11 +476,11 @@ class StockOrderService(BaseService[StockOrder], IStockOrderService):
         return stock_order, order_products
 
     async def update(
-            self,
-            uid: str,
-            order_products: list[StockOrderProductLineIn],
-            department_uid: str | None,
-            user: User,
+        self,
+        uid: str,
+        order_products: list[StockOrderProductLineIn],
+        department_uid: str | None,
+        user: User,
     ) -> tuple[StockOrder, list[StockProduct]]:
 
         stock_order = await self.get(uid=uid)
@@ -550,7 +550,7 @@ class StockOrderService(BaseService[StockOrder], IStockOrderService):
         )
 
     async def issue(
-            self, uid: str, payload: list[StockOrderProductLineIn], user: User
+        self, uid: str, payload: list[StockOrderProductLineIn], user: User
     ) -> tuple[StockOrder, list[StockProduct]]:
 
         stock_order = await self.get(uid=uid)

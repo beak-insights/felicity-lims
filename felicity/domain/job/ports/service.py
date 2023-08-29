@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 
-from domain.shared.ports.service import IBaseService
 from domain.job.schemas import Job
+from domain.shared.ports.service import IBaseService
 
 
 class IJobService(IBaseService[Job], ABC):
     @abstractmethod
-    async def backoff(self, minutes=5, max_retries=5) -> None:
+    async def backoff(self, job: Job, minutes=5, max_retries=5) -> None:
         ...
 
     @abstractmethod

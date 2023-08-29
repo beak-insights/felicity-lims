@@ -270,8 +270,12 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
     async def filter(
         self,
         filters: list[dict],
-        sort_attrs: list[str] | None,
+        sort_attrs: list[str] | None = None,
+        either: bool = False,
     ) -> list[M]:
+        if either:
+            filters = {sa_or_: filters}
+
         stmt = self._qb.smart_query(filters, sort_attrs)
         async with self.async_session() as session:
             results = await session.execute(stmt)

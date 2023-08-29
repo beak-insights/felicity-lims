@@ -1,11 +1,12 @@
 """Shipment Configs
 This file is part of Felicity LIMS Software
 """
+from enum import StrEnum
 
 
-class ShipmentStates(object):
+class ShipmentStates(StrEnum):
     """Shipment Workflow States
-    empty -> preperation -> ready -> shipped
+    empty -> preparation -> ready -> shipped
     Other:
     rejected, recalled, received
     """
@@ -13,14 +14,11 @@ class ShipmentStates(object):
     DUE = "due"  # shipment recived from external labs
     RECEIVING = "receiving"
     EMPTY = "empty"  # shipment without samples
-    PREPERATION = "preperation"  # shipment containing at least a single sample
+    PREPARATION = "preparation"  # shipment containing at least a single sample
     READY = "ready"  # shipment finalised
     AWAITING = "awaiting"  # shipment queued for dispatch
     FAILED = "failed"  # shipment queued for dispatch, has at least a one dispatch trial
     SHIPPED = "shipped"  # shipment that was successfully send and acknowledged in the other system
     REJECTED = "rejected"  # shipment rejected by the receiving lab
-    RECEIVED = "received"  # shipment receved by the receiving lab
+    RECEIVED = "received"  # shipment received by the receiving lab
     CANCELLED = "cancelled"  #
-
-
-shipment_states = ShipmentStates()

@@ -74,9 +74,7 @@ class IBaseRepository(Generic[M], ABC):
 
     @abstractmethod
     async def filter(
-        self,
-        filters: dict | list[dict],
-        sort: list[str] | None,
+        self, filters: dict | list[dict], sort: list[str] | None, either: bool
     ) -> list[M]:
         pass
 

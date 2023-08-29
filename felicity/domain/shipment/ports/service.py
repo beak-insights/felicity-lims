@@ -6,6 +6,7 @@ from domain.shipment.schemas import (
     ShippedSample,
     Shipment,
 )
+from domain.user.schemas import User
 
 
 class IReferralLaboratoryService(IBaseService[ReferralLaboratory], ABC):
@@ -26,7 +27,7 @@ class IShipmentService(IBaseService[Shipment], ABC):
         ...
 
     @abstractmethod
-    async def change_state(self, state, updated_by_uid):
+    async def change_state(self, shipment: Shipment, state: str, updated_by: User):
         ...
 
     @abstractmethod

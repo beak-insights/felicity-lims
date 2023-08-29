@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 
-from domain.shared.ports.service import IBaseService
 from domain.setup.schemas import (
     LaboratorySetting,
     Supplier,
@@ -12,6 +11,7 @@ from domain.setup.schemas import (
     Province,
     Country,
 )
+from domain.shared.ports.service import IBaseService
 
 
 class ILaboratorySettingService(IBaseService[LaboratorySetting], ABC):
@@ -36,7 +36,7 @@ class IUnitService(IBaseService[Unit], ABC):
 
 class ILaboratoryService(IBaseService[Laboratory], ABC):
     @abstractmethod
-    async def get_by_setup_name(cls, keyword: str) -> Laboratory | None:
+    async def get_by_setup_name(cls, keyword: str | None) -> Laboratory | None:
         ...
 
 

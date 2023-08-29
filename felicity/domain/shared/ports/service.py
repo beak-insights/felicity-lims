@@ -12,13 +12,13 @@ PydanticModel = TypeVar("PydanticModel", bound=BaseModel)
 class IBaseService(Generic[M], ABC):
     @abstractmethod
     async def paging_filter(
-            self,
-            page_size: int | None,
-            after_cursor: str | None,
-            before_cursor: str | None,
-            text: str | None,
-            sort_by: list[str] | None,
-            **kwargs
+        self,
+        page_size: int | None,
+        after_cursor: str | None,
+        before_cursor: str | None,
+        text: str | None,
+        sort_by: list[str] | None,
+        **kwargs
     ) -> PageCursor:
         pass
 
@@ -47,7 +47,7 @@ class IBaseService(Generic[M], ABC):
         pass
 
     @abstractmethod
-    async def bulk_create(self, bulk: list[dict]) -> None:
+    async def bulk_create(self, bulk: list[dict]) -> list[M]:
         pass
 
     @abstractmethod
