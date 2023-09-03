@@ -502,10 +502,10 @@ def hybrid_methods(model):
 
 def filterable_attributes(model):
     return (
-            relations(model)
-            + columns(model)
-            + hybrid_properties(model)
-            + hybrid_methods(model)
+        relations(model)
+        + columns(model)
+        + hybrid_properties(model)
+        + hybrid_methods(model)
     )
 
 
