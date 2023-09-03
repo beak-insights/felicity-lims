@@ -10,7 +10,7 @@ analysis_reports = Table(
     "analysis_reports",
     BaseAuditDBModel.metadata,
     Column("analysis_uid", ForeignKey("analysis.uid"), primary_key=True),
-    Column("report_uid", ForeignKey("reportmeta.uid"), primary_key=True),
+    Column("report_uid", ForeignKey("report_meta.uid"), primary_key=True),
 )
 
 

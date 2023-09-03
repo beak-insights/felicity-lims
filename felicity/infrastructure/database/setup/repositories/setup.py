@@ -1,4 +1,4 @@
-from domain.setup.ports.repository.setup import (
+from domain.setup.ports.repository import (
     IDepartmentRepository,
     ILaboratoryRepository,
     ILaboratorySettingRepository,

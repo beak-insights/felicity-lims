@@ -4,8 +4,9 @@ import strawberry  # noqa
 from api.gql.analysis.types import analysis as a_types
 from api.gql.auth import auth_from_info, verify_user_auth
 from api.gql.types import OperationError
-from apps.analysis import schemas
-from apps.analysis.models import analysis as analysis_models
+from domain.analysis.models import analysis as analysis_models
+
+from domain.analysis import schemas
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -26,7 +27,7 @@ ResultOptionResponse = strawberry.union(
 
 
 async def create_result_option(
-        info, payload: ResultOptionInputType
+    info, payload: ResultOptionInputType
 ) -> ResultOptionResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
@@ -62,7 +63,7 @@ async def create_result_option(
 
 
 async def update_result_option(
-        info, uid: str, payload: ResultOptionInputType
+    info, uid: str, payload: ResultOptionInputType
 ) -> ResultOptionResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(

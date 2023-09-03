@@ -3,10 +3,11 @@ import logging
 from typing import AsyncGenerator
 
 import strawberry  # noqa
-from api.gql.notification.types import ActivityStreamType
-from api.gql.permissions import IsAuthenticated
-from apps.common.channel import BroadcastEvent, Subscriber, broadcast
-from apps.notification.models import ActivityStream
+from domain.notification.models import ActivityStream
+
+from adapters.graphql.notification.types import ActivityStreamType
+from adapters.graphql.permissions import IsAuthenticated
+from domain.shared.channel import BroadcastEvent, Subscriber, broadcast
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

@@ -2,10 +2,11 @@ import json
 import logging
 from typing import Optional
 
-from apps.client import models as client_models
-from apps.client import schemas as client_schemas
-from apps.setup import models, schemas
 from core.config import settings
+
+from domain.client import models as client_models
+from domain.client import schemas as client_schemas
+from domain.setup import models, schemas
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

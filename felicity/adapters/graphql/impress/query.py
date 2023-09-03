@@ -3,12 +3,12 @@ import logging
 from typing import List
 
 import strawberry  # noqa
-from api.gql.impress.types import ReportImpressType
-from api.gql.permissions import IsAuthenticated
-from api.gql.types import BytesScalar
-from apps.impress.models import ReportImpress
-
 from PyPDF2 import PdfWriter
+from domain.impress.models import ReportImpress
+
+from adapters.graphql.impress.types import ReportImpressType
+from adapters.graphql.permissions import IsAuthenticated
+from adapters.graphql.types import BytesScalar
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -18,13 +18,13 @@ logger = logging.getLogger(__name__)
 class ReportImpressQuery:
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def impress_reports_meta(
-        self, info, uids: List[str]
+            self, info, uids: List[str]
     ) -> List[ReportImpressType]:
         return await ReportImpress.get_all(sample_uid__in=uids)
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def impress_reports_download(
-        self, info, uids: List[str]
+            self, info, uids: List[str]
     ) -> BytesScalar | None:
         """Fetch Latest report given sample id"""
         items = await ReportImpress.get_all(sample_uid__in=uids)

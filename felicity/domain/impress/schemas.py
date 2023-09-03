@@ -1,9 +1,10 @@
 from datetime import datetime
-from typing import Dict, Optional
-
-from apps.analysis.schemas import SampleInDB
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
+
+from domain.analysis.schemas import SampleInDB
+
 
 #
 # ReportImpress Schemas

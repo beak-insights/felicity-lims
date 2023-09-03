@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from domain.analysis.ports.service.analysis import IAnalysisService
 from domain.exceptions import AlreadyExistsError
 from domain.idsequence.ports.service import IIdSequenceService
 from domain.instrument.ports.repository import (
@@ -36,10 +35,6 @@ from domain.instrument.schemas import (
 )
 from domain.shared.services import BaseService
 from domain.shared.utils.serialisers import marshal
-from infrastructure.database.analysis.entities.analysis import (
-    analysis_method,
-    analysis_instrument,
-)
 from infrastructure.database.instrument.entities import method_instrument
 
 
@@ -106,17 +101,15 @@ class MethodService(BaseService[Method], IMethodService):
         self,
         repository: IMethodRepository,
         instrument_service: IInstrumentService,
-        analysis_service: IAnalysisService,
     ):
         self.repository = repository
         self.instrument_service = instrument_service
-        self.analysis_service = analysis_service
 
     async def create(
         self,
         name: str,
         instruments: list[str] | None,
-        analyses: list[str] | None,
+        # analyses: list[str] | None,
         keyword: str | None,
         description: str | None,
     ) -> Method:
@@ -154,26 +147,26 @@ class MethodService(BaseService[Method], IMethodService):
                     },
                 )
 
-        for a_uid in analyses:
-            analysis = await self.analysis_service.get(uid=a_uid)
-            meth_uids = [meth.uid for meth in analysis.methods]
-            if method.uid not in meth_uids:
-                await self.repository.table_insert(
-                    table=analysis_method,
-                    mappings={"method_uid": method.uid, "analysis_uid": analysis.uid},
-                )
-
-            for inst in method.instruments:
-                inst_uids = [inst.uid for inst in analysis.instruments]
-                if inst.uid not in inst_uids:
-                    analysis.instruments.append(inst)
-                    await self.repository.table_insert(
-                        table=analysis_instrument,
-                        mappings={
-                            "instrument_uid": inst.uid,
-                            "analysis_uid": analysis.uid,
-                        },
-                    )
+        # for a_uid in analyses:
+        #     analysis = await self.analysis_service.get(uid=a_uid)
+        #     meth_uids = [meth.uid for meth in analysis.methods]
+        #     if method.uid not in meth_uids:
+        #         await self.repository.table_insert(
+        #             table=analysis_method,
+        #             mappings={"method_uid": method.uid, "analysis_uid": analysis.uid},
+        #         )
+        #
+        #     for inst in method.instruments:
+        #         inst_uids = [inst.uid for inst in analysis.instruments]
+        #         if inst.uid not in inst_uids:
+        #             analysis.instruments.append(inst)
+        #             await self.repository.table_insert(
+        #                 table=analysis_instrument,
+        #                 mappings={
+        #                     "instrument_uid": inst.uid,
+        #                     "analysis_uid": analysis.uid,
+        #                 },
+        #             )
 
         return method
 
@@ -182,7 +175,7 @@ class MethodService(BaseService[Method], IMethodService):
         uid: str,
         name: str,
         instruments: list[str] | None,
-        analyses: list[str] | None,
+        # analyses: list[str] | None,
         keyword: str | None,
         description: str | None,
     ) -> Method:  # noqa
@@ -221,30 +214,30 @@ class MethodService(BaseService[Method], IMethodService):
         method = await super().update(method, **marshal(method))
 
         # manage analyses
-        all_analyses = await self.all()
-        analyses = set()
-        for analysis in all_analyses:
-            for _meth in analysis.methods:
-                if _meth.uid == method.uid:
-                    analyses.add(analysis)
-
-        an_uids = [an.uid for an in analyses]
-        for _anal in an_uids:
-            if _anal not in analyses:
-                analysis = filter(lambda a: a.uid == _anal, analyses)
-                analysis = list(analysis)[0]
-                for _method in analysis.methods:
-                    if _method.uid == method.uid:
-                        analysis.methods.remove(_method)
-                        await super().update(analysis, **marshal(analysis))
-
-        for _anal in analyses:
-            if _anal not in an_uids:
-                analysis = await self.analysis_service.get(uid=_anal)
-                await self.repostory.table_insert(
-                    table=analysis_method,
-                    mappings={"method_uid": method.uid, "analysis_uid": analysis.uid},
-                )
+        # all_analyses = await self.all()
+        # analyses = set()
+        # for analysis in all_analyses:
+        #     for _meth in analysis.methods:
+        #         if _meth.uid == method.uid:
+        #             analyses.add(analysis)
+        #
+        # an_uids = [an.uid for an in analyses]
+        # for _anal in an_uids:
+        #     if _anal not in analyses:
+        #         analysis = filter(lambda a: a.uid == _anal, analyses)
+        #         analysis = list(analysis)[0]
+        #         for _method in analysis.methods:
+        #             if _method.uid == method.uid:
+        #                 analysis.methods.remove(_method)
+        #                 await super().update(analysis, **marshal(analysis))
+        #
+        # for _anal in analyses:
+        #     if _anal not in an_uids:
+        #         analysis = await self.analysis_service.get(uid=_anal)
+        #         await self.repostory.table_insert(
+        #             table=analysis_method,
+        #             mappings={"method_uid": method.uid, "analysis_uid": analysis.uid},
+        #         )
 
         return method
 

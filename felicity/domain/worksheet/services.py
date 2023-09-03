@@ -11,7 +11,6 @@ from domain.analysis.ports.service.quality_control import (
 from domain.analysis.ports.service.result import IAnalysisResultService
 from domain.analysis.schemas import AnalysisResult
 from domain.analysis.schemas import QCSetCreate, AnalysisResultCreate, SampleCreate
-from domain.analysis.utils import get_qc_sample_type
 from domain.exceptions import *
 from domain.idsequence.ports.service import IIdSequenceService
 from domain.job.conf import JobActions, JobCategories, JobPriorities, JobStates
@@ -42,15 +41,15 @@ logger = logging.getLogger(__name__)
 
 class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
     def __init__(
-            self,
-            repository: IWorkSheetRepository,
-            analysis_result_service: IAnalysisResultService,
-            sample_service: ISampleService,
-            template_service: IWorkSheetTemplateService,
-            id_service: IIdSequenceService,
-            job_service: IJobService,
-            qc_set_service: IQCSetService,
-            qc_template_service: IQCTemplateService,
+        self,
+        repository: IWorkSheetRepository,
+        analysis_result_service: IAnalysisResultService,
+        sample_service: ISampleService,
+        template_service: IWorkSheetTemplateService,
+        id_service: IIdSequenceService,
+        job_service: IJobService,
+        qc_set_service: IQCSetService,
+        qc_template_service: IQCTemplateService,
     ):
         self.repository = repository
         self.analysis_result_service = analysis_result_service
@@ -92,7 +91,7 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
         await self.repository.update(worksheet, **marshal(worksheet))
 
     async def change_state(
-            self, worksheet: WorkSheet, state: str, updated_by_uid: str
+        self, worksheet: WorkSheet, state: str, updated_by_uid: str
     ) -> None:
         worksheet.state = state
         worksheet.updated_by_uid = updated_by_uid  # noqa
@@ -150,11 +149,11 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
         return worksheet
 
     async def create(
-            self,
-            template_uid: str,
-            analyst_uid: str,
-            count: int | None,
-            user: User,
+        self,
+        template_uid: str,
+        analyst_uid: str,
+        count: int | None,
+        user: User,
     ) -> list[WorkSheet]:
         if not count:
             count = 1
@@ -216,13 +215,13 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
         return [(await self.get(uid=ws.uid)) for ws in worksheets]
 
     async def update(
-            self,
-            worksheet_uid: str,
-            analyst_uid: str | None = None,
-            instrument_uid: str | None = None,
-            method_uid: str | None = None,
-            action: str | None = None,
-            samples: list[str] | None = None,
+        self,
+        worksheet_uid: str,
+        analyst_uid: str | None = None,
+        instrument_uid: str | None = None,
+        method_uid: str | None = None,
+        action: str | None = None,
+        samples: list[str] | None = None,
     ) -> WorkSheet:  # noqa
 
         if not worksheet_uid:
@@ -262,7 +261,7 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
         return worksheet
 
     async def update_worksheet_apply_template(
-            self, template_uid: str, worksheet_uid: str, user: User
+        self, template_uid: str, worksheet_uid: str, user: User
     ) -> WorkSheet:
 
         if not template_uid or not worksheet_uid:
@@ -309,11 +308,11 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
         return ws
 
     async def update_worksheet_manual_assign(
-            self,
-            uid: str,
-            analyses_uids: list[str],
-            qc_template_uid: str | None,
-            user: User,
+        self,
+        uid: str,
+        analyses_uids: list[str],
+        qc_template_uid: str | None,
+        user: User,
     ) -> WorkSheet:
 
         if not len(analyses_uids) > 0:
@@ -376,7 +375,7 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
                 job,
                 new_status=JobStates.FAILED,
                 change_reason=f"WorkSheet {ws_uid} - contains at least a "
-                              f"processed sample",
+                f"processed sample",
             )
             logger.warning(f"WorkSheet {ws_uid} - contains at least a processed sample")
             return
@@ -387,7 +386,7 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
                 job,
                 new_status=JobStates.FAILED,
                 change_reason=f"WorkSheet {ws_uid} already has "
-                              f"{ws.assigned_count} assigned samples",
+                f"{ws.assigned_count} assigned samples",
             )
             logger.warning(
                 f"WorkSheet {ws_uid} already has {ws.assigned_count} assigned samples"
@@ -410,7 +409,7 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
                 job,
                 new_status=JobStates.FAILED,
                 change_reason=f"There are no samples to assign to "
-                              f"WorkSheet {ws_uid}",
+                f"WorkSheet {ws_uid}",
             )
             logger.warning(f"There are no samples to assign to WorkSheet {ws_uid}")
             return
@@ -421,7 +420,7 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
 
             position = 1
             for key, sample in enumerate(
-                    sorted(samples, key=lambda s: s.uid, reverse=True)
+                sorted(samples, key=lambda s: s.uid, reverse=True)
             ):
 
                 while position in reserved:
@@ -506,7 +505,7 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
                             add_qc_sample = False
 
                 if add_qc_sample:
-                    sample_type = await get_qc_sample_type()
+                    sample_type = await self.sample_service.get_qc_sample_type()
 
                     # create qc_sample
                     s_in = SampleCreate(
@@ -581,7 +580,7 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
                             add_qc_sample = False
 
                 if add_qc_sample:
-                    sample_type = await get_qc_sample_type()
+                    sample_type = await self.sample_service.get_qc_sample_type()
 
                     # create qc_sample
                     s_in = SampleCreate(
@@ -651,7 +650,7 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
                 job,
                 new_status=JobStates.FAILED,
                 change_reason=f"WorkSheet {ws_uid} - contains at least a "
-                              f"processed sample",
+                f"processed sample",
             )
             logger.warning(f"WorkSheet {ws_uid} - contains at least a processed sample")
             return
@@ -679,7 +678,7 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
 
             position = 1
             for key, sample in enumerate(
-                    sorted(samples, key=lambda s: s.uid, reverse=True)
+                sorted(samples, key=lambda s: s.uid, reverse=True)
             ):
 
                 while position in reserved:
@@ -744,11 +743,11 @@ class WorkSheetService(BaseService[WorkSheet], IWorkSheetService):
 
 class WorkSheetTemplateService(BaseService[WSTemplate], IWorkSheetTemplateService):
     def __init__(
-            self,
-            repository: IWorkSheetTemplateRepository,
-            sample_type_service: ISampleTypeService,
-            qc_template_service: IQCTemplateService,
-            qc_level_service: IQCLevelService,
+        self,
+        repository: IWorkSheetTemplateRepository,
+        sample_type_service: ISampleTypeService,
+        qc_template_service: IQCTemplateService,
+        qc_level_service: IQCLevelService,
     ):
         self.repository = repository
         self.sample_type_service = sample_type_service
@@ -757,21 +756,21 @@ class WorkSheetTemplateService(BaseService[WSTemplate], IWorkSheetTemplateServic
         super().__init__(repository)
 
     async def create(
-            self,
-            user: User,
-            name: str,
-            sample_type_uid: str,
-            reserved: list[ReservedIn],
-            analysis_uid: str | None = None,
-            number_of_samples: int | None = None,
-            instrument_uid: str | None = None,
-            worksheet_type: str | None = None,
-            rows: int | None = None,
-            cols: int | None = None,
-            row_wise: bool | None = True,
-            description: str | None = None,
-            qc_template_uid: str | None = None,
-            profiles: list[str] | None = None,
+        self,
+        user: User,
+        name: str,
+        sample_type_uid: str,
+        reserved: list[ReservedIn],
+        analysis_uid: str | None = None,
+        number_of_samples: int | None = None,
+        instrument_uid: str | None = None,
+        worksheet_type: str | None = None,
+        rows: int | None = None,
+        cols: int | None = None,
+        row_wise: bool | None = True,
+        description: str | None = None,
+        qc_template_uid: str | None = None,
+        profiles: list[str] | None = None,
     ) -> WSTemplate:
 
         taken = await self.get(name=name)
@@ -821,22 +820,22 @@ class WorkSheetTemplateService(BaseService[WSTemplate], IWorkSheetTemplateServic
         return await self.create(**marshal(wst_schema))
 
     async def update(
-            self,
-            uid: str,
-            user: User,
-            name: str,
-            sample_type_uid: str,
-            reserved: list[ReservedIn],
-            analysis_uid: str | None = None,
-            number_of_samples: int | None = None,
-            instrument_uid: str | None = None,
-            worksheet_type: str | None = None,
-            rows: int | None = None,
-            cols: int | None = None,
-            row_wise: bool | None = True,
-            description: str | None = None,
-            qc_template_uid: str | None = None,
-            profiles: list[str] | None = None,
+        self,
+        uid: str,
+        user: User,
+        name: str,
+        sample_type_uid: str,
+        reserved: list[ReservedIn],
+        analysis_uid: str | None = None,
+        number_of_samples: int | None = None,
+        instrument_uid: str | None = None,
+        worksheet_type: str | None = None,
+        rows: int | None = None,
+        cols: int | None = None,
+        row_wise: bool | None = True,
+        description: str | None = None,
+        qc_template_uid: str | None = None,
+        profiles: list[str] | None = None,
     ) -> WSTemplate:
         payload = locals()
 

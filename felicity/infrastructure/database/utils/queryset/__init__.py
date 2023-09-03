@@ -272,7 +272,6 @@ def smart_query(query, filters=None, sort_attrs=None, schema=None):
                 else:
                     entity, attr_name = root_cls, attr
                 try:
-                    print(entity)
                     yield from filter_expr(entity, **{attr_name: value})
                 except KeyError as e:
                     raise KeyError("Incorrect filter path `{}`: {}".format(attr, e))

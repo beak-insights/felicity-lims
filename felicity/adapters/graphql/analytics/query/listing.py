@@ -1,11 +1,12 @@
 import logging
 
 import strawberry  # noqa
-from api.gql.analytics import types
-from apps.analysis.models.analysis import Sample
-from apps.analytics import SampleAnalyticsInit
-from apps.instrument.models import Instrument
-from apps.user.models import User
+from domain.analysis.models.analysis import Sample
+from domain.instrument.models import Instrument
+from domain.user.models import User
+
+from adapters.graphql.analytics import types
+from domain.analytics import SampleAnalyticsInit
 from utils import has_value_or_is_truthy
 
 logging.basicConfig(level=logging.INFO)

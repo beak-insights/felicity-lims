@@ -271,12 +271,15 @@ class BaseRepository(Generic[M], IBaseRepository[M]):
         self,
         filters: list[dict],
         sort_attrs: list[str] | None = None,
+        limit: int | None = None,
         either: bool = False,
     ) -> list[M]:
         if either:
             filters = {sa_or_: filters}
 
         stmt = self._qb.smart_query(filters, sort_attrs)
+        if limit:
+            stmt = stmt.limit(limit)
         async with self.async_session() as session:
             results = await session.execute(stmt)
             found = results.scalars().all()

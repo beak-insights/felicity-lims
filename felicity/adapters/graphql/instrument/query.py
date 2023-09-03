@@ -2,9 +2,8 @@ from typing import List
 
 import sqlalchemy as sa
 import strawberry  # noqa
-from api.gql.types import PageInfo
-from api.gql.permissions import IsAuthenticated
-from api.gql.instrument.types import (
+
+from adapters.graphql.instrument.types import (
     InstrumentCursorPage,
     InstrumentEdge,
     InstrumentType,
@@ -15,19 +14,20 @@ from api.gql.instrument.types import (
     MethodEdge,
     MethodType,
 )
-from apps.instrument import models
-
+from adapters.graphql.permissions import IsAuthenticated
+from adapters.graphql.types import PageInfo
+from domain.instrument import models
 from utils import has_value_or_is_truthy
 
 
 async def get_all_instrument_types(
-    self,
-    info,
-    page_size: int | None = None,
-    after_cursor: str | None = None,
-    before_cursor: str | None = None,
-    text: str | None = None,
-    sort_by: list[str] | None = None,
+        self,
+        info,
+        page_size: int | None = None,
+        after_cursor: str | None = None,
+        before_cursor: str | None = None,
+        text: str | None = None,
+        sort_by: list[str] | None = None,
 ) -> InstrumentTypeCursorPage:
     filters = {}
 
@@ -58,13 +58,13 @@ async def get_all_instrument_types(
 
 
 async def get_all_instruments(
-    self,
-    info,
-    page_size: int | None = None,
-    after_cursor: str | None = None,
-    before_cursor: str | None = None,
-    text: str | None = None,
-    sort_by: list[str] | None = None,
+        self,
+        info,
+        page_size: int | None = None,
+        after_cursor: str | None = None,
+        before_cursor: str | None = None,
+        text: str | None = None,
+        sort_by: list[str] | None = None,
 ) -> InstrumentCursorPage:
     filters = {}
 
@@ -105,13 +105,13 @@ async def get_all_instruments(
 
 
 async def get_all_methods(
-    self,
-    info,
-    page_size: int | None = None,
-    after_cursor: str | None = None,
-    before_cursor: str | None = None,
-    text: str | None = None,
-    sort_by: list[str] | None = None,
+        self,
+        info,
+        page_size: int | None = None,
+        after_cursor: str | None = None,
+        before_cursor: str | None = None,
+        text: str | None = None,
+        sort_by: list[str] | None = None,
 ) -> MethodCursorPage:
     filters = {}
 

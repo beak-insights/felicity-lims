@@ -1,12 +1,13 @@
 import logging
 
 import strawberry  # noqa
-from api.gql.analysis.types import analysis as a_types
-from api.gql.auth import auth_from_info, verify_user_auth
-from api.gql.permissions import IsAuthenticated
-from api.gql.types import OperationError
-from apps.analysis import schemas
-from apps.analysis.models import analysis as analysis_models
+from domain.analysis.models import analysis as analysis_models
+
+from adapters.graphql.analysis.types import analysis as a_types
+from adapters.graphql.auth import auth_from_info, verify_user_auth
+from adapters.graphql.permissions import IsAuthenticated
+from adapters.graphql.types import OperationError
+from domain.analysis import schemas
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

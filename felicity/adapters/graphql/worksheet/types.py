@@ -2,17 +2,18 @@ from datetime import datetime
 from typing import List, Optional
 
 import strawberry  # noqa
-from api.gql.types import PageInfo
-from api.gql.analysis.types.analysis import (
+
+from adapters.graphql.analysis.types.analysis import (
     AnalysisType,
     QCLevelType,
     QCTemplateType,
     SampleTypeTyp,
 )
-from api.gql.analysis.types.results import AnalysisResultType
-from api.gql.instrument.types import InstrumentType
-from api.gql.types import JSONScalar
-from api.gql.user.types import UserType
+from adapters.graphql.analysis.types.results import AnalysisResultType
+from adapters.graphql.instrument.types import InstrumentType
+from adapters.graphql.types import JSONScalar
+from adapters.graphql.types import PageInfo
+from adapters.graphql.user.types import UserType
 
 
 @strawberry.type

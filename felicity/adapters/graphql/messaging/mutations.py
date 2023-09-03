@@ -3,13 +3,13 @@ import logging
 from typing import List
 
 import strawberry  # noqa
-from api.gql.auth import auth_from_info, verify_user_auth
-from api.gql.messaging.types import MessageType
-from api.gql.permissions import IsAuthenticated
-from api.gql.types import DeletedItem, DeleteResponse, OperationError
-from apps.messaging import models, schemas
-from apps.user.models import User
+from domain.user.models import User
 
+from adapters.graphql.auth import auth_from_info, verify_user_auth
+from adapters.graphql.messaging.types import MessageType
+from adapters.graphql.permissions import IsAuthenticated
+from adapters.graphql.types import DeletedItem, DeleteResponse, OperationError
+from domain.messaging import models, schemas
 from utils import get_passed_args
 
 logging.basicConfig(level=logging.INFO)

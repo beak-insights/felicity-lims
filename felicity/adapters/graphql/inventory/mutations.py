@@ -3,12 +3,13 @@ from datetime import datetime, timedelta
 from typing import List
 
 import strawberry  # noqa
-from api.gql.auth import auth_from_info, verify_user_auth
-from api.gql.inventory import types
-from api.gql.permissions import IsAuthenticated
-from api.gql.types import OperationError
-from apps.inventory import models, schemas
-from apps.inventory.conf import order_states
+
+from adapters.graphql.auth import auth_from_info, verify_user_auth
+from adapters.graphql.inventory import types
+from adapters.graphql.permissions import IsAuthenticated
+from adapters.graphql.types import OperationError
+from domain.inventory import models, schemas
+from domain.inventory.conf import order_states
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

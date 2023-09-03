@@ -1,6 +1,7 @@
-from apps.analysis.schemas import SampleBaseInDB
-
 from pydantic import BaseModel, ConfigDict
+
+from domain.analysis.schemas import SampleBaseInDB
+
 
 #
 # ReferralLaboratory Schemas

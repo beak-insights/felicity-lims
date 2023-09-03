@@ -17,26 +17,26 @@ from domain.user.schemas import User
 class IFhirCreateService(ABC):
     @abstractmethod
     async def create_resource(
-            self,
-            resource_type: str,
-            resource_data: BundleResource
-                           | PatientResource
-                           | ServiceRequestResource
-                           | DiagnosticReportResource,
-            request: Request,
-            current_user: User,
+        self,
+        resource_type: str,
+        resource_data: BundleResource
+        | PatientResource
+        | ServiceRequestResource
+        | DiagnosticReportResource,
+        request: Request,
+        current_user: User,
     ):
         pass
 
     @abstractmethod
     async def create_bundle(
-            self, resource_data: BundleResource, request: Request, current_user: User
+        self, resource_data: BundleResource, request: Request, current_user: User
     ):
         pass
 
     @abstractmethod
     async def create_inbound_shipment(
-            self, payload: BundleResource, request: Request, current_user: User
+        self, payload: BundleResource, request: Request, current_user: User
     ):
         pass
 
@@ -46,10 +46,10 @@ class IFhirCreateService(ABC):
 
     @abstractmethod
     async def create_diagnostic_report(
-            self,
-            diagnostic_data: DiagnosticReportResource,
-            request: Request,
-            current_user: User,
+        self,
+        diagnostic_data: DiagnosticReportResource,
+        request: Request,
+        current_user: User,
     ):
         pass
 
@@ -67,7 +67,7 @@ class IFhirReadService(ABC):
 
     @abstractmethod
     async def get_diagnostic_report_resource(
-            self, service_request_uid: str, obs_uids: list[str], for_referral=False
+        self, service_request_uid: str, obs_uids: list[str], for_referral=False
     ) -> DiagnosticReportResource | None:
         pass
 
@@ -81,7 +81,7 @@ class IFhirReadService(ABC):
 
     @abstractmethod
     async def get_shipment_bundle_resource(
-            self, shipment_uid: str
+        self, shipment_uid: str
     ) -> BundleResource | None:
         pass
 

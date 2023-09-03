@@ -121,8 +121,8 @@ class ActivityStreamService(BaseService[ActivityStream], IActivityStreamService)
 
 
 class NotificationService(BaseService[Notification], INotificationService):
-    def __init__(self, respository: INotificationRepository):
-        self.respository = respository
+    def __init__(self, repository: INotificationRepository):
+        self.repository = repository
 
     async def notify(
             self,

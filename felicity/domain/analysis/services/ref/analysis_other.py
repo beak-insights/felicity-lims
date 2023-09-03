@@ -4,8 +4,9 @@ import strawberry  # noqa
 from api.gql.analysis.types import analysis as a_types
 from api.gql.auth import auth_from_info, verify_user_auth
 from api.gql.types import OperationError
-from apps.analysis import schemas
-from apps.analysis.models import analysis as analysis_models
+from domain.analysis.models import analysis as analysis_models
+
+from domain.analysis import schemas
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -92,7 +93,7 @@ AnalysisSpecificationResponse = strawberry.union(
 
 
 async def create_analysis_interim(
-        info, payload: AnalysisInterimInput
+    info, payload: AnalysisInterimInput
 ) -> AnalysisInterimResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
@@ -116,7 +117,7 @@ async def create_analysis_interim(
 
 
 async def update_analysis_interim(
-        info, uid: str, payload: AnalysisInterimInput
+    info, uid: str, payload: AnalysisInterimInput
 ) -> AnalysisInterimResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
@@ -145,7 +146,7 @@ async def update_analysis_interim(
 
 
 async def create_analysis_correction_factor(
-        info, payload: AnalysisCorrectionFactorInput
+    info, payload: AnalysisCorrectionFactorInput
 ) -> AnalysisCorrectionFactorResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
@@ -169,7 +170,7 @@ async def create_analysis_correction_factor(
 
 
 async def update_analysis_correction_factor(
-        info, uid: str, payload: AnalysisCorrectionFactorInput
+    info, uid: str, payload: AnalysisCorrectionFactorInput
 ) -> AnalysisCorrectionFactorResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
@@ -200,7 +201,7 @@ async def update_analysis_correction_factor(
 
 
 async def create_analysis_detection_limit(
-        info, payload: AnalysisDetectionLimitInput
+    info, payload: AnalysisDetectionLimitInput
 ) -> AnalysisDetectionLimitResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
@@ -224,7 +225,7 @@ async def create_analysis_detection_limit(
 
 
 async def update_analysis_detection_limit(
-        info, uid: str, payload: AnalysisDetectionLimitInput
+    info, uid: str, payload: AnalysisDetectionLimitInput
 ) -> AnalysisDetectionLimitResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
@@ -255,7 +256,7 @@ async def update_analysis_detection_limit(
 
 
 async def create_analysis_uncertainty(
-        info, payload: AnalysisUncertaintyInput
+    info, payload: AnalysisUncertaintyInput
 ) -> AnalysisUncertaintyResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
@@ -279,7 +280,7 @@ async def create_analysis_uncertainty(
 
 
 async def update_analysis_uncertainty(
-        info, uid: str, payload: AnalysisUncertaintyInput
+    info, uid: str, payload: AnalysisUncertaintyInput
 ) -> AnalysisUncertaintyResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
@@ -308,7 +309,7 @@ async def update_analysis_uncertainty(
 
 
 async def create_analysis_specification(
-        info, payload: AnalysisSpecificationInput
+    info, payload: AnalysisSpecificationInput
 ) -> AnalysisSpecificationResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
@@ -338,7 +339,7 @@ async def create_analysis_specification(
 
 
 async def update_analysis_specification(
-        info, uid: str, payload: AnalysisSpecificationInput
+    info, uid: str, payload: AnalysisSpecificationInput
 ) -> AnalysisSpecificationResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(

@@ -1,9 +1,10 @@
 from datetime import datetime
 from typing import List, Optional
 
-from apps.common.schemas import BaseAuditModel
-from apps.setup.schemas import ManufacturerInDB, SupplierInDB
 from pydantic import BaseModel, ConfigDict
+
+from domain.setup.schemas import ManufacturerInDB, SupplierInDB
+from domain.shared.schemas import BaseAuditModel
 
 
 #

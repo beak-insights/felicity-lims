@@ -27,14 +27,14 @@ from domain.shipment.ports.service import (
 
 class FhirReadService(IFhirReadService):
     def __init__(
-            self,
-            analysis_request_service: IAnalysisRequestService,
-            sample_service: ISampleService,
-            analysis_result_service: IAnalysisResultService,
-            shipped_sample_service: IShippedSampleService,
-            patient_service: IPatientService,
-            shipment_service: IShipmentService,
-            laboratory_service: ILaboratoryService,
+        self,
+        analysis_request_service: IAnalysisRequestService,
+        sample_service: ISampleService,
+        analysis_result_service: IAnalysisResultService,
+        shipped_sample_service: IShippedSampleService,
+        patient_service: IPatientService,
+        shipment_service: IShipmentService,
+        laboratory_service: ILaboratoryService,
     ):
         self.analysis_request_service = analysis_request_service
         self.sample_service = sample_service
@@ -55,7 +55,7 @@ class FhirReadService(IFhirReadService):
         return v.strftime("%Y-%m-%d %H:%M:%S")
 
     async def get_diagnostic_report_resource(
-            self, service_request_uid: str, obs_uids: list[str] = [], for_referral=False
+        self, service_request_uid: str, obs_uids: list[str] = [], for_referral=False
     ) -> DiagnosticReportResource | None:
         ar, sample = await asyncio.gather(
             self.analysis_request_service.get(uid=service_request_uid),
@@ -296,7 +296,7 @@ class FhirReadService(IFhirReadService):
         return SpecimenResource(**sp_values)
 
     async def get_shipment_bundle_resource(
-            self, shipment_uid: int
+        self, shipment_uid: int
     ) -> BundleResource | None:
         shipment = await self.shipment_service.get(uid=shipment_uid)
         shipped_samples = await self.shipped_sample_service.get_all(

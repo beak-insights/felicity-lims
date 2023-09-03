@@ -2,9 +2,10 @@ from datetime import datetime
 from typing import Optional
 
 import strawberry  # noqa
-from api.gql.analysis.types.analysis import SampleType
-from api.gql.types import BytesScalar, JSONScalar
-from api.gql.user.types import UserType
+
+from adapters.graphql.analysis.types.analysis import SampleType
+from adapters.graphql.types import BytesScalar, JSONScalar
+from adapters.graphql.user.types import UserType
 
 
 @strawberry.type

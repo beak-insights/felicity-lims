@@ -63,15 +63,15 @@ class ReferralLaboratoryService(
         self.repository = repository
 
     async def create(
-            self,
-            name: str,
-            code: str,
-            url: str,
-            username: str,
-            password: str,
-            is_reference: bool,
-            is_referral: bool,
-            user: User,
+        self,
+        name: str,
+        code: str,
+        url: str,
+        username: str,
+        password: str,
+        is_reference: bool,
+        is_referral: bool,
+        user: User,
     ) -> ReferralLaboratory:
 
         exists = await self.repository.filter(
@@ -98,16 +98,16 @@ class ReferralLaboratoryService(
         return await super().create(**marshal(obj_in))
 
     async def update(
-            self,
-            uid: str,
-            name: str,
-            code: str,
-            url: str,
-            username: str,
-            password: str,
-            is_reference: bool,
-            is_referral: bool,
-            user: User,
+        self,
+        uid: str,
+        name: str,
+        code: str,
+        url: str,
+        username: str,
+        password: str,
+        is_reference: bool,
+        is_referral: bool,
+        user: User,
     ) -> ReferralLaboratory:
         payload = locals()
 
@@ -136,21 +136,21 @@ class ShippedSampleService(BaseService[ShippedSample], IShippedSampleService):
 
 class ShipmentService(BaseService[Shipment], IShipmentService):
     def __init__(
-            self,
-            repository: IShipmentRepository,
-            shipped_sample_service: IShippedSampleService,
-            stream_service: IActivityStreamService,
-            id_sequence_service: IIdSequenceService,
-            job_service: IJobService,
-            sample_service: ISampleService,
-            analysis_result_service: IAnalysisResultService,
-            user_service: IUserService,
-            analysis_request_service: IAnalysisRequestService,
-            client_service: IClientService,
-            patient_service: IPatientService,
-            sample_type_service: ISampleTypeService,
-            analysis_service: IAnalysisService,
-            reflex_engine_service: IReflexEngineService,
+        self,
+        repository: IShipmentRepository,
+        shipped_sample_service: IShippedSampleService,
+        stream_service: IActivityStreamService,
+        id_sequence_service: IIdSequenceService,
+        job_service: IJobService,
+        sample_service: ISampleService,
+        analysis_result_service: IAnalysisResultService,
+        user_service: IUserService,
+        analysis_request_service: IAnalysisRequestService,
+        client_service: IClientService,
+        patient_service: IPatientService,
+        sample_type_service: ISampleTypeService,
+        analysis_service: IAnalysisService,
+        reflex_engine_service: IReflexEngineService,
     ):
         self.repository = repository
         self.shipped_sample_service = shipped_sample_service
@@ -186,12 +186,12 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
         return await super().update(shipment, **marshal(shipment))
 
     async def create(
-            self,
-            laboratory_uid: str | None,
-            courier: str,
-            comment: str | None,
-            count: int | None,
-            user: User,
+        self,
+        laboratory_uid: str | None,
+        courier: str,
+        comment: str | None,
+        count: int | None,
+        user: User,
     ) -> list[Shipment]:
 
         incoming = {
@@ -226,7 +226,7 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
         return [(await self.get(uid=sh.uid)) for sh in shipments]
 
     async def update(
-            self, uid: str, laboratory_uid: str | None, courier: str, comment: str | None
+        self, uid: str, laboratory_uid: str | None, courier: str, comment: str | None
     ) -> Shipment:  # noqa
         payload = locals()
 
@@ -277,7 +277,7 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
         return await self.get(uid=uid)
 
     async def manage_samples(
-            self, uid: str, samples: list[ReferenceSampleIn], action: str, user: User
+        self, uid: str, samples: list[ReferenceSampleIn], action: str, user: User
     ) -> Shipment:
 
         if not len(samples) > 0:
@@ -495,7 +495,7 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
                         update={
                             "analysis_uid": _service.uid,
                             "due_date": datetime.now()
-                                        + timedelta(minutes=_service.tat_length_minutes)
+                            + timedelta(minutes=_service.tat_length_minutes)
                             if _service.tat_length_minutes
                             else None,
                         }
@@ -526,7 +526,7 @@ class ShipmentService(BaseService[Shipment], IShipmentService):
         await self.job_service.change_status(job, new_status=JobStates.FINISHED)
 
     async def shipment_recover(
-            self, shipment: Shipment, samples_data: list[dict], actor
+        self, shipment: Shipment, samples_data: list[dict], actor
     ):
         async def process_sample(sample_data):
             sample = await self.sample_service.get(

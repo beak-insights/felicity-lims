@@ -1,19 +1,17 @@
 import logging
-from typing import List, Optional
+from typing import List
 
 import sqlalchemy as sa
 import strawberry  # noqa
-from api.gql.types import PageInfo
-from api.gql.permissions import IsAuthenticated
-from api.gql.worksheet.types import (
+
+from adapters.graphql.permissions import IsAuthenticated
+from adapters.graphql.types import PageInfo
+from adapters.graphql.worksheet.types import (
     WorkSheetCursorPage,
     WorkSheetEdge,
     WorkSheetTemplateType,
     WorkSheetType,
 )
-from apps.worksheet import models as ws_models
-
-from utils import has_value_or_is_truthy
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -23,20 +21,20 @@ logger = logging.getLogger(__name__)
 class WorkSheetQuery:
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def worksheet_all(
-        self,
-        info,
-        page_size: int | None = None,
-        after_cursor: str | None = None,
-        before_cursor: str | None = None,
-        text: str | None = None,
-        status: str | None = None,
-        sort_by: list[str] | None = None,
+            self,
+            info,
+            page_size: int | None = None,
+            after_cursor: str | None = None,
+            before_cursor: str | None = None,
+            text: str | None = None,
+            status: str | None = None,
+            sort_by: list[str] | None = None,
     ) -> WorkSheetCursorPage:
 
         filters = []
 
         _or_text_ = {}
-        if has_value_or_is_truthy(text):
+        if text:
             arg_list = [
                 "state__ilike",
                 "worksheet_id__ilike",
@@ -55,7 +53,7 @@ class WorkSheetQuery:
 
         # filters.append({'internal_use__ne': True})
 
-        page = await ws_models.WorkSheet.paginate_with_cursors(
+        page = await WorkSheet.paginate_with_cursors(
             page_size=page_size,
             after_cursor=after_cursor,
             before_cursor=before_cursor,
@@ -74,28 +72,28 @@ class WorkSheetQuery:
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def worksheet_template_all(self, info) -> List[WorkSheetTemplateType]:
-        return await ws_models.WorkSheetTemplate.all()
+        return await WorkSheetTemplate.all()
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def worksheet_by_analyst(self, info, analyst_uid: str) -> List[WorkSheetType]:
-        return await ws_models.WorkSheet.get_all(analyst_uid=analyst_uid)
+        return await WorkSheet.get_all(analyst_uid=analyst_uid)
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def worksheet_by_uid(self, info, worksheet_uid: str) -> WorkSheetType:
-        return await ws_models.WorkSheet.get(uid=worksheet_uid)
+        return await WorkSheet.get(uid=worksheet_uid)
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def worksheet_by_id(self, info, worksheet_id: str) -> WorkSheetType:
-        return await ws_models.WorkSheet.get(worksheet_id=worksheet_id)
+        return await WorkSheet.get(worksheet_id=worksheet_id)
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def worksheet_by_status(
-        self, info, worksheet_status: str
+            self, info, worksheet_status: str
     ) -> List[WorkSheetType]:
-        return await ws_models.WorkSheet.get_all(status__exact=worksheet_status)
+        return await WorkSheet.get_all(status__exact=worksheet_status)
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def worksheet_template_by_uid(
-        self, info, worksheet_uid: str
+            self, info, worksheet_uid: str
     ) -> List[WorkSheetType]:
-        return await ws_models.WorkSheet.get_all(uid=worksheet_uid)
+        return await WorkSheet.get_all(uid=worksheet_uid)

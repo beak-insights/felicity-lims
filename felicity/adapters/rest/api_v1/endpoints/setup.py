@@ -1,12 +1,12 @@
 import logging
 from typing import Any, Optional
 
-from sanic import Blueprint, json
-from apps.setup import models, schemas
-from apps.user import models as user_models
-from api import deps
 from init import default_setup, requisite_setup
 from pydantic import BaseModel
+from sanic import Blueprint, json
+
+from domain.setup import models, schemas
+from domain.user import models as user_models
 
 setup = Blueprint("setup", url_prefix="/setup")
 

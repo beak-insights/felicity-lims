@@ -43,6 +43,10 @@ class IBaseService(Generic[M], ABC):
         pass
 
     @abstractmethod
+    async def get_related(self, uid: str, related: list[str]) -> M:
+        pass
+
+    @abstractmethod
     async def create(self, **kwargs) -> M:
         pass
 

@@ -1,9 +1,10 @@
 from typing import List, Optional
 
 import strawberry  # noqa
-from api.gql.noticeboard.types import NoticeType
-from api.gql.permissions import IsAuthenticated
-from apps.noticeboard import models
+
+from adapters.graphql.noticeboard.types import NoticeType
+from adapters.graphql.permissions import IsAuthenticated
+from domain.noticeboard import models
 
 
 @strawberry.type
@@ -18,10 +19,10 @@ class NoticeQuery:
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def notice_filter(
-        self,
-        info,
-        group_uid: str | None,
-        department_uid: str | None,
+            self,
+            info,
+            group_uid: str | None,
+            department_uid: str | None,
     ) -> List[NoticeType]:
         filters = {}
 

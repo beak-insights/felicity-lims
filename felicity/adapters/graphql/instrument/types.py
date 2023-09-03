@@ -3,9 +3,10 @@ from datetime import datetime
 from typing import List, Optional
 
 import strawberry  # noqa
-from api.gql.types import PageInfo
-from api.gql.user.types import UserType
-from api.gql.setup.types import ManufacturerType, SupplierType
+
+from adapters.graphql.setup.types import ManufacturerType, SupplierType
+from adapters.graphql.types import PageInfo
+from adapters.graphql.user.types import UserType
 
 
 @strawberry.type

@@ -1,8 +1,9 @@
 import logging
 
 import pytest
-from apps.analysis.tasks import submit_results, verify_results
 from tests.utils.user import make_password, make_username
+
+from domain.analysis.services.tasks import submit_results, verify_results
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

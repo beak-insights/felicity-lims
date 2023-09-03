@@ -1,12 +1,10 @@
 from sqlalchemy import Boolean, Column, ForeignKey, String
 from sqlalchemy.orm import backref, relationship
 
-from infrastructure.database import Auditable
-
 from domain.user.conf import UserType
+from infrastructure.database import Auditable
 from infrastructure.database.setup.entities import District, Province
 from infrastructure.database.user.abstract import AbstractBaseUser
-from infrastructure.database.user.entities import UserAuth
 
 
 class Client(Auditable):
@@ -51,10 +49,6 @@ class Client(Auditable):
 class ClientContact(AbstractBaseUser):
     __tablename__ = "client_contact"
 
-    auth_uid = Column(String, ForeignKey("userauth.uid"), nullable=True)
-    auth = relationship(
-        UserAuth, backref=backref(UserType.CLIENT_CONTACT, uselist=False)
-    )
     email = Column(String, unique=False, index=True, nullable=True)
     email_cc = Column(String, nullable=True)
     consent_sms = Column(Boolean(), default=False)

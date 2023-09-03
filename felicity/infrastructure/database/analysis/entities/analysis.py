@@ -328,7 +328,7 @@ class ResultOption(BaseAuditDBModel):
 class AnalysisRequest(BaseAuditDBModel):
     """AnalysisRequest a.k.a Laboratory Request"""
 
-    __tablename__ = "result_request"
+    __tablename__ = "analysis_request"
 
     patient_uid = Column(String, ForeignKey("patient.uid"))
     patient = relationship(
@@ -371,7 +371,9 @@ sample_rejection_reason = Table(
     "sample_rejection_reason",
     DBModel.metadata,
     Column("sample_uid", ForeignKey("sample.uid"), primary_key=True),
-    Column("rejection_reason_uid", ForeignKey("rejectionreason.uid"), primary_key=True),
+    Column(
+        "rejection_reason_uid", ForeignKey("rejection_reason.uid"), primary_key=True
+    ),
 )
 
 
@@ -394,7 +396,7 @@ class Sample(Auditable, BaseMPTT):
     analysis_request = relationship(
         "AnalysisRequest", back_populates="samples", lazy="selectin"
     )
-    sample_type_uid = Column(String, ForeignKey("sampletype.uid"), nullable=False)
+    sample_type_uid = Column(String, ForeignKey("sample_type.uid"), nullable=False)
     sample_type = relationship("SampleType", backref="samples", lazy="selectin")
     sample_id = Column(String, index=True, unique=True, nullable=True)
     profiles = relationship(

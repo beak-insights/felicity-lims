@@ -46,7 +46,7 @@ class Patient(Auditable):
     phone_home = Column(String, nullable=True)
     consent_sms = Column(Boolean(), default=False)
     email = Column(String, nullable=True)
-    identifications: Mapped[List["PatientIdentification"]] = relationship(
+    identifications: Mapped[list["PatientIdentification"]] = relationship(
         PatientIdentification, back_populates="patient", lazy="selectin"
     )
     # status

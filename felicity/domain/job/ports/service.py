@@ -24,3 +24,13 @@ class IJobService(IBaseService[Job], ABC):
     @abstractmethod
     async def decrease_priority(self) -> None:
         ...
+
+
+class IJobWorkerService(ABC):
+    @abstractmethod
+    async def run_jobs_if_exists(self):
+        pass
+
+    @staticmethod
+    async def unknown_action(action: str):
+        pass

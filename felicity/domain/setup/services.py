@@ -58,20 +58,20 @@ class LaboratorySettingService(
         self.repository = repository
 
     async def update(
-            self,
-            uid: str,
-            laboratory_uid: str,
-            allow_self_verification: bool | None,
-            allow_patient_registration: bool | None,
-            allow_sample_registration: bool | None,
-            allow_worksheet_creation: bool | None,
-            default_route: str | None,
-            password_lifetime: int | None,
-            inactivity_log_out: int | None,
-            default_theme: str | None,
-            auto_receive_samples: bool | None,
-            sticker_copies: int | None,
-            **kwargs,
+        self,
+        uid: str,
+        laboratory_uid: str,
+        allow_self_verification: bool | None,
+        allow_patient_registration: bool | None,
+        allow_sample_registration: bool | None,
+        allow_worksheet_creation: bool | None,
+        default_route: str | None,
+        password_lifetime: int | None,
+        inactivity_log_out: int | None,
+        default_theme: str | None,
+        auto_receive_samples: bool | None,
+        sticker_copies: int | None,
+        **kwargs,
     ) -> LaboratorySetting:  # noqa
         payload = locals()
 
@@ -94,10 +94,10 @@ class SupplierService(BaseService[Supplier], ISupplierService):
         self.repository = repository
 
     async def create(
-            self,
-            name: str,
-            description: str | None,
-            code: str | None = None,
+        self,
+        name: str,
+        description: str | None,
+        code: str | None = None,
     ) -> Supplier:  # noqa
         payload = locals()
 
@@ -113,11 +113,11 @@ class SupplierService(BaseService[Supplier], ISupplierService):
         return await super().create(**marshal(obj_in))
 
     async def update(
-            self,
-            uid: str,
-            name: str,
-            description: str | None,
-            code: str | None = None,
+        self,
+        uid: str,
+        name: str,
+        description: str | None,
+        code: str | None = None,
     ) -> Supplier:  # noqa
         payload = locals()
 
@@ -139,9 +139,9 @@ class ManufacturerService(BaseService[Manufacturer], IManufacturerService):
         self.repository = repository
 
     async def create(
-            self,
-            name: str,
-            description: str | None,
+        self,
+        name: str,
+        description: str | None,
     ) -> Manufacturer:  # noqa
         payload = locals()
 
@@ -157,7 +157,7 @@ class ManufacturerService(BaseService[Manufacturer], IManufacturerService):
         return await super().create(**marshal(obj_in))
 
     async def update(
-            self, uid: str, name: str, description: str | None
+        self, uid: str, name: str, description: str | None
     ) -> Manufacturer:
         payload = locals()
 
@@ -180,10 +180,10 @@ class DepartmentService(BaseService[Department], IDepartmentService):
         self.repository = repository
 
     async def create(
-            self,
-            name: str,
-            description: str | None,
-            code: str | None,
+        self,
+        name: str,
+        description: str | None,
+        code: str | None,
     ) -> Department:
         payload = locals()
 
@@ -199,7 +199,7 @@ class DepartmentService(BaseService[Department], IDepartmentService):
         return await super().create(**marshal(obj_in))
 
     async def update(
-            self, uid: str, name: str, description: str | None, code: str | None
+        self, uid: str, name: str, description: str | None, code: str | None
     ) -> Department:
         payload = locals()
 
@@ -260,17 +260,17 @@ class LaboratoryService(BaseService[Laboratory], ILaboratoryService):
         return await self.get(setup_name=keyword)
 
     async def update(
-            self,
-            uid: str,
-            lab_name: str,
-            setup_name: str,
-            email: str | None,
-            email_cc: str | None,
-            mobile_phone: str | None,
-            business_phone: str | None,
-            lab_manager_uid: str | None,
-            address: str | None,
-            logo: str | None,
+        self,
+        uid: str,
+        lab_name: str,
+        setup_name: str,
+        email: str | None,
+        email_cc: str | None,
+        mobile_phone: str | None,
+        business_phone: str | None,
+        lab_manager_uid: str | None,
+        address: str | None,
+        logo: str | None,
     ) -> Laboratory:  # noqa
         payload = locals()
 
@@ -293,15 +293,15 @@ class DistrictService(BaseService[District], IDistrictService):
         self.repository = repository
 
     async def create(
-            self,
-            name: str,
-            province_uid: str | None,
-            code: str | None,
-            email: str | None,
-            email_cc: str | None,
-            mobile_phone: str | None,
-            business_phone: str | None,
-            active: bool | None = True,
+        self,
+        name: str,
+        province_uid: str | None,
+        code: str | None,
+        email: str | None,
+        email_cc: str | None,
+        mobile_phone: str | None,
+        business_phone: str | None,
+        active: bool | None = True,
     ) -> District:  # noqa
         payload = locals()
 
@@ -317,17 +317,17 @@ class DistrictService(BaseService[District], IDistrictService):
         return await super().create(**marshal(district_in))
 
     async def update(
-            self,
-            info,
-            uid: str,
-            name: str,
-            province_uid: str | None,
-            code: str | None,
-            email: str | None,
-            email_cc: str | None,
-            mobile_phone: str | None,
-            business_phone: str | None,
-            active: bool | None = True,
+        self,
+        info,
+        uid: str,
+        name: str,
+        province_uid: str | None,
+        code: str | None,
+        email: str | None,
+        email_cc: str | None,
+        mobile_phone: str | None,
+        business_phone: str | None,
+        active: bool | None = True,
     ) -> District:
         payload = locals()
 
@@ -350,15 +350,15 @@ class ProvinceService(BaseService[Province], IProvinceService):
         self.repository = repository
 
     async def create(
-            self,
-            name: str | None,
-            country_uid: str | None,
-            code: str | None,
-            email: str | None,
-            email_cc: str | None,
-            mobile_phone: str | None,
-            business_phone: str | None,
-            active: bool | None,
+        self,
+        name: str | None,
+        country_uid: str | None,
+        code: str | None,
+        email: str | None,
+        email_cc: str | None,
+        mobile_phone: str | None,
+        business_phone: str | None,
+        active: bool | None,
     ) -> Province:
         payload = locals()
 
@@ -376,18 +376,18 @@ class ProvinceService(BaseService[Province], IProvinceService):
         return await super().create(**marshal(province_in))
 
     async def update(
-            self,
-            info,
-            uid: str,
-            name: str | None,
-            country_uid: str | None,
-            code: str | None,
-            email: str | None,
-            email_cc: str | None,
-            mobile_phone: str | None,
-            business_phone: str | None,
-            active: bool | None,
-    ) -> ProvinceResponse:  # noqa
+        self,
+        info,
+        uid: str,
+        name: str | None,
+        country_uid: str | None,
+        code: str | None,
+        email: str | None,
+        email_cc: str | None,
+        mobile_phone: str | None,
+        business_phone: str | None,
+        active: bool | None,
+    ) -> Province:  # noqa
         payload = locals()
 
         province = await self.get(uid=uid)
@@ -409,7 +409,7 @@ class CountryService(BaseService[Country], ICountryService):
         self.repository = repository
 
     async def create(
-            self, name: str, code: str, active: bool | None
+        self, name: str, code: str, active: bool | None
     ) -> Country:  # noqa
         payload = locals()
         exists = await self.get(code=code)
@@ -426,7 +426,7 @@ class CountryService(BaseService[Country], ICountryService):
         return await super().create(**marshal(obj_in))
 
     async def update(
-            self, uid: str, name: str, code: str, active: bool | None
+        self, uid: str, name: str, code: str, active: bool | None
     ) -> Country:  # noqa
         payload = locals()
 

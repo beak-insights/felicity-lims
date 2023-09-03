@@ -1,7 +1,9 @@
 from typing import List, Optional
 
-from apps.common.schemas import BaseAuditModel
-from apps.user.schemas import User
+from pydantic import ConfigDict
+
+from domain.shared.schemas import BaseAuditModel
+from domain.user.schemas import User
 
 
 #

@@ -1,19 +1,21 @@
 import json
+
+from domain.iol.fhir.utils import (
+    get_diagnostic_report_resource,
+    get_patient_resource,
+    create_resource,
+)
 from sanic import Blueprint
-from sanic.request import Request
 from sanic.exceptions import SanicException
-from apps.iol.fhir.schema import (
+from sanic.request import Request
+
+from domain.iol.fhir.schema import (
     BundleResource,
     DiagnosticReportResource,
     PatientResource,
     ServiceRequestResource,
 )
-from apps.iol.fhir.utils import (
-    get_diagnostic_report_resource,
-    get_patient_resource,
-    create_resource,
-)
-from apps.user import models as user_models
+from domain.user import models as user_models
 
 fhir_v4 = Blueprint("fhir-v4", url_prefix="/fhir")
 

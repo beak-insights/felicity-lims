@@ -1,9 +1,10 @@
 from datetime import datetime
 from typing import List, Optional
+
 from pydantic import BaseModel, ConfigDict
 
-from domain.shared.schemas import BaseAuditModel
 from domain.setup.schemas import Department, Unit
+from domain.shared.schemas import BaseAuditModel
 
 
 #
@@ -634,7 +635,7 @@ class SampleBase(BaseAuditModel):
     analysis_request_uid: str | None = None
     sample_type_uid: str | None = None
     profiles: Optional[List[Profile]] = []
-    analyses: Optional[List[Analysis]] = []
+    analyses: list[Analysis] | None = []
     sample_id: str | None = None
     priority: int | None = 0
     invalidated_by_uid: str | None = None

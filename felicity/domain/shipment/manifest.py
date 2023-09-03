@@ -1,8 +1,9 @@
 # coding: utf-8
 import logging
 
-from infrastructure.reports.pdf.impress.utils import get_from_nested
 from fpdf import FPDF
+
+from domain.impress.reports.utils import get_from_nested
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

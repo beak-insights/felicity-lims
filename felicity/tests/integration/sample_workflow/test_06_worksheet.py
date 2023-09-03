@@ -1,7 +1,7 @@
 import logging
 
 import pytest
-from apps.worksheet.tasks import populate_worksheet_plate
+from domain.worksheet.tasks import populate_worksheet_plate
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

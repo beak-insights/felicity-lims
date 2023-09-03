@@ -1,8 +1,8 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
-from domain.shared.ports.service import IBaseService
 from domain.errlog.schemas import ErrorLog
+from domain.shared.ports.service import IBaseService
 
 
 class IErrorLogService(IBaseService[ErrorLog], ABC):
-    ...
+    pass

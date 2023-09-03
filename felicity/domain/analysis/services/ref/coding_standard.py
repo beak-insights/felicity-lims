@@ -4,8 +4,9 @@ import strawberry  # noqa
 from api.gql.analysis.types import analysis as a_types
 from api.gql.auth import auth_from_info, verify_user_auth
 from api.gql.types import OperationError
-from apps.analysis import schemas
-from apps.analysis.models import analysis as analysis_models
+from domain.analysis.models import analysis as analysis_models
+
+from domain.analysis import schemas
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ CodingStandardResponse = strawberry.union(
 
 
 async def create_coding_standard(
-        info, payload: CodingStandardInputType
+    info, payload: CodingStandardInputType
 ) -> CodingStandardResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
@@ -56,7 +57,7 @@ async def create_coding_standard(
 
 
 async def update_coding_standard(
-        info, uid: str, payload: CodingStandardInputType
+    info, uid: str, payload: CodingStandardInputType
 ) -> CodingStandardResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(

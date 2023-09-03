@@ -2,11 +2,12 @@ from datetime import datetime
 from typing import Optional
 
 import strawberry  # noqa
-from api.gql.types import PageInfo
-from api.gql.analysis.types.analysis import AnalysisType, QCSetType, SampleType
-from api.gql.instrument.types import InstrumentType, MethodType
-from api.gql.user.types import UserType
-from apps.worksheet import models as ws_models
+
+from adapters.graphql.analysis.types.analysis import AnalysisType, QCSetType, SampleType
+from adapters.graphql.instrument.types import InstrumentType, MethodType
+from adapters.graphql.types import PageInfo
+from adapters.graphql.user.types import UserType
+from domain.worksheet import models as ws_models
 
 
 @strawberry.type

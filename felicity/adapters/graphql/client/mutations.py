@@ -1,12 +1,13 @@
 import logging
 
 import strawberry  # noqa
-from api.gql.auth import auth_from_info, verify_user_auth
-from api.gql.client.types import ClientContactType, ClientType
-from api.gql.permissions import IsAuthenticated
-from api.gql.types import OperationError, DeletedItem
-from apps.client import models, schemas
 from strawberry.types import Info  # noqa
+
+from adapters.graphql.auth import auth_from_info, verify_user_auth
+from adapters.graphql.client.types import ClientContactType, ClientType
+from adapters.graphql.permissions import IsAuthenticated
+from adapters.graphql.types import OperationError, DeletedItem
+from domain.client import models, schemas
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

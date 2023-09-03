@@ -1,11 +1,10 @@
 from datetime import datetime
 
 from domain.analysis.conf import ResultStates
-from domain.analysis.ports.service.analysis import IAnalysisService, ISampleService
+from domain.analysis.ports.service.analysis import IAnalysisService
 from domain.analysis.ports.service.result import IAnalysisResultService
 from domain.analysis.schemas import (
     AnalysisResult,
-    Sample,
     Analysis,
     AnalysisResultCreate,
     AnalysisResultUpdate,
@@ -70,7 +69,7 @@ class ReflexRuleService(BaseService[ReflexRule], IReflexRuleService):
         return await super().create(**marshal(obj_in))
 
     async def update(
-            self, info, uid: str, name: str, description: str, user: User
+        self, info, uid: str, name: str, description: str, user: User
     ) -> ReflexRule:
         payload = locals()
 
@@ -111,19 +110,19 @@ class ReflexBrainCriteriaService(
 
 class ReflexBrainService(BaseService[ReflexBrain], IReflexBrainService):
     def __init__(
-            self, repository: IReflexBrainRepository, analysis_service: IAnalysisService
+        self, repository: IReflexBrainRepository, analysis_service: IAnalysisService
     ):
         self.repository = repository
         self.analysis_service = analysis_service
 
     async def create(
-            self,
-            reflex_action_uid: str,
-            description: str,
-            analyses_values: list[ReflexCriteriaIn] | None,
-            add_new: list[ReflexAddNewIn] | None,
-            finalise: list[ReflexFinalIn] | None,
-            user: User,
+        self,
+        reflex_action_uid: str,
+        description: str,
+        analyses_values: list[ReflexCriteriaIn] | None,
+        add_new: list[ReflexAddNewIn] | None,
+        finalise: list[ReflexFinalIn] | None,
+        user: User,
     ) -> ReflexBrain:
         payload = locals()
 
@@ -174,15 +173,15 @@ class ReflexBrainService(BaseService[ReflexBrain], IReflexBrainService):
         )
 
     async def update(
-            self,
-            info,
-            uid: str,
-            reflex_action_uid: str,
-            description: str,
-            analyses_values: list[ReflexCriteriaIn] | None,
-            add_new: list[ReflexAddNewIn] | None,
-            finalise: list[ReflexFinalIn] | None,
-            user: User,
+        self,
+        info,
+        uid: str,
+        reflex_action_uid: str,
+        description: str,
+        analyses_values: list[ReflexCriteriaIn] | None,
+        add_new: list[ReflexAddNewIn] | None,
+        finalise: list[ReflexFinalIn] | None,
+        user: User,
     ) -> ReflexBrain:
         payload = locals()
 
@@ -235,19 +234,19 @@ class ReflexBrainService(BaseService[ReflexBrain], IReflexBrainService):
 
 class ReflexActionService(BaseService[ReflexAction], IReflexActionService):
     def __init__(
-            self, repository: IReflexActionRepository, analysis_service: IAnalysisService
+        self, repository: IReflexActionRepository, analysis_service: IAnalysisService
     ):
         self.repository = repository
         self.analysis_service = analysis_service
 
     async def create(
-            self,
-            level: int,
-            description: str,
-            analyses: list[str],
-            reflex_rule_uid: str,
-            sample_type_uid: str | None,
-            user: User,
+        self,
+        level: int,
+        description: str,
+        analyses: list[str],
+        reflex_rule_uid: str,
+        sample_type_uid: str | None,
+        user: User,
     ) -> ReflexAction:
         payload = locals()
 
@@ -271,15 +270,15 @@ class ReflexActionService(BaseService[ReflexAction], IReflexActionService):
         return await super().create(**marshal(obj_in))
 
     async def update(
-            self,
-            info,
-            uid: str,
-            level: int,
-            description: str,
-            analyses: list[str],
-            reflex_rule_uid: str,
-            sample_type_uid: str | None,
-            user: User,
+        self,
+        info,
+        uid: str,
+        level: int,
+        description: str,
+        analyses: list[str],
+        reflex_rule_uid: str,
+        sample_type_uid: str | None,
+        user: User,
     ) -> ReflexAction:
         payload = locals()
 
@@ -309,22 +308,22 @@ class ReflexEngineService(IReflexEngineService):
     _siblings: list[AnalysisResult] = []
     _cousins: list[AnalysisResult] = []
     _reflex_action: ReflexAction = None
+    user = None
+    analysis_result = None
+    analysis = None
 
     def __init__(
-            self,
-            analysis_result: AnalysisResult,
-            user: User,
-            reflex_action_service: IReflexActionService,
-            analysis_result_service: IAnalysisResultService,
-            sample_service: ISampleService,
+        self,
+        reflex_action_service: IReflexActionService,
+        analysis_result_service: IAnalysisResultService,
     ):
-        self.analysis_result: AnalysisResult = analysis_result
-        self.sample: Sample = analysis_result.sample
-        self.analysis: Analysis = analysis_result.analysis
-        self.user = user
         self.reflex_action_service = reflex_action_service
         self.analysis_result_service = analysis_result_service
-        self.sample_service = sample_service
+
+    def init(self, analysis_result: AnalysisResult, user: User):
+        self.analysis_result = analysis_result
+        self.user = user
+        self.analysis: Analysis = analysis_result.analysis
 
     # TODO: apply set_reflex_actions for already created analyses
 
@@ -444,13 +443,13 @@ class ReflexEngineService(IReflexEngineService):
         if self._siblings is None:
             analysis_uid = self.analysis.uid
             results = await self.analysis_result_service.get_all(
-                sample_uid=self.sample.uid
+                sample_uid=self.analysis_result.sample_uid
             )
             # get siblings and exclude current analysis
             self._siblings = list(
                 filter(
                     lambda result: result.analysis_uid == analysis_uid
-                                   and result.uid != self.analysis_result.uid,
+                    and result.uid != self.analysis_result.uid,
                     results,
                 )
             )
@@ -464,7 +463,7 @@ class ReflexEngineService(IReflexEngineService):
         if self._cousins is None:
             analysis_uid = self.analysis.uid
             results = await self.analysis_result_service.get_all(
-                sample_uid=self.sample.uid
+                sample_uid=self.analysis_result.sample_uid
             )
             self._cousins = list(
                 filter(lambda result: result.analysis_uid != analysis_uid, results)
@@ -476,7 +475,7 @@ class ReflexEngineService(IReflexEngineService):
         analysis = await Analysis.get(uid=analysis_uid)
 
         a_result_in = {
-            "sample_uid": self.sample.uid,
+            "sample_uid": self.analysis_result.sample_uid,
             "analysis_uid": analysis.uid,
             "status": ResultStates.PENDING,
             "instrument_uid": self.analysis_result.instrument_uid,

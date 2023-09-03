@@ -12,14 +12,14 @@ from domain.user.ports.service import IUserService
 
 class IOLService(IIOLService):
     def __init__(
-            self,
-            fhir_read_service: IFhirReadService,
-            fhir_create_service: IFhirCreateService,
-            user_service: IUserService,
-            job_service: IJobService,
-            shipment_service: IShipmentService,
-            activity_stream_service: IActivityStreamService,
-            shipped_sample_service: IShippedSampleService,
+        self,
+        fhir_read_service: IFhirReadService,
+        fhir_create_service: IFhirCreateService,
+        user_service: IUserService,
+        job_service: IJobService,
+        shipment_service: IShipmentService,
+        activity_stream_service: IActivityStreamService,
+        shipped_sample_service: IShippedSampleService,
     ):
         self.fhir_read_service = fhir_read_service
         self.fhir_create_service = fhir_create_service

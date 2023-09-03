@@ -1,17 +1,17 @@
 import logging
-from typing import Optional
 
 import strawberry  # noqa
-from api.gql.analytics import types
-from api.gql.permissions import IsAuthenticated
-from apps.analysis.conf import states
-from apps.analysis.models.analysis import Sample
-from apps.analysis.models.results import AnalysisResult
-from apps.analytics import SampleAnalyticsInit
-from apps.instrument.models import Instrument
-from apps.user.models import User
-from apps.worksheet.conf import worksheet_states
-from apps.worksheet.models import WorkSheet
+from domain.analysis.models.analysis import Sample
+from domain.analysis.models.results import AnalysisResult
+from domain.instrument.models import Instrument
+from domain.user.models import User
+from domain.worksheet.models import WorkSheet
+
+from adapters.graphql.analytics import types
+from adapters.graphql.permissions import IsAuthenticated
+from domain.analysis.conf import states
+from domain.analytics import SampleAnalyticsInit
+from domain.worksheet.conf import worksheet_states
 from utils import has_value_or_is_truthy
 
 logging.basicConfig(level=logging.INFO)
@@ -137,7 +137,7 @@ async def count_worksheet_group_by_status(info) -> types.GroupedCounts:
 
 @strawberry.field(permission_classes=[IsAuthenticated])
 async def count_analyte_group_by_instrument(
-    info, start_date: str | None = None, end_date: str | None = None
+        info, start_date: str | None = None, end_date: str | None = None
 ) -> types.GroupedCounts:
     analytics = SampleAnalyticsInit(AnalysisResult)
     results = await analytics.get_counts_group_by(
@@ -155,7 +155,7 @@ async def count_analyte_group_by_instrument(
 
 @strawberry.field(permission_classes=[IsAuthenticated])
 async def count_sample_group_by_action(
-    info, start_date: str | None = None, end_date: str | None = None
+        info, start_date: str | None = None, end_date: str | None = None
 ) -> types.GroupedData:
     analytics = SampleAnalyticsInit(Sample)
     created = await analytics.get_counts_group_by(
@@ -205,7 +205,7 @@ async def count_sample_group_by_action(
 
 @strawberry.field(permission_classes=[IsAuthenticated])
 async def sample_process_performance(
-    info, start_date: str, end_date: str
+        info, start_date: str, end_date: str
 ) -> types.ProcessStatistics:
     analytics = SampleAnalyticsInit(Sample)
     received_to_published = await analytics.get_sample_process_performance(
@@ -280,7 +280,7 @@ async def sample_process_performance(
 
 @strawberry.field(permission_classes=[IsAuthenticated])
 async def analysis_process_performance(
-    info, process: str, start_date: str, end_date: str
+        info, process: str, start_date: str, end_date: str
 ) -> types.ProcessStatistics:
     analytics = SampleAnalyticsInit(Sample)
     processes = [

@@ -2,8 +2,9 @@ from datetime import datetime
 from typing import List, Optional
 
 import strawberry  # noqa
-from api.gql.user.types import UserType
-from apps.storage import models
+
+from adapters.graphql.user.types import UserType
+from domain.storage import models
 
 
 @strawberry.type

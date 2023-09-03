@@ -4,8 +4,9 @@ import strawberry  # noqa
 from api.gql.analysis.types import analysis as a_types
 from api.gql.auth import auth_from_info, verify_user_auth
 from api.gql.types import OperationError
-from apps.analysis import schemas
-from apps.analysis.models import analysis as analysis_models
+from domain.analysis.models import analysis as analysis_models
+
+from domain.analysis import schemas
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -72,7 +73,7 @@ async def create_sample_type(info, payload: SampleTypeInputType) -> SampleTypeRe
 
 
 async def update_sample_type(
-        info, uid: str, payload: SampleTypeInputType
+    info, uid: str, payload: SampleTypeInputType
 ) -> SampleTypeResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
@@ -99,7 +100,7 @@ async def update_sample_type(
 
 
 async def create_sample_type_mapping(
-        info, payload: SampleTypeMappingInputType
+    info, payload: SampleTypeMappingInputType
 ) -> SampleTypeMappingResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
@@ -127,7 +128,7 @@ async def create_sample_type_mapping(
 
 
 async def update_sample_type_mapping(
-        info, uid: str, payload: SampleTypeMappingInputType
+    info, uid: str, payload: SampleTypeMappingInputType
 ) -> SampleTypeMappingResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(

@@ -4,14 +4,15 @@ import random
 from typing import Any, Generator
 
 import pytest_asyncio
-from apps.job.sched import felicity_workforce_init
 from core.config import settings
 from database.base_class import DBModel
+from domain.job.sched import felicity_workforce_init
 from faker import Faker
 from httpx import AsyncClient
 from init.setup.create_superuser import create_super_user
-from main import flims
 from sqlalchemy import create_engine
+
+from main import flims
 
 fake_engine = Faker()
 

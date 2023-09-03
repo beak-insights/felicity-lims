@@ -2,16 +2,16 @@ from typing import List, Optional
 
 import sqlalchemy as sa
 import strawberry  # noqa
-from api.gql.types import PageInfo
-from api.gql.patient.types import (
+
+from adapters.graphql.patient.types import (
     IdentificationType,
     PatientCursorPage,
     PatientEdge,
     PatientType,
 )
-from api.gql.permissions import IsAuthenticated
-from apps.patient import models
-
+from adapters.graphql.permissions import IsAuthenticated
+from adapters.graphql.types import PageInfo
+from domain.patient import models
 from utils import has_value_or_is_truthy
 
 
@@ -19,13 +19,13 @@ from utils import has_value_or_is_truthy
 class PatientQuery:
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def patient_all(
-        self,
-        info,
-        page_size: int | None = None,
-        after_cursor: str | None = None,
-        before_cursor: str | None = None,
-        text: str | None = None,
-        sort_by: list[str] | None = None,
+            self,
+            info,
+            page_size: int | None = None,
+            after_cursor: str | None = None,
+            before_cursor: str | None = None,
+            text: str | None = None,
+            sort_by: list[str] | None = None,
     ) -> PatientCursorPage:
         filters = {}
 
@@ -71,7 +71,7 @@ class PatientQuery:
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def patient_by_patient_id(
-        self, info, patient_id: str
+            self, info, patient_id: str
     ) -> Optional[PatientType]:
         return await models.Patient.get(patient_id=patient_id)
 

@@ -2,16 +2,17 @@ from datetime import datetime
 from typing import List, Optional, Union
 
 import strawberry  # noqa
-from api.gql.analysis.types.analysis import SampleType
-from api.gql.analysis.types.results import AnalysisResultType
-from api.gql.analytics.types import ReportMetaType
-from api.gql.setup.types.department import DepartmentType
-from api.gql.user.types import GroupType, UserType
-from api.gql.worksheet.types import WorkSheetType
-from apps.analysis.models.analysis import Sample
-from apps.analysis.models.results import AnalysisResult
-from apps.analytics.models import ReportMeta
-from apps.worksheet.models import WorkSheet
+from domain.analysis.models.analysis import Sample
+from domain.analysis.models.results import AnalysisResult
+from domain.analytics.models import ReportMeta
+from domain.worksheet.models import WorkSheet
+
+from adapters.graphql.analysis.types.analysis import SampleType
+from adapters.graphql.analysis.types.results import AnalysisResultType
+from adapters.graphql.analytics.types import ReportMetaType
+from adapters.graphql.setup.types.department import DepartmentType
+from adapters.graphql.user.types import GroupType, UserType
+from adapters.graphql.worksheet.types import WorkSheetType
 
 
 @strawberry.type
@@ -51,7 +52,7 @@ class ActivityStreamType:
 
     @strawberry.field
     async def action_object(
-        self, info
+            self, info
     ) -> Union[
         WorkSheetType, SampleType, AnalysisResultType, ReportMetaType, UnknownObjectType
     ]:

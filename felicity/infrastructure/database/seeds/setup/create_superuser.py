@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 
-from apps.user import models, schemas
+from domain.user import models, schemas
 from core.config import settings
 from init.setup.groups_perms import FGroup
 from core.events import post_event

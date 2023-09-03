@@ -2,21 +2,21 @@ import logging
 from typing import List, Optional
 
 import strawberry  # noqa
-from api.gql.auth import auth_from_info, verify_user_auth
-from api.gql.permissions import IsAuthenticated
-from api.gql.types import OperationError
-from api.gql.worksheet.types import WorkSheetTemplateType, WorkSheetType
-from apps.analysis.models import analysis as analysis_models
-from apps.analysis.models import qc as qc_models
-from apps.analysis.models import results as result_models
-from apps.common.models import IdSequence
-from apps.job import models as job_models
-from apps.job import schemas as job_schemas
-from apps.job.conf import actions, categories, priorities, states
-from apps.setup import models as setup_models
-from apps.user import models as user_models
-from apps.worksheet import conf, models, schemas
+from domain.analysis.models import analysis as analysis_models
+from domain.analysis.models import qc as qc_models
+from domain.analysis.models import results as result_models
+from domain.shared.models import IdSequence
 
+from adapters.graphql.auth import auth_from_info, verify_user_auth
+from adapters.graphql.permissions import IsAuthenticated
+from adapters.graphql.types import OperationError
+from adapters.graphql.worksheet.types import WorkSheetTemplateType, WorkSheetType
+from domain.job import models as job_models
+from domain.job import schemas as job_schemas
+from domain.job.conf import actions, categories, priorities, states
+from domain.setup import models as setup_models
+from domain.user import models as user_models
+from domain.worksheet import conf, models, schemas
 from utils import has_value_or_is_truthy
 
 logging.basicConfig(level=logging.INFO)

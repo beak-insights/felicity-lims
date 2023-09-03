@@ -6,17 +6,18 @@ from api.gql.analysis.types import results as r_types
 from api.gql.auth import auth_from_info, verify_user_auth
 from api.gql.permissions import CanVerifyAnalysisResult
 from api.gql.types import OperationError, OperationSuccess
-from apps.analysis.conf import states as analysis_states
-from apps.analysis.models import analysis as analysis_models
-from apps.analysis.models import results as result_models
-from apps.analysis.utils import retest_from_result_uids
-from apps.job import models as job_models
-from apps.job import schemas as job_schemas
-from apps.job.conf import actions, categories, priorities
-from apps.job.conf import states as job_states
-from apps.notification.utils import FelicityStreamer
-from apps.worksheet import conf as ws_conf
-from apps.worksheet import models as ws_models
+from domain.analysis.models import analysis as analysis_models
+from domain.analysis.models import results as result_models
+from domain.notification.utils import FelicityStreamer
+
+from domain.analysis.conf import states as analysis_states
+from domain.analysis.utils import retest_from_result_uids
+from domain.job import models as job_models
+from domain.job import schemas as job_schemas
+from domain.job.conf import actions, categories, priorities
+from domain.job.conf import states as job_states
+from domain.worksheet import conf as ws_conf
+from domain.worksheet import models as ws_models
 
 streamer = FelicityStreamer()
 
@@ -50,10 +51,10 @@ AnalysisResultOperationResponse = strawberry.union(
 
 
 async def submit_analysis_results(
-        info,
-        analysis_results: List[ARResultInputType],
-        source_object: str,
-        source_object_uid: str,
+    info,
+    analysis_results: List[ARResultInputType],
+    source_object: str,
+    source_object_uid: str,
 ) -> AnalysisResultOperationResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
@@ -102,7 +103,7 @@ async def submit_analysis_results(
 
 @strawberry.mutation(permission_classes=[CanVerifyAnalysisResult])
 async def verify_analysis_results(
-        info, analyses: list[str], source_object: str, source_object_uid: str
+    info, analyses: list[str], source_object: str, source_object_uid: str
 ) -> AnalysisResultOperationResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
@@ -241,7 +242,7 @@ async def cancel_analysis_results(info, analyses: list[str]) -> AnalysisResultRe
 
 
 async def re_instate_analysis_results(
-        info, analyses: list[str]
+    info, analyses: list[str]
 ) -> AnalysisResultResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(

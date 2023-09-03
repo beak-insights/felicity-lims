@@ -1,8 +1,9 @@
 # coding: utf-8
 import logging
 
-from apps.impress.reports.utils import get_from_nested, strtobool
 from fpdf import FPDF
+
+from domain.impress.reports.utils import get_from_nested, strtobool
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

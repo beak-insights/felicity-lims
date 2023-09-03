@@ -1,12 +1,11 @@
 import logging
-from apps.impress.reports.utils import get_from_nested, strtobool
+from domain.impress.reports.utils import get_from_nested, strtobool
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import Paragraph, Table, TableStyle
 import io
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

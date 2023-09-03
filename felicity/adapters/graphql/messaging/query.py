@@ -1,16 +1,17 @@
 from typing import List, Optional
 
 import strawberry  # noqa
-from api.gql.messaging.types import MessageThreadType
-from api.gql.permissions import IsAuthenticated
-from apps.messaging import models
+
+from adapters.graphql.messaging.types import MessageThreadType
+from adapters.graphql.permissions import IsAuthenticated
+from domain.messaging import models
 
 
 @strawberry.type
 class MessageQuery:
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def threads_for_user(
-        self, info, uid: str
+            self, info, uid: str
     ) -> Optional[List[MessageThreadType]]:
         return await models.MessageThread.get_all(recipients__uid__in=[uid])
 

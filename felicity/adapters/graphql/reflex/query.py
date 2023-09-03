@@ -2,11 +2,15 @@ from typing import List, Optional
 
 import sqlalchemy as sa
 import strawberry  # noqa
-from api.gql.types import PageInfo
-from api.gql.permissions import IsAuthenticated
-from api.gql.reflex.types import ReflexRuleCursorPage, ReflexRuleEdge, ReflexRuleType
-from apps.reflex import models
 
+from adapters.graphql.permissions import IsAuthenticated
+from adapters.graphql.reflex.types import (
+    ReflexRuleCursorPage,
+    ReflexRuleEdge,
+    ReflexRuleType,
+)
+from adapters.graphql.types import PageInfo
+from domain.reflex import models
 from utils import has_value_or_is_truthy
 
 
@@ -14,13 +18,13 @@ from utils import has_value_or_is_truthy
 class ReflexRuleQuery:
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def reflex_rule_all(
-        self,
-        info,
-        page_size: int | None = None,
-        after_cursor: str | None = None,
-        before_cursor: str | None = None,
-        text: str | None = None,
-        sort_by: list[str] | None = None,
+            self,
+            info,
+            page_size: int | None = None,
+            after_cursor: str | None = None,
+            before_cursor: str | None = None,
+            text: str | None = None,
+            sort_by: list[str] | None = None,
     ) -> ReflexRuleCursorPage:
         filters = {}
 

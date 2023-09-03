@@ -5,7 +5,10 @@ from sqlalchemy import text
 from sqlalchemy.future import select
 from sqlalchemy.sql import func
 
-from domain.analytics.ports.repository import ISampleAnalytics, IReportMetaRepository
+from domain.analytics.ports.repository import (
+    IReportMetaRepository,
+    ISampleAnalyticsRepository,
+)
 from infrastructure.database.analysis.entities.analysis import Sample
 from infrastructure.database.analytics.entities import ReportMeta
 from infrastructure.database.repository.base import BaseRepository
@@ -20,7 +23,7 @@ class ReportMetaRepository(BaseRepository[ReportMeta], IReportMetaRepository):
         super().__init__()
 
 
-class SampleAnalyticsRepository(BaseRepository[Sample], ISampleAnalytics):
+class SampleAnalyticsRepository(BaseRepository[Sample], ISampleAnalyticsRepository):
     def __init__(self):
         self.model = Sample
         self.table = Sample.__tablename__

@@ -1,13 +1,14 @@
 from datetime import datetime
 
 import strawberry  # noqa
-from api.gql.types import PageInfo
-from api.gql.analysis.types.analysis import (
+from domain.shipment.models import ShippedSample
+
+from adapters.graphql.analysis.types.analysis import (
     SampleType,
 )
-from api.gql.types import JSONScalar, BytesScalar
-from api.gql.user.types import UserType
-from apps.shipment.models import ShippedSample
+from adapters.graphql.types import JSONScalar, BytesScalar
+from adapters.graphql.types import PageInfo
+from adapters.graphql.user.types import UserType
 
 
 @strawberry.type

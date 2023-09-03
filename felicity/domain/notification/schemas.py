@@ -1,8 +1,10 @@
 from typing import List, Optional
 
-from apps.common.schemas import BaseAuditModel
-from apps.setup.schemas import Department
-from apps.user.schemas import Group, User
+from pydantic import ConfigDict
+
+from domain.setup.schemas import Department
+from domain.shared.schemas import BaseAuditModel
+from domain.user.schemas import Group, User
 
 
 #

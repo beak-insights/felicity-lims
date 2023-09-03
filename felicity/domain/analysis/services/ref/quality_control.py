@@ -6,13 +6,13 @@ import strawberry  # noqa
 from api.gql.analysis.types import analysis as a_types
 from api.gql.auth import auth_from_info, verify_user_auth
 from api.gql.types import OperationError
-from apps.analysis import schemas
-from apps.analysis.conf import states
-from apps.analysis.models import analysis as analysis_models
-from apps.analysis.models import qc as qc_models
-from apps.analysis.models import results as result_models
-from apps.analysis.utils import get_qc_sample_type
-from apps.setup.models import setup as setup_models
+from domain.analysis import schemas
+from domain.analysis.conf import states
+from domain.analysis.models import analysis as analysis_models
+from domain.analysis.models import qc as qc_models
+from domain.analysis.models import results as result_models
+from domain.analysis.utils import get_qc_sample_type
+from domain.setup.models import setup as setup_models
 
 from utils import get_passed_args
 
@@ -224,7 +224,7 @@ async def create_QC_template(info, payload: QCTemplateInputType) -> QCTemplateRe
 
 
 async def update_QC_template(
-        info, uid: str, payload: QCTemplateInputType
+    info, uid: str, payload: QCTemplateInputType
 ) -> QCTemplateResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(

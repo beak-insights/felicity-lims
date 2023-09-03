@@ -2,11 +2,12 @@ import logging
 from typing import List, Optional
 
 import strawberry  # noqa
-from api.gql.auth import auth_from_info, verify_user_auth
-from api.gql.noticeboard.types import NoticeType
-from api.gql.permissions import IsAuthenticated
-from api.gql.types import DeletedItem, DeleteResponse, OperationError
-from apps.noticeboard import models, schemas
+
+from adapters.graphql.auth import auth_from_info, verify_user_auth
+from adapters.graphql.noticeboard.types import NoticeType
+from adapters.graphql.permissions import IsAuthenticated
+from adapters.graphql.types import DeletedItem, DeleteResponse, OperationError
+from domain.noticeboard import models, schemas
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

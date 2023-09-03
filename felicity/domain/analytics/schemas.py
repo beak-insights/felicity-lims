@@ -1,10 +1,10 @@
 from datetime import datetime
 
-from apps.analysis.schemas import AnalysisBasic
-from apps.analytics import conf
-from apps.user.schemas import UserBasic
-
 from pydantic import BaseModel, ConfigDict
+
+from domain.analysis.schemas import AnalysisBasic
+from domain.analytics.conf import ReportTypes, ReportStates
+from domain.user.schemas import UserBasic
 
 
 class ReportMetaBase(BaseModel):
@@ -12,8 +12,8 @@ class ReportMetaBase(BaseModel):
     period_end: datetime
     date_column: str
     sample_states: str | None
-    report_type: str = conf.report_types.LINE_LISTING
-    status: str | None = conf.report_states.PENDING
+    report_type: str = ReportTypes.LINE_LISTING
+    status: str | None = ReportStates.PENDING
     analyses: list[AnalysisBasic] | None = None
     created_at: datetime | None = None
     created_by_uid: str | None = None

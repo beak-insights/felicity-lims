@@ -2,14 +2,15 @@ import logging
 from typing import List
 
 import strawberry  # noqa
-from api.gql.analysis.types.analysis import SampleType
-from api.gql.auth import auth_from_info, verify_user_auth
-from api.gql.permissions import IsAuthenticated
-from api.gql.storage import types
-from api.gql.types import OperationError
-from apps.analysis.conf import states as analysis_states
-from apps.analysis.models import analysis as an_models
-from apps.storage import models, schemas
+from domain.analysis.models import analysis as an_models
+
+from adapters.graphql.analysis.types.analysis import SampleType
+from adapters.graphql.auth import auth_from_info, verify_user_auth
+from adapters.graphql.permissions import IsAuthenticated
+from adapters.graphql.storage import types
+from adapters.graphql.types import OperationError
+from domain.analysis.conf import states as analysis_states
+from domain.storage import models, schemas
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -107,7 +108,7 @@ class StorageMutations:
 
         exists = await models.StoreRoom.get(name=payload.name)
         if exists:
-            return OperationError(error=f"StoreRoom with this name already exists")
+            raise AlreadyExistsError(f"StoreRoom with this name already exists")
 
         incoming: dict = {
             "created_by_uid": user.uid,
@@ -245,7 +246,7 @@ class StorageMutations:
 
         exists = await models.StorageSection.get(name=payload.name)
         if exists:
-            return OperationError(error=f"StorageSection with this name already exists")
+            raise AlreadyExistsError(f"StorageSection with this name already exists")
 
         storage_location = await models.StorageLocation.get(
             uid=payload.storage_location_uid

@@ -9,18 +9,19 @@ from api.gql.analysis.types import results as r_types
 from api.gql.auth import auth_from_info, verify_user_auth
 from api.gql.permissions import CanVerifySample
 from api.gql.types import OperationError, OperationSuccess, SuccessErrorResponse
-from apps.analysis import schemas
-from apps.analysis.conf import states
-from apps.analysis.models import analysis as analysis_models
-from apps.analysis.models import results as result_models
-from apps.client import models as ct_models
-from apps.job import models as job_models
-from apps.job import schemas as job_schemas
-from apps.job.conf import actions, categories, priorities
-from apps.job.conf import states as job_states
-from apps.notification.utils import FelicityStreamer
-from apps.patient import models as pt_models
-from apps.reflex.utils import ReflexUtil
+from domain.analysis.models import analysis as analysis_models
+from domain.analysis.models import results as result_models
+from domain.notification.utils import FelicityStreamer
+from domain.reflex.utils import ReflexUtil
+
+from domain.analysis import schemas
+from domain.analysis.conf import states
+from domain.client import models as ct_models
+from domain.job import models as job_models
+from domain.job import schemas as job_schemas
+from domain.job.conf import actions, categories, priorities
+from domain.job.conf import states as job_states
+from domain.patient import models as pt_models
 
 streamer = FelicityStreamer()
 
@@ -92,7 +93,7 @@ class AnalysisRequestInputType:
 
 
 async def create_analysis_request(
-        info, payload: AnalysisRequestInputType
+    info, payload: AnalysisRequestInputType
 ) -> AnalysisRequestResponse:
     logger.info("Received request to create analysis request")
 
@@ -233,7 +234,7 @@ async def create_analysis_request(
                     update={
                         "analysis_uid": _service.uid,
                         "due_date": datetime.now()
-                                    + timedelta(minutes=_service.tat_length_minutes)
+                        + timedelta(minutes=_service.tat_length_minutes)
                         if _service.tat_length_minutes
                         else None,
                     }
@@ -403,7 +404,7 @@ async def verify_samples(info, samples: List[str]) -> SampleActionResponse:
 
 
 async def reject_samples(
-        info, samples: List[SampleRejectInputType]
+    info, samples: List[SampleRejectInputType]
 ) -> SampleActionResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
@@ -445,7 +446,7 @@ async def reject_samples(
 
 
 async def publish_samples(
-        info, samples: List[SamplePublishInputType]
+    info, samples: List[SamplePublishInputType]
 ) -> SuccessErrorResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(

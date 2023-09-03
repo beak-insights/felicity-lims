@@ -1,17 +1,17 @@
 from typing import Any
 from uuid import uuid4
 
+from domain.analysis.models import analysis as ana_models
 from sanic import Blueprint
 from sanic.log import logger
-from apps.analysis.models import analysis as ana_models
-from apps.analytics import conf, models
-from apps.analytics import schemas as an_schema
-from apps.job import conf as job_conf
-from apps.job import models as job_models
-from apps.job import schemas as job_schemas
-from apps.user import models as user_models
-from utils.dirs import deleteFile, resolve_media_dirs_for
 
+from domain.analytics import conf, models
+from domain.analytics import schemas as an_schema
+from domain.job import conf as job_conf
+from domain.job import models as job_models
+from domain.job import schemas as job_schemas
+from domain.user import models as user_models
+from utils.dirs import deleteFile, resolve_media_dirs_for
 
 reports = Blueprint("reports", url_prefix="/reports")
 

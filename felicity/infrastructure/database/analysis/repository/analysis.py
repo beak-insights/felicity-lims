@@ -1,3 +1,5 @@
+from sqlalchemy import or_
+
 from domain.analysis.ports.repository.analysis import (
     ICodingStandardRepository,
     ISampleTypeRepository,
@@ -17,9 +19,6 @@ from domain.analysis.ports.repository.analysis import (
     IRejectionReasonRepository,
     ISampleRepository,
 )
-
-from infrastructure.database.repository.base import BaseRepository
-
 from infrastructure.database.analysis.entities.analysis import (
     CodingStandard,
     SampleType,
@@ -39,6 +38,7 @@ from infrastructure.database.analysis.entities.analysis import (
     RejectionReason,
     Sample,
 )
+from infrastructure.database.repository.base import BaseRepository
 
 
 class CodingStandardRepository(
@@ -163,3 +163,32 @@ class SampleRepository(BaseRepository[Sample], ISampleRepository):
     def __init__(self) -> None:
         self.model = Sample
         super().__init__()
+
+    async def search(self, status: str, text: str, client_uid: str) -> list[Sample]:
+        """No pagination"""
+        filters = []
+        _or_text_ = {}
+        if text:
+            arg_list = [
+                "sample_id__ilike",
+                "analysis_request___patient___first_name__ilike",
+                "analysis_request___patient___last_name__ilike",
+                "analysis_request___patient___client_patient_id__ilike",
+                "analysis_request___client_request_id__ilike",
+            ]
+            for _arg in arg_list:
+                _or_text_[_arg] = f"%{text}%"
+
+            text_filters = {or_: _or_text_}
+            filters.append(text_filters)
+
+        if client_uid:
+            filters.append({"analysis_request___client_uid__exact": client_uid})
+
+        if status:
+            filters.append({"status__exact": status})
+
+        filters.append({"internal_use__ne": True})
+
+        stmt = self._db.smart_query(filters=filters, sort_attrs=["uid"])
+        return (await self.async_session().execute(stmt)).scalars().all()

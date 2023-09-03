@@ -1,8 +1,8 @@
-from fastapi import FastAPI
+from sanic import Sanic
 from starlette.responses import HTMLResponse
 
 
-def setup_backends(app: FastAPI, serve_webapp: bool):
+def setup_backends(app: Sanic, serve_webapp: bool):
     backends = "/backends" if serve_webapp else "/"
 
     @app.get(backends, response_class=HTMLResponse)

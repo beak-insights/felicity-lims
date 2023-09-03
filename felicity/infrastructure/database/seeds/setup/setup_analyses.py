@@ -3,15 +3,19 @@ import logging
 from datetime import datetime
 from typing import Optional
 
-from apps.analysis.models.analysis import (
+from core.config import settings
+from db.session import async_session_factory
+from domain.analysis.models.analysis import (
     Analysis,
     AnalysisCategory,
     Profile,
     RejectionReason,
     SampleType,
 )
-from apps.analysis.models.qc import QCLevel
-from apps.analysis.schemas import (
+from domain.analysis.models.qc import QCLevel
+from domain.shared.models import IdSequence
+
+from domain.analysis.schemas import (
     AnalysisCategoryCreate,
     AnalysisCreate,
     ProfileCreate,
@@ -19,9 +23,6 @@ from apps.analysis.schemas import (
     RejectionReasonCreate,
     SampleTypeCreate,
 )
-from apps.common.models import IdSequence
-from core.config import settings
-from db.session import async_session_factory
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

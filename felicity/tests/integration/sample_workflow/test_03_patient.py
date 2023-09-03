@@ -2,14 +2,14 @@ import logging
 import random
 
 import pytest
-from apps.patient.conf import genders
 from faker import Faker
+
+from domain.patient.conf import genders
 
 fake_engine = Faker()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 
 add_patient_query = """
   mutation AddPatient($payload: PatientInputType!){

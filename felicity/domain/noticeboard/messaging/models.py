@@ -1,11 +1,11 @@
 import logging
 
-from apps import BaseAuditDBModel, DBModel
-from apps.common import BaseMPTT
-from apps.user.models import User
+from domain.user.models import User
 from sqlalchemy import Boolean, Column, ForeignKey, String, Table
 from sqlalchemy.orm import relationship
 
+from domain import BaseAuditDBModel, DBModel
+from domain.shared import BaseMPTT
 from . import schemas
 
 logging.basicConfig(level=logging.INFO)
@@ -48,7 +48,7 @@ class MessageThread(BaseAuditDBModel):
         return await super().create(**data)
 
     async def update(
-            self, obj_in: schemas.MessageThreadUpdate
+        self, obj_in: schemas.MessageThreadUpdate
     ) -> schemas.MessageThread:
         data = marshal(obj_in)
         return await super().update(**data)

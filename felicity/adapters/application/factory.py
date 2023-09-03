@@ -1,18 +1,21 @@
-from sanic import Sanic, HTTPResponse
-from sanic_ext import Extend
-from sanic.response import json
-
-from adapters.graphql.schema import schema
-from adapters.graphql.view import AppGraphQLView, Request
-from adapters.graphql.dependencies import register_dependencies
-from adapters.baje.service import JobWorker
-
-from core.setting import settings
+import logging
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
+from requests import post
+from sanic import Sanic, HTTPResponse
+from sanic.response import json
+from sanic_ext import Extend
 
+from adapters.application.container import register_dependencies
 from adapters.graphql.dependencies import IDependencyService
+from adapters.graphql.schema import schema
+from adapters.graphql.view import AppGraphQLView, Request
+from core.setting import settings
+from domain.job.ports.service import IJobWorkerService
+
+log = logging.getLogger("apscheduler.executors.default")
+log.setLevel(logging.WARNING)
 
 
 def register_configs(app: Sanic):
@@ -40,20 +43,21 @@ def register_graphql(app: Sanic):
 
 def register_job_runner(app: Sanic):
     @app.post("/job-runner")
-    async def job_runner(request: Request, worker: JobWorker):
+    async def job_runner(request: Request, worker: IJobWorkerService):
         # await worker.run_jobs_if_exists()
         request.app.add_task(worker.run_jobs_if_exists)
         return json({"ok": "ok"})
 
     def invoke_task_runner():
-        from requests import post
-        post("http://localhost:8001/job-runner", json={"run": True})
+        post("http://localhost:8002/job-runner", json={"run": True})
 
     @app.listener("after_server_start")
-    async def run_jons(app, loop):
+    async def run_jons(a, l):
         scheduler = AsyncIOScheduler()
         scheduler.add_job(
-            func=invoke_task_runner, trigger=IntervalTrigger(seconds=2), id="felicity_wf"
+            func=invoke_task_runner,
+            trigger=IntervalTrigger(seconds=5),
+            id="felicity_wf",
         )
         scheduler.start()
 

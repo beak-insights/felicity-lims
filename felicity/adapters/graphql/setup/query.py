@@ -2,10 +2,9 @@ from typing import List
 
 import sqlalchemy as sa
 import strawberry  # noqa
-from api.gql.types import PageInfo
-from api.gql.permissions import IsAuthenticated
-from api.gql.setup.types.department import DepartmentType
-from api.gql.setup.types import (
+
+from adapters.graphql.permissions import IsAuthenticated
+from adapters.graphql.setup.types import (
     CountryType,
     DistrictCursorPage,
     DistrictEdge,
@@ -19,8 +18,9 @@ from api.gql.setup.types import (
     SupplierType,
     UnitType,
 )
-from apps.setup import models
-
+from adapters.graphql.setup.types.department import DepartmentType
+from adapters.graphql.types import PageInfo
+from domain.setup import models
 from utils import has_value_or_is_truthy
 
 
@@ -50,13 +50,13 @@ async def get_all_units() -> List[UnitType]:
 
 
 async def get_all_districts(
-    self,
-    info,
-    page_size: int | None = None,
-    after_cursor: str | None = None,
-    before_cursor: str | None = None,
-    text: str | None = None,
-    sort_by: list[str] | None = None,
+        self,
+        info,
+        page_size: int | None = None,
+        after_cursor: str | None = None,
+        before_cursor: str | None = None,
+        text: str | None = None,
+        sort_by: list[str] | None = None,
 ) -> DistrictCursorPage:
     filters = {}
 
@@ -96,13 +96,13 @@ async def get_all_districts(
 
 
 async def get_all_provinces(
-    self,
-    info,
-    page_size: int | None = None,
-    after_cursor: str | None = None,
-    before_cursor: str | None = None,
-    text: str | None = None,
-    sort_by: list[str] | None = None,
+        self,
+        info,
+        page_size: int | None = None,
+        after_cursor: str | None = None,
+        before_cursor: str | None = None,
+        text: str | None = None,
+        sort_by: list[str] | None = None,
 ) -> ProvinceCursorPage:
     filters = {}
 

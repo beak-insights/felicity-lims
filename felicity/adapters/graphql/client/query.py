@@ -1,22 +1,21 @@
 import logging
-from typing import List, Optional
+from typing import List
 
 import sqlalchemy as sa
 import strawberry  # noqa
-from api.gql.types import PageInfo
-from api.gql.auth import auth_from_info
 from api.deps import Info
-from api.gql.permissions import IsAuthenticated
-from api.gql.client.types import (
+
+from adapters.graphql.auth import auth_from_info
+from adapters.graphql.client.types import (
     ClientContactType,
     ClientCursorPage,
     ClientEdge,
     ClientType,
 )
-from apps.client import models
-
+from adapters.graphql.permissions import IsAuthenticated
+from adapters.graphql.types import PageInfo
+from domain.client import models
 from utils import has_value_or_is_truthy
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -26,13 +25,13 @@ logger = logging.getLogger(__name__)
 class ClientQuery:
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def client_all(
-        self,
-        info: Info,
-        page_size: int | None = None,
-        after_cursor: str | None = None,
-        before_cursor: str | None = None,
-        text: str | None = None,
-        sort_by: list[str] | None = None,
+            self,
+            info: Info,
+            page_size: int | None = None,
+            after_cursor: str | None = None,
+            before_cursor: str | None = None,
+            text: str | None = None,
+            sort_by: list[str] | None = None,
     ) -> ClientCursorPage:
         ss, dd = await auth_from_info(info)
 
@@ -108,6 +107,6 @@ class ClientQuery:
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def client_contact_by_client_uid(
-        self, info, client_uid: str
+            self, info, client_uid: str
     ) -> List[ClientContactType]:
         return await models.ClientContact.get_all(client_uid=client_uid, is_active=True)

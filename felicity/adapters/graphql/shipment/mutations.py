@@ -2,18 +2,19 @@ import logging
 from typing import List, Optional
 
 import strawberry  # noqa
-from api.gql.auth import auth_from_info, verify_user_auth
-from api.gql.permissions import IsAuthenticated
-from api.gql.shipment import types
-from api.gql.shipment.types import ShipmentType
-from api.gql.types import OperationError
-from apps.common.models import IdSequence
-from apps.job import models as job_models
-from apps.job import schemas as job_schemas
-from apps.job.conf import actions, categories, priorities, states
-from apps.shipment import conf, models, schemas
-from apps.shipment.utils import shipment_recover, shipment_recall, action_shipment
+from domain.shared.models import IdSequence
+from domain.shipment.utils import shipment_recover, shipment_recall, action_shipment
 from sqlalchemy import or_
+
+from adapters.graphql.auth import auth_from_info, verify_user_auth
+from adapters.graphql.permissions import IsAuthenticated
+from adapters.graphql.shipment import types
+from adapters.graphql.shipment.types import ShipmentType
+from adapters.graphql.types import OperationError
+from domain.job import models as job_models
+from domain.job import schemas as job_schemas
+from domain.job.conf import actions, categories, priorities, states
+from domain.shipment import conf, models, schemas
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

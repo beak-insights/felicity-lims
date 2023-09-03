@@ -1,7 +1,9 @@
 from typing import List, Optional
 
-from apps.analysis.schemas import Analysis, SampleType
-from apps.common.schemas import BaseAuditModel
+from pydantic import ConfigDict
+
+from domain.analysis.schemas import Analysis, SampleType
+from domain.shared.schemas import BaseAuditModel
 
 
 #

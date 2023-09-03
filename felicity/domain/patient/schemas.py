@@ -1,9 +1,10 @@
 from datetime import datetime
 from typing import Optional
 
-from apps.common.schemas import BaseAuditModel
+from pydantic import EmailStr, ConfigDict
 
-from pydantic import EmailStr
+from domain.shared.schemas import BaseAuditModel
+
 
 #
 #  Patient Schema

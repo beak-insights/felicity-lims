@@ -6,8 +6,9 @@ import strawberry  # noqa
 from api.gql.analysis.types import analysis as a_types
 from api.gql.auth import auth_from_info, verify_user_auth
 from api.gql.types import OperationError
-from apps.analysis import schemas
-from apps.analysis.models import analysis as analysis_models
+from domain.analysis.models import analysis as analysis_models
+
+from domain.analysis import schemas
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -97,7 +98,7 @@ async def create_profile(info, payload: ProfileInputType) -> AnalysisProfileResp
 
 
 async def update_profile(
-        info, uid: str, payload: ProfileInputType
+    info, uid: str, payload: ProfileInputType
 ) -> AnalysisProfileResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
@@ -151,7 +152,7 @@ async def update_profile(
 
 
 async def create_profile_mapping(
-        info, payload: ProfileMappingInputType
+    info, payload: ProfileMappingInputType
 ) -> ProfileMappingResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(
@@ -179,7 +180,7 @@ async def create_profile_mapping(
 
 
 async def update_profile_mapping(
-        info, uid: str, payload: ProfileMappingInputType
+    info, uid: str, payload: ProfileMappingInputType
 ) -> ProfileMappingResponse:
     is_authenticated, user = await auth_from_info(info)
     verify_user_auth(

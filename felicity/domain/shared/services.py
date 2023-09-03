@@ -15,13 +15,13 @@ class BaseService(Generic[M], IBaseService[M]):
         self.repository = repository
 
     async def paging_filter(
-            self,
-            page_size: int | None = None,
-            after_cursor: str | None = None,
-            before_cursor: str | None = None,
-            text: str | None = None,
-            sort_by: list[str] | None = None,
-            **kwargs
+        self,
+        page_size: int | None = None,
+        after_cursor: str | None = None,
+        before_cursor: str | None = None,
+        text: str | None = None,
+        sort_by: list[str] | None = None,
+        **kwargs
     ) -> PageCursor:
         return await self.repository.paginate_with_cursors(
             page_size, after_cursor, before_cursor, text, sort_by, **kwargs
@@ -41,6 +41,9 @@ class BaseService(Generic[M], IBaseService[M]):
 
     async def get_all(self, **kwargs) -> list[M]:
         return await self.repository.get_all(**kwargs)
+
+    async def get_related(self, uid: str, related: list[str]) -> M:
+        return await self.repository.get_related(uid, related)
 
     async def create(self, **kwargs) -> M:
         return await self.repository.create(**kwargs)

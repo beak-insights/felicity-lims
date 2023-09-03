@@ -3,18 +3,18 @@ import logging
 from typing import List, Optional
 
 import strawberry  # noqa
-from api.gql.analysis.types import analysis as a_types
-from api.gql.auth import auth_from_info, verify_user_auth
-from api.gql.permissions import IsAuthenticated
-from api.gql.types import OperationError
-from apps.analysis import schemas
-from apps.analysis.conf import states
-from apps.analysis.models import analysis as analysis_models
-from apps.analysis.models import qc as qc_models
-from apps.analysis.models import results as result_models
-from apps.analysis.utils import get_qc_sample_type
-from apps.setup.models import setup as setup_models
+from domain.analysis.models import analysis as analysis_models
+from domain.analysis.models import qc as qc_models
+from domain.analysis.models import results as result_models
+from domain.analysis.utils import get_qc_sample_type
+from domain.setup.models import setup as setup_models
 
+from adapters.graphql.analysis.types import analysis as a_types
+from adapters.graphql.auth import auth_from_info, verify_user_auth
+from adapters.graphql.permissions import IsAuthenticated
+from adapters.graphql.types import OperationError
+from domain.analysis import schemas
+from domain.analysis.conf import states
 from utils import get_passed_args
 
 logging.basicConfig(level=logging.INFO)

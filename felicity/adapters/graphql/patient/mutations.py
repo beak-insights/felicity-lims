@@ -4,12 +4,13 @@ from datetime import datetime
 from typing import List, Optional
 
 import strawberry  # noqa
-from api.gql.auth import auth_from_info, verify_user_auth
-from api.gql.patient.types import IdentificationType, PatientType
-from api.gql.permissions import IsAuthenticated
-from api.gql.types import OperationError
-from apps.client import models as client_models
-from apps.patient import models, schemas
+
+from adapters.graphql.auth import auth_from_info, verify_user_auth
+from adapters.graphql.patient.types import IdentificationType, PatientType
+from adapters.graphql.permissions import IsAuthenticated
+from adapters.graphql.types import OperationError
+from domain.client import models as client_models
+from domain.patient import models, schemas
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -136,7 +137,7 @@ class PatientMutations:
 
         exists = await models.Patient.get(client_patient_id=payload.client_patient_id)
         if exists:
-            return OperationError(error=f"Client Patient Id already in use")
+            raise AlreadyExistsError(f"Client Patient Id already in use")
 
         client = await client_models.Client.get(uid=payload.client_uid)
         if not client:

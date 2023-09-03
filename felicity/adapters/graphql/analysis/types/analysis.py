@@ -2,14 +2,15 @@ from datetime import datetime
 from typing import List, Optional
 
 import strawberry  # noqa
-from api.gql.types.generic import PageInfo
-from api.gql.client.types import ClientType
-from api.gql.patient.types import PatientType
-from api.gql.instrument.types import InstrumentType, MethodType
-from api.gql.setup.types import UnitType
-from api.gql.setup.types.department import DepartmentType
-from api.gql.storage.types import StorageContainerType
-from api.gql.user.types import UserType
+
+from adapters.graphql.client.types import ClientType
+from adapters.graphql.instrument.types import InstrumentType, MethodType
+from adapters.graphql.patient.types import PatientType
+from adapters.graphql.setup.types import UnitType
+from adapters.graphql.setup.types.department import DepartmentType
+from adapters.graphql.storage.types import StorageContainerType
+from adapters.graphql.types.generic import PageInfo
+from adapters.graphql.user.types import UserType
 
 
 @strawberry.type

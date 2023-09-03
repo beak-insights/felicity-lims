@@ -1,10 +1,12 @@
 from datetime import datetime
 from typing import Optional
 
-from apps.common.schemas import BaseAuditModel
-from apps.setup.schemas import Department, Supplier
-from apps.storage.schemas import StoreRoom
-from apps.user.schemas import User
+from pydantic import ConfigDict
+
+from domain.setup.schemas import Department, Supplier
+from domain.shared.schemas import BaseAuditModel
+from domain.storage.schemas import StoreRoom
+from domain.user.schemas import User
 
 
 #
